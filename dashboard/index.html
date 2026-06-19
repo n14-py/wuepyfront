@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Panel | Wuepy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="/js/api.js"></script>
+    <style>
+        .hover-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .hover-card:hover { 
+            transform: translateY(-5px); 
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); 
+        }
+        .bg-pattern { 
+            background-color: #f8fafc;
+            background-image: radial-gradient(#cbd5e1 1px, transparent 1px); 
+            background-size: 24px 24px; 
+        }
+        .admin-glow {
+            animation: pulse-border 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse-border {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
+            50% { box-shadow: 0 0 0 8px rgba(245, 158, 11, 0); }
+        }
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans" x-data="dashboardSetup()">
+    
+    <nav class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm" x-show="user">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <a href="/dashboard/index.html" class="flex items-center gap-2">
+                    <div class="w-8 h-8 bg-blue-600 rounded flex items-center justify-center text-white font-bold text-lg shadow-md">W</div>
+                    <span class="text-xl font-extrabold text-slate-900 tracking-tight">Wuepy</span>
+                </a>
+                <div class="flex items-center gap-4">
+                    <span class="font-bold text-slate-900 text-sm hidden sm:block" x-text="'Hola, ' + (user?.name || '')"></span>
+                    <a href="#" @click.prevent="logout" class="text-slate-400 hover:text-red-500 p-2"><i class="fas fa-sign-out-alt"></i></a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="min-h-screen bg-pattern pb-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+            
+            <div class="flex flex-col md:flex-row justify-between items-center bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200 mb-8 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-64 h-64 bg-blue-50 rounded-full blur-[80px] -z-10 translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>
+
+                <div class="flex items-center gap-5 mb-6 md:mb-0 relative z-10">
+                    <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-2xl font-black shadow-inner border border-blue-200" x-text="user?.name ? user.name.charAt(0).toUpperCase() : 'W'">
+                    </div>
+                    <div>
+                        <h1 class="text-2xl md:text-3xl font-black text-slate-900 tracking-tight" x-text="'¡Hola, ' + (user?.name || 'Emprendedor') + '!'"></h1>
+                        <p class="text-slate-500 font-medium">Bienvenido a tu panel central Wuepy.</p>
+                    </div>
+                </div>
+                
+                <div class="flex flex-col sm:flex-row gap-3 relative z-10 w-full md:w-auto">
+                    <template x-if="user?.role === 'superadmin'">
+                        <a href="/superadmin" class="w-full sm:w-auto bg-slate-900 hover:bg-black text-amber-400 px-6 py-4 rounded-xl font-black shadow-lg transition transform hover:-translate-y-1 flex items-center justify-center gap-2 border border-amber-500/30 admin-glow">
+                            <i class="fas fa-crown"></i> Master Panel
+                        </a>
+                    </template>
+                    <a href="/dashboard/create-site.html" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-xl font-black shadow-lg shadow-blue-600/30 transition transform hover:-translate-y-1 flex items-center justify-center gap-2">
+                        <i class="fas fa-plus-circle text-lg"></i> Crear Nueva Tienda
+                    </a>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3 mb-6">
+                <i class="fas fa-store text-blue-500 text-xl"></i>
+                <h2 class="text-2xl font-black text-slate-900">Mis Tiendas Activas</h2>
+            </div>
+
+            <template x-if="isLoading">
+                <div class="text-center py-10"><i class="fas fa-spinner fa-spin text-3xl text-blue-500"></i></div>
+            </template>
+
+            <template x-if="!isLoading && sites.length === 0">
+                <div class="bg-white rounded-[2rem] shadow-sm border-2 border-dashed border-slate-300 p-12 md:p-20 text-center max-w-3xl mx-auto mt-10 relative overflow-hidden">
+                    <div class="absolute inset-0 bg-slate-50/50 pointer-events-none"></div>
+                    <div class="relative z-10">
+                        <div class="w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6 text-blue-500 text-4xl shadow-inner border border-blue-100">
+                            <i class="fas fa-store-slash"></i>
+                        </div>
+                        <h3 class="text-2xl md:text-3xl font-black text-slate-900 mb-3">Aún no tienes ninguna tienda</h3>
+                        <p class="text-slate-500 mb-8 max-w-md mx-auto text-lg font-medium">Crea tu primera tienda en Wuepy y empieza a vender en internet de manera profesional en solo 5 minutos.</p>
+                        <a href="/dashboard/create-site.html" class="inline-block bg-blue-600 hover:bg-blue-700 text-white px-10 py-4 rounded-xl font-black shadow-xl shadow-blue-600/20 transition transform hover:-translate-y-1 uppercase tracking-widest text-sm">
+                            Empezar a Crear Mi Tienda
+                        </a>
+                    </div>
+                </div>
+            </template>
+
+            <template x-if="!isLoading && sites.length > 0">
+                <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
+                    <template x-for="site in sites" :key="site._id">
+                        <div class="bg-white rounded-[2rem] shadow-sm border border-slate-200 flex flex-col hover-card relative group overflow-hidden">
+                            
+                            <div class="absolute top-5 right-5 z-10">
+                                <template x-if="site.subscriptionStatus === 'active'">
+                                    <div class="bg-emerald-100 text-emerald-700 text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-wider flex items-center gap-1.5 shadow-sm border border-emerald-200">
+                                        <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span> Activa
+                                    </div>
+                                </template>
+                                <template x-if="site.subscriptionStatus === 'trial' || !site.subscriptionStatus">
+                                    <div class="bg-blue-100 text-blue-700 text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-wider flex items-center gap-1.5 shadow-sm border border-blue-200">
+                                        <i class="fas fa-gift"></i> Prueba Gratis
+                                    </div>
+                                </template>
+                            </div>
+
+                            <div class="p-8 border-b border-slate-100 relative bg-gradient-to-b from-slate-50 to-white">
+                                <div class="flex items-center gap-5 relative z-10">
+                                    <div class="w-20 h-20 bg-white rounded-2xl shadow-md border border-slate-100 p-1 flex-shrink-0 flex items-center justify-center overflow-hidden">
+                                        <template x-if="site.logoUrl && !site.logoUrl.includes('placehold')">
+                                            <img :src="site.logoUrl" class="w-full h-full object-cover rounded-xl">
+                                        </template>
+                                        <template x-if="!site.logoUrl || site.logoUrl.includes('placehold')">
+                                            <div class="w-full h-full bg-slate-100 rounded-xl flex items-center justify-center">
+                                                <i class="fas fa-store text-3xl text-blue-300"></i>
+                                            </div>
+                                        </template>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <h3 class="text-2xl font-black text-slate-900 truncate leading-tight mb-2" x-text="site.name"></h3>
+                                        <a :href="'https://' + site.subdomain + '.wuepy.com'" target="_blank" class="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:text-white hover:bg-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg font-bold transition border border-blue-100 hover:border-blue-600">
+                                            <span x-text="site.subdomain + '.wuepy.com'"></span> <i class="fas fa-external-link-alt text-[10px]"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="p-6 flex-1 flex flex-col justify-end gap-4 bg-white">
+                                <div class="grid grid-cols-3 gap-2 sm:gap-4">
+                                    <a :href="'/dashboard/site/' + site._id + '/pos'" class="bg-emerald-50 border border-emerald-100 rounded-2xl p-3 sm:p-4 flex flex-col items-center justify-center gap-2 hover:border-emerald-400 hover:shadow-md transition group/pos">
+                                        <div class="w-10 h-10 sm:w-12 sm:h-12 bg-white rounded-full flex items-center justify-center shadow-sm group-hover/pos:scale-110 transition-transform border border-emerald-50">
+                                            <i class="fas fa-cash-register text-lg sm:text-xl text-emerald-500"></i>
+                                        </div>
+                                        <span class="text-[9px] sm:text-[10px] font-black text-emerald-700 uppercase tracking-widest text-center">Abrir Caja</span>
+                                    </a>
+
+                                    <a :href="'/dashboard/site/' + site._id + '/inventory'" class="bg-blue-50 border border-blue-100 rounded-2xl p-3 sm:p-4 flex flex-col items-center justify-center gap-2 hover:border-blue-400 hover:shadow-md transition group/inv">
+                                        <div class="w-10 h-10 sm:w-12 sm:h-12 bg-white rounded-full flex items-center justify-center shadow-sm group-hover/inv:scale-110 transition-transform border border-blue-50">
+                                            <i class="fas fa-boxes text-lg sm:text-xl text-blue-500"></i>
+                                        </div>
+                                        <span class="text-[9px] sm:text-[10px] font-black text-blue-700 uppercase tracking-widest text-center">Catálogo</span>
+                                    </a>
+
+                                    <a :href="'/dashboard/site/' + site._id + '/billing'" class="bg-purple-50 border border-purple-100 rounded-2xl p-3 sm:p-4 flex flex-col items-center justify-center gap-2 hover:border-purple-400 hover:shadow-md transition group/fin">
+                                        <div class="w-10 h-10 sm:w-12 sm:h-12 bg-white rounded-full flex items-center justify-center shadow-sm group-hover/fin:scale-110 transition-transform border border-purple-50">
+                                            <i class="fas fa-credit-card text-lg sm:text-xl text-purple-500"></i>
+                                        </div>
+                                        <span class="text-[9px] sm:text-[10px] font-black text-purple-700 uppercase tracking-widest text-center">Suscripción</span>
+                                    </a>
+                                </div>
+
+                                <a :href="'/dashboard/site/' + site._id" class="w-full bg-slate-900 border border-slate-800 rounded-xl py-4 px-4 flex items-center justify-between hover:bg-black transition text-sm font-black text-white mt-2 group/panel">
+                                    <span><i class="fas fa-sliders-h mr-2 text-slate-400"></i> Entrar al Panel de Control</span>
+                                    <i class="fas fa-arrow-right text-slate-500 group-hover/panel:text-white group-hover/panel:translate-x-1 transition-all"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </template>
+
+            <div class="mt-16 mb-6">
+                <div class="flex items-center gap-3 mb-6">
+                    <i class="fas fa-hand-holding-heart text-pink-500 text-xl"></i>
+                    <h2 class="text-2xl font-black text-slate-900">Wuepy Apoya a los Emprendedores</h2>
+                </div>
+                
+                <div class="bg-gradient-to-br from-indigo-900 to-slate-900 rounded-[2rem] p-8 md:p-12 text-white shadow-2xl relative overflow-hidden border border-indigo-500/30 flex flex-col md:flex-row items-center justify-between gap-10 hover-card">
+                    <i class="fas fa-flag absolute -left-10 -top-10 text-[180px] text-white/5 rotate-12 pointer-events-none"></i>
+                    <i class="fab fa-tiktok absolute right-20 -bottom-10 text-[150px] text-white/5 -rotate-12 pointer-events-none"></i>
+
+                    <div class="flex-1 relative z-10 w-full">
+                        <div class="flex items-center gap-2 mb-6">
+                            <div class="bg-pink-500 text-white px-3 py-1.5 rounded-lg font-black tracking-widest text-[10px] uppercase shadow-sm">
+                                <i class="fas fa-heart"></i> 100% Paraguayo
+                            </div>
+                            <div class="bg-yellow-400/20 text-yellow-400 px-3 py-1.5 rounded-lg border border-yellow-400/30 font-black tracking-widest text-[10px] uppercase">
+                                <i class="fas fa-gift"></i> Gana 6 Meses Gratis
+                            </div>
+                        </div>
+                        
+                        <h3 class="text-3xl md:text-4xl font-black mb-4 text-white leading-tight">Sabemos lo difícil que es emprender. ¡Te ayudamos!</h3>
+                        <p class="text-indigo-100 font-medium leading-relaxed mb-6 text-base max-w-2xl">
+                            Wuepy es una plataforma creada por y para paraguayos. Como creemos en lo nuestro, queremos regalarte <strong>6 meses de suscripción gratis</strong>. No necesitas hacer un comercial aburrido: solo muéstranos tu negocio en TikTok, Reels o YouTube y menciónanos. ¡Así de fácil!
+                        </p>
+                        
+                        <div class="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/10 mb-8 max-w-2xl">
+                            <h4 class="text-yellow-400 font-black text-sm uppercase tracking-widest mb-3"><i class="fas fa-lightbulb mr-1"></i> No te compliques, hazlo a tu estilo:</h4>
+                            <ul class="text-indigo-50 text-sm space-y-2 font-medium">
+                                <li><i class="fas fa-check-circle text-emerald-400 mr-2"></i> Solo <strong>3 segunditos</strong> bastan. Pega una captura de tu web o de tus ventas.</li>
+                                <li><i class="fas fa-check-circle text-emerald-400 mr-2"></i> Menciónanos orgánicamente ("Miren lo que logré vender con Wuepy").</li>
+                                <li><i class="fas fa-check-circle text-emerald-400 mr-2"></i> Un video de tu día a día mostrando cómo preparas tus pedidos.</li>
+                            </ul>
+                        </div>
+
+                        <template x-if="sites.length > 0">
+                            <button @click="showApoyaModal = true" class="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-black py-4 px-10 rounded-xl transition transform active:scale-95 flex items-center justify-center gap-3 text-lg shadow-xl shadow-yellow-400/20 w-full sm:w-auto">
+                                Ya subí mi video <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </template>
+                        <template x-if="sites.length === 0">
+                            <button disabled class="bg-slate-800 text-slate-400 font-bold py-4 px-10 rounded-xl cursor-not-allowed text-sm uppercase tracking-widest w-full sm:w-auto">
+                                Crea una tienda primero para participar
+                            </button>
+                        </template>
+                    </div>
+                    
+                    <div class="hidden lg:flex flex-col items-center justify-center flex-shrink-0 relative z-10 w-64 h-64 bg-indigo-800/50 rounded-full border-[8px] border-indigo-500/20 shadow-inner">
+                        <i class="fas fa-store text-6xl text-white mb-2"></i>
+                        <i class="fas fa-star text-3xl text-yellow-400 absolute top-12 right-12 animate-pulse"></i>
+                        <i class="fas fa-heart text-3xl text-pink-500 absolute bottom-16 left-12 animate-bounce"></i>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div x-show="showApoyaModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div x-show="showApoyaModal" class="fixed inset-0 bg-slate-900/75 backdrop-blur-sm transition-opacity" @click="showApoyaModal = false"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div x-show="showApoyaModal" class="inline-block align-bottom bg-white rounded-[2rem] text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl w-full border border-slate-200">
+                <form @submit.prevent="submitApoya" class="p-8">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-2xl font-black text-indigo-900 flex items-center gap-2"><i class="fas fa-gift text-pink-500"></i> Reclama tu regalo</h3>
+                        <button type="button" @click="showApoyaModal = false" class="text-slate-400 hover:text-slate-600 transition text-xl"><i class="fas fa-times"></i></button>
+                    </div>
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Selecciona tu Tienda</label>
+                            <select name="siteId" required class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl focus:border-indigo-500 font-bold text-slate-800 outline-none">
+                                <template x-for="site in sites" :key="site._id">
+                                    <option :value="site._id" x-text="site.name + ' (' + site.subdomain + ')'"></option>
+                                </template>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Enlace de tu video publicado</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400">
+                                    <i class="fas fa-link"></i>
+                                </span>
+                                <input type="url" name="videoUrl" required placeholder="Pega aquí el link (TikTok, Instagram, etc)..." class="w-full pl-10 pr-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl focus:border-indigo-500 font-bold text-slate-800 outline-none">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-8 bg-pink-50 p-4 rounded-xl border border-pink-100 mb-6">
+                        <p class="text-[11px] text-pink-800 font-bold text-center"><i class="fas fa-heart text-pink-500 mr-1"></i> En cuanto le echemos un vistazo al link, te activaremos los 6 meses de regalo.</p>
+                    </div>
+                    <div>
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-4 rounded-xl transition shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 text-lg">
+                            Enviar Enlace <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('dashboardSetup', () => ({
+                user: null, sites: [], isLoading: true, showApoyaModal: false,
+                async init() {
+                    this.user = WuepyAPI.getUser();
+                    if (!this.user) { window.location.href = '/auth/login.html'; return; }
+                    try {
+                        const res = await WuepyAPI.fetch('/dashboard');
+                        if (res.status === 200) {
+                            this.sites = res.data.sites || res.data;
+                        }
+                    } catch(e) { console.error(e); }
+                    this.isLoading = false;
+                },
+                logout() { WuepyAPI.logoutLocal(); },
+                submitApoya() {
+                    alert('Solicitud enviada (Conectar a endpoint API próximamente)');
+                    this.showApoyaModal = false;
+                }
+            }));
+        });
+    </script>
+</body>
+</html>

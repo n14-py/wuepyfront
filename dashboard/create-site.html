@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="es" class="bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Nueva Tienda | Wuepy SaaS</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="/js/api.js"></script>
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        [x-cloak] { display: none !important; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="text-slate-800 flex flex-col min-h-screen" x-data="siteWizard()">
+
+    <nav class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm" x-show="user">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center gap-8">
+                    <a href="/dashboard/index.html" class="flex items-center gap-2 group">
+                        <div class="w-8 h-8 bg-blue-600 rounded flex items-center justify-center text-white font-bold text-lg shadow-md group-hover:bg-blue-700 transition">W</div>
+                        <span class="text-xl font-extrabold text-slate-900 tracking-tight">Wuepy</span>
+                    </a>
+                    <div class="hidden md:flex space-x-2">
+                        <a href="/dashboard/index.html" class="text-slate-600 hover:text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-lg text-sm font-bold transition">Mis Tiendas</a>
+                        <a href="/dashboard/create-site.html" class="text-blue-600 bg-blue-50 px-3 py-2 rounded-lg text-sm font-bold transition">Nueva Tienda</a>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="hidden sm:block text-sm text-slate-500 text-right">
+                        <div class="font-medium">Hola, <span class="font-bold text-slate-900" x-text="user?.name"></span></div>
+                    </div>
+                    <div class="h-8 w-px bg-slate-200 mx-2 hidden sm:block"></div>
+                    <a href="#" @click.prevent="WuepyAPI.logoutLocal()" class="text-slate-400 hover:text-red-500 p-2 transition flex items-center gap-2">
+                        <i class="fas fa-sign-out-alt text-lg"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+            
+            <div class="mb-8">
+                <a href="/dashboard/index.html" class="inline-flex items-center text-sm font-bold text-slate-400 hover:text-indigo-600 transition mb-4">
+                    <i class="fas fa-arrow-left mr-2"></i> Volver al panel
+                </a>
+                <h1 class="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">Despliega tu negocio online</h1>
+                <p class="text-slate-500 font-medium mt-2">Sigue estos 4 pasos para configurar tu plataforma en Wuepy.</p>
+            </div>
+
+            <template x-if="errorMsg">
+                <div class="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl mb-8 shadow-sm flex items-center gap-3">
+                    <i class="fas fa-exclamation-circle text-xl text-red-500"></i>
+                    <p class="font-bold text-sm" x-text="errorMsg"></p>
+                </div>
+            </template>
+
+            <div class="mb-10">
+                <div class="flex items-center justify-between relative">
+                    <div class="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-slate-200 rounded-full z-0"></div>
+                    <div class="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-indigo-600 rounded-full z-0 transition-all duration-500" :style="'width: ' + ((step - 1) / 3 * 100) + '%'"></div>
+                    
+                    <div class="relative z-10 flex flex-col items-center">
+                        <div class="w-10 h-10 rounded-full font-black flex items-center justify-center transition-colors shadow-sm" :class="step >= 1 ? 'bg-indigo-600 text-white shadow-indigo-600/30' : 'bg-white border-2 border-slate-200 text-slate-400'">1</div>
+                        <span class="absolute top-12 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 whitespace-nowrap">Básico</span>
+                    </div>
+                    <div class="relative z-10 flex flex-col items-center">
+                        <div class="w-10 h-10 rounded-full font-black flex items-center justify-center transition-colors shadow-sm" :class="step >= 2 ? 'bg-indigo-600 text-white shadow-indigo-600/30' : 'bg-white border-2 border-slate-200 text-slate-400'">2</div>
+                        <span class="absolute top-12 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 whitespace-nowrap">Suscripción</span>
+                    </div>
+                    <div class="relative z-10 flex flex-col items-center">
+                        <div class="w-10 h-10 rounded-full font-black flex items-center justify-center transition-colors shadow-sm" :class="step >= 3 ? 'bg-indigo-600 text-white shadow-indigo-600/30' : 'bg-white border-2 border-slate-200 text-slate-400'">3</div>
+                        <span class="absolute top-12 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 whitespace-nowrap">Diseño Web</span>
+                    </div>
+                    <div class="relative z-10 flex flex-col items-center">
+                        <div class="w-10 h-10 rounded-full font-black flex items-center justify-center transition-colors shadow-sm" :class="step >= 4 ? 'bg-indigo-600 text-white shadow-indigo-600/30' : 'bg-white border-2 border-slate-200 text-slate-400'">4</div>
+                        <span class="absolute top-12 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 whitespace-nowrap">Contacto</span>
+                    </div>
+                </div>
+            </div>
+
+            <form @submit.prevent="submitForm" id="createSiteForm" class="bg-white rounded-[2rem] shadow-xl border border-slate-200 overflow-hidden mt-8">
+                
+                <div>
+                    <div x-show="step === 1" x-transition.opacity.duration.300ms class="p-8 sm:p-10">
+                        <div class="mb-8">
+                            <h2 class="text-2xl font-black text-slate-900 flex items-center gap-3"><i class="fas fa-store text-indigo-500"></i> Identidad del Negocio</h2>
+                            <p class="text-sm text-slate-500 mt-1">Cuéntanos sobre tu emprendimiento para adaptar la plataforma.</p>
+                        </div>
+
+                        <div class="space-y-6">
+                            <div class="relative" x-data="{ open: false }">
+                                <label class="block text-xs font-black text-slate-600 uppercase tracking-widest mb-2">¿De qué trata tu negocio? <span class="text-red-500">*</span></label>
+                                <input type="hidden" name="businessType" :value="formData.businessType">
+                                
+                                <button type="button" @click="open = !open" @click.away="open = false" 
+                                        class="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-xl focus:bg-white focus:border-indigo-500 font-bold transition outline-none flex items-center justify-between"
+                                        :class="formData.businessType === '' ? 'text-slate-400' : 'text-slate-800'">
+                                    <span x-text="formData.businessType ? businessOptions.find(o => o.id === formData.businessType).label : '-- Selecciona el rubro principal --'"></span>
+                                    <i class="fas fa-chevron-down transition-transform duration-200" :class="open ? 'rotate-180 text-indigo-500' : 'text-slate-400'"></i>
+                                </button>
+
+                                <div x-show="open" x-transition.opacity.duration.200ms style="display: none;"
+                                     class="absolute z-50 w-full mt-2 bg-white border border-slate-200 rounded-xl shadow-2xl max-h-64 overflow-y-auto py-2">
+                                    <template x-for="item in businessOptions" :key="item.id">
+                                        <button type="button" @click="formData.businessType = item.id; open = false"
+                                                class="w-full text-left px-5 py-3 hover:bg-indigo-50 hover:text-indigo-700 font-bold transition flex items-center justify-between"
+                                                :class="formData.businessType === item.id ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600'">
+                                            <span x-text="item.label"></span>
+                                            <i class="fas fa-check text-indigo-500" x-show="formData.businessType === item.id"></i>
+                                        </button>
+                                    </template>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-black text-slate-600 uppercase tracking-widest mb-2">Nombre Comercial <span class="text-red-500">*</span></label>
+                                <input type="text" name="name" x-model="formData.name" @input="generateSubdomain" placeholder="Ej: Importadora San José" required class="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-xl focus:bg-white focus:border-indigo-500 font-bold text-slate-800 transition outline-none text-lg">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-black text-slate-600 uppercase tracking-widest mb-2">Enlace de tu Tienda (Subdominio) <span class="text-red-500">*</span></label>
+                                <div class="flex relative rounded-xl shadow-sm border-2 border-slate-100 focus-within:border-indigo-500 transition-colors bg-slate-50 focus-within:bg-white overflow-hidden">
+                                    <span class="inline-flex items-center px-4 rounded-l-xl border-r border-slate-200 bg-slate-100 text-slate-500 sm:text-sm font-bold">https://</span>
+                                    <input type="text" name="subdomain" x-model="formData.subdomain" @input="cleanSubdomain" placeholder="minegocio" required class="flex-1 block w-full min-w-0 px-4 py-4 sm:text-lg font-black text-indigo-600 outline-none bg-transparent">
+                                    <span class="inline-flex items-center px-4 rounded-r-xl border-l border-slate-200 bg-slate-100 text-slate-500 sm:text-sm font-bold">.wuepy.com</span>
+                                </div>
+                            </div>
+
+                            <div class="relative" x-data="{ open: false }">
+                                <label class="block text-xs font-black text-slate-600 uppercase tracking-widest mb-2">Moneda Principal</label>
+                                <input type="hidden" name="currency" :value="formData.currency">
+                                <button type="button" @click="open = !open" @click.away="open = false" 
+                                        class="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-xl focus:bg-white focus:border-indigo-500 font-bold text-slate-800 transition outline-none flex items-center justify-between">
+                                    <span x-text="formData.currency === 'PYG' ? 'Guaraníes (Gs.)' : 'Dólares Estadounidenses ($)'"></span>
+                                    <i class="fas fa-chevron-down transition-transform duration-200" :class="open ? 'rotate-180 text-indigo-500' : 'text-slate-400'"></i>
+                                </button>
+                                <div x-show="open" x-transition.opacity style="display: none;" class="absolute z-50 w-full mt-2 bg-white border border-slate-200 rounded-xl shadow-xl py-2">
+                                    <button type="button" @click="formData.currency = 'PYG'; open = false" class="w-full text-left px-5 py-3 hover:bg-indigo-50 font-bold flex justify-between items-center" :class="formData.currency === 'PYG' ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600'">
+                                        <span>Guaraníes (Gs.)</span><i class="fas fa-check text-indigo-500" x-show="formData.currency === 'PYG'"></i>
+                                    </button>
+                                    <button type="button" @click="formData.currency = 'USD'; open = false" class="w-full text-left px-5 py-3 hover:bg-indigo-50 font-bold flex justify-between items-center" :class="formData.currency === 'USD' ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600'">
+                                        <span>Dólares Estadounidenses ($)</span><i class="fas fa-check text-indigo-500" x-show="formData.currency === 'USD'"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div x-show="step === 2" x-cloak x-transition.opacity.duration.300ms class="p-8 sm:p-10">
+                        <div class="mb-8">
+                            <h2 class="text-2xl font-black text-slate-900 flex items-center gap-3"><i class="fas fa-medal text-emerald-500"></i> Plan y Suscripción</h2>
+                            <p class="text-sm text-slate-500 mt-1">Elige la capacidad que necesitas. <strong class="text-emerald-600">¡El primer mes siempre va por nuestra cuenta!</strong></p>
+                        </div>
+                        <div class="space-y-8">
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                                <label class="relative flex cursor-pointer rounded-2xl border-2 p-6 shadow-sm transition hover:bg-slate-50" :class="formData.plan === 'basico' ? 'border-indigo-600 bg-indigo-50/50 ring-2 ring-indigo-600' : 'border-slate-200'">
+                                    <input type="radio" name="plan" value="basico" x-model="formData.plan" class="sr-only">
+                                    <div class="flex flex-col w-full text-center">
+                                        <div class="inline-block bg-emerald-100 text-emerald-700 text-[10px] font-black uppercase tracking-widest py-1 px-3 rounded-full mb-3 mx-auto">1 Mes Gratis</div>
+                                        <span class="font-black text-slate-900 text-xl uppercase tracking-wider mb-1">Básico</span>
+                                        <span class="text-sm text-slate-500 font-bold mb-4 border-b border-slate-200 pb-4">30.000 Gs/mes</span>
+                                    </div>
+                                </label>
+                                <label class="relative flex cursor-pointer rounded-2xl border-2 p-6 shadow-md transition hover:bg-slate-50" :class="formData.plan === 'medio' ? 'border-indigo-600 bg-indigo-50/50 ring-2 ring-indigo-600' : 'border-slate-200'">
+                                    <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-[10px] font-black uppercase tracking-widest py-1 px-4 rounded-full shadow-sm whitespace-nowrap">Recomendado</div>
+                                    <input type="radio" name="plan" value="medio" x-model="formData.plan" class="sr-only">
+                                    <div class="flex flex-col w-full text-center">
+                                        <div class="inline-block bg-emerald-100 text-emerald-700 text-[10px] font-black uppercase tracking-widest py-1 px-3 rounded-full mb-3 mx-auto">1 Mes Gratis</div>
+                                        <span class="font-black text-indigo-700 text-xl uppercase tracking-wider mb-1">Inteligente</span>
+                                        <span class="text-sm text-indigo-500 font-bold mb-4 border-b border-slate-200 pb-4">100.000 Gs/mes</span>
+                                    </div>
+                                </label>
+                                <label class="relative flex cursor-pointer rounded-2xl border-2 p-6 shadow-sm transition hover:bg-slate-50" :class="formData.plan === 'profesional' ? 'border-indigo-600 bg-indigo-50/50 ring-2 ring-indigo-600' : 'border-slate-200'">
+                                    <input type="radio" name="plan" value="profesional" x-model="formData.plan" class="sr-only">
+                                    <div class="flex flex-col w-full text-center">
+                                        <div class="inline-block bg-emerald-100 text-emerald-700 text-[10px] font-black uppercase tracking-widest py-1 px-3 rounded-full mb-3 mx-auto">1 Mes Gratis</div>
+                                        <span class="font-black text-slate-900 text-xl uppercase tracking-wider mb-1">Profesional</span>
+                                        <span class="text-sm text-slate-500 font-bold mb-4 border-b border-slate-200 pb-4">200.000 Gs/mes</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div x-show="step === 3" x-cloak x-transition.opacity.duration.300ms class="p-8 sm:p-10">
+                        <div class="mb-8">
+                            <h2 class="text-2xl font-black text-slate-900 flex items-center gap-3"><i class="fas fa-paint-brush text-pink-500"></i> Apariencia Visual</h2>
+                        </div>
+                        <div class="space-y-6">
+                            <div>
+                                <label class="block text-xs font-black text-slate-600 uppercase tracking-widest mb-2">Logo de la Empresa (Opcional)</label>
+                                <div class="flex items-center gap-6">
+                                    <div class="w-24 h-24 rounded-2xl bg-slate-100 border-2 border-dashed border-slate-300 flex items-center justify-center overflow-hidden shrink-0">
+                                        <template x-if="imagePreview"><img :src="imagePreview" class="w-full h-full object-cover"></template>
+                                        <template x-if="!imagePreview"><i class="fas fa-camera text-slate-300 text-3xl"></i></template>
+                                    </div>
+                                    <input type="file" name="logo" accept="image/*" @change="previewLogo" class="block w-full text-sm text-slate-500 file:mr-4 file:py-3 file:px-6 file:rounded-xl file:border-0 file:text-xs file:font-black file:uppercase file:tracking-widest file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 transition cursor-pointer">
+                                </div>
+                            </div>
+                            
+                            <input type="hidden" name="designMode" value="template">
+                            <div class="p-6 bg-slate-50 rounded-2xl border border-slate-200 mt-4 min-h-[200px]">
+                                <div class="space-y-4">
+                                    <div class="relative" x-data="{ open: false }">
+                                        <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Elige tu Plantilla</label>
+                                        <input type="hidden" name="template" :value="formData.template">
+                                        <button type="button" @click="open = !open" @click.away="open = false" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:border-indigo-500 font-bold text-slate-700 outline-none flex items-center justify-between">
+                                            <span x-text="templateOptions.find(t => t.id === formData.template)?.name || 'Selecciona una plantilla'"></span>
+                                            <i class="fas fa-chevron-down text-slate-400"></i>
+                                        </button>
+                                        <div x-show="open" style="display: none;" class="absolute z-50 w-full mt-2 bg-white border border-slate-200 rounded-xl shadow-2xl py-2 max-h-60 overflow-y-auto">
+                                            <template x-for="tpl in templateOptions" :key="tpl.id">
+                                                <button type="button" @click="formData.template = tpl.id; open = false" class="w-full text-left px-4 py-3 hover:bg-indigo-50 font-bold flex justify-between items-center" :class="formData.template === tpl.id ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600'">
+                                                    <span x-text="tpl.name"></span><i class="fas fa-check text-indigo-500" x-show="formData.template === tpl.id"></i>
+                                                </button>
+                                            </template>
+                                        </div>
+                                    </div>
+
+                                    <div class="grid grid-cols-2 gap-4 pt-2">
+                                        <div>
+                                            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Color Principal</label>
+                                            <div class="flex items-center gap-3 bg-white border border-slate-200 rounded-xl px-4 py-2">
+                                                <input type="color" name="primaryColor" x-model="formData.primaryColor" class="w-8 h-8 rounded cursor-pointer border-none p-0 bg-transparent">
+                                                <span class="text-xs font-bold text-slate-600 uppercase" x-text="formData.primaryColor"></span>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Color Secundario</label>
+                                            <div class="flex items-center gap-3 bg-white border border-slate-200 rounded-xl px-4 py-2">
+                                                <input type="color" name="secondaryColor" x-model="formData.secondaryColor" class="w-8 h-8 rounded cursor-pointer border-none p-0 bg-transparent">
+                                                <span class="text-xs font-bold text-slate-600 uppercase" x-text="formData.secondaryColor"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div x-show="step === 4" x-cloak x-transition.opacity.duration.300ms class="p-8 sm:p-10">
+                        <div class="mb-8">
+                            <h2 class="text-2xl font-black text-slate-900 flex items-center gap-3"><i class="fas fa-address-book text-orange-500"></i> Contacto y Textos</h2>
+                        </div>
+                        <div class="space-y-6">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                <div>
+                                    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2"><i class="fab fa-whatsapp text-emerald-500 text-sm mr-1"></i> WhatsApp de Ventas <span class="text-red-500">*</span></label>
+                                    <input type="text" name="whatsapp" x-model="formData.whatsapp" required placeholder="Ej: 0981123456" class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold text-slate-800 outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2"><i class="fas fa-envelope text-slate-400 text-sm mr-1"></i> Email Comercial</label>
+                                    <input type="email" name="contactEmail" x-model="formData.contactEmail" class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold text-slate-800 outline-none">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2"><i class="fas fa-map-marker-alt text-red-400 text-sm mr-1"></i> Dirección Física (Opcional)</label>
+                                <input type="text" name="address" class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold text-slate-800 outline-none">
+                            </div>
+
+                            <div class="pt-4 border-t border-slate-100">
+                                <h4 class="font-black text-slate-800 mb-4 text-sm uppercase tracking-widest">Textos de la Portada</h4>
+                                <div class="space-y-4">
+                                    <div>
+                                        <input type="text" name="heroTitle" placeholder="Título Grande (Hero)" class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold text-slate-800 outline-none">
+                                    </div>
+                                    <div>
+                                        <textarea name="aboutText" rows="2" placeholder="Breve descripción de tu negocio..." class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl font-medium text-slate-700 outline-none resize-none"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="px-8 sm:px-10 py-6 bg-slate-50 border-t border-slate-200 flex justify-between items-center relative z-10">
+                    <button type="button" @click="prevStep()" x-show="step > 1" class="px-6 py-3 rounded-xl font-bold text-slate-500 hover:bg-slate-200 transition">
+                        <i class="fas fa-chevron-left mr-2"></i> Atrás
+                    </button>
+                    <div x-show="step === 1"></div>
+                    
+                    <button type="button" @click="nextStep()" x-show="step < 4" class="px-8 py-3 rounded-xl font-black text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-600/30 transition transform active:scale-95 flex items-center gap-2 ml-auto">
+                        Siguiente <i class="fas fa-chevron-right"></i>
+                    </button>
+
+                    <button type="submit" x-show="step === 4" :disabled="isLoading" class="px-10 py-4 rounded-2xl font-black text-white bg-emerald-500 hover:bg-emerald-600 shadow-xl shadow-emerald-500/30 transition transform hover:-translate-y-1 active:scale-95 flex items-center gap-3 text-lg ml-auto disabled:opacity-75">
+                        <span x-text="isLoading ? 'CONSTRUYENDO...' : 'CREAR MI NEGOCIO'"></span>
+                        <i class="fas" :class="isLoading ? 'fa-spinner fa-spin' : 'fa-rocket'"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <footer class="bg-white border-t border-slate-200 py-8 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p class="text-sm text-slate-400 font-medium">&copy; 2026 Wuepy by LFAFTECH. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('siteWizard', () => ({
+                user: null,
+                step: 1,
+                imagePreview: null,
+                isLoading: false,
+                errorMsg: '',
+                
+                businessOptions: [
+                    { id: 'tienda_online', label: 'Tienda Online / E-commerce (Ropa, Electrónica)' },
+                    { id: 'gastronomia', label: 'Gastronomía (Restaurante, Lomitería, Bodega)' },
+                    { id: 'tienda_fisica', label: 'Tienda Física / Local Comercial (Supermercado)' },
+                    { id: 'servicios', label: 'Servicios Profesionales / Agencia / Consultoría' },
+                    { id: 'salud_belleza', label: 'Salud y Belleza (Peluquería, Barbería, Spa)' },
+                    { id: 'gimnasio', label: 'Gimnasio / Deportes / Club' },
+                    { id: 'fabrica', label: 'Fábrica / Industria / Venta Mayorista' },
+                    { id: 'inmobiliaria', label: 'Inmobiliaria / Bienes Raíces' },
+                    { id: 'otro', label: 'Otro rubro' }
+                ],
+                templateOptions: [
+                    { id: 'template1', name: 'E-Commerce Moderno (Claro)' },
+                    { id: 'template2', name: 'Minimalista Elegante (Oscuro)' }
+                ],
+                
+                formData: {
+                    businessType: '', name: '', subdomain: '', currency: 'PYG',
+                    plan: 'basico', designMode: 'template', primaryColor: '#3b82f6',
+                    secondaryColor: '#1e293b', template: 'template1', whatsapp: '', contactEmail: ''
+                },
+
+                init() {
+                    this.user = WuepyAPI.getUser();
+                    if(!this.user) { window.location.href = '/auth/login.html'; return; }
+                    this.formData.contactEmail = this.user.email;
+                },
+
+                generateSubdomain() {
+                    if (this.step === 1 && !this.formData.subdomain) {
+                        this.formData.subdomain = this.formData.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, '');
+                    }
+                },
+                cleanSubdomain() {
+                    this.formData.subdomain = this.formData.subdomain.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, '');
+                },
+                previewLogo(event) {
+                    const file = event.target.files[0];
+                    if (file) this.imagePreview = URL.createObjectURL(file);
+                },
+
+                validateStep1() {
+                    if(!this.formData.businessType) { alert("Selecciona el Tipo de Negocio."); return false; }
+                    if(!this.formData.name || !this.formData.subdomain) { alert("Nombre y subdominio obligatorios."); return false; }
+                    return true;
+                },
+                validateStep4() {
+                    if(!this.formData.whatsapp) { alert("El WhatsApp de ventas es obligatorio."); return false; }
+                    return true;
+                },
+                nextStep() {
+                    let valid = false;
+                    if(this.step === 1) valid = this.validateStep1();
+                    else valid = true;
+                    if(valid) { window.scrollTo({ top: 0, behavior: 'smooth' }); this.step++; }
+                },
+                prevStep() {
+                    if(this.step > 1) { window.scrollTo({ top: 0, behavior: 'smooth' }); this.step--; }
+                },
+
+                async submitForm() {
+                    if(!this.validateStep4()) return;
+                    this.isLoading = true;
+                    this.errorMsg = '';
+                    
+                    try {
+                        const formElement = document.getElementById('createSiteForm');
+                        const formDataPayload = new FormData(formElement);
+                        
+                        // Enviamos usando fetch nativo apuntando a tu backend API en Contabo
+                        const response = await fetch(`${API_URL}/dashboard/create-site`, {
+                            method: 'POST',
+                            body: formDataPayload,
+                            headers: { 'Authorization': `Bearer ${this.user?.token || ''}` } 
+                        });
+                        
+                        const data = await response.json();
+                        if(response.ok && data.success !== false) {
+                            window.location.href = '/dashboard/index.html';
+                        } else {
+                            this.errorMsg = data.message || 'Error al crear la tienda.';
+                        }
+                    } catch(e) {
+                        this.errorMsg = 'Error de conexión con el servidor.';
+                    } finally {
+                        this.isLoading = false;
+                    }
+                }
+            }));
+        });
+    </script>
+</body>
+</html>

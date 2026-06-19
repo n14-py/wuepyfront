@@ -1,0 +1,31 @@
+<header class="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+            <div class="flex-shrink-0 flex items-center">
+                <a href="/" class="text-lg font-semibold tracking-tight text-[#1d1d1f]">
+                    <% if(site.logoUrl) { %>
+                        <img class="h-6 w-auto object-contain" src="<%= site.logoUrl %>" alt="<%= site.name %>">
+                    <% } else { %>
+                        <span><%= site.name %></span>
+                    <% } %>
+                </a>
+            </div>
+            
+            <nav class="hidden md:flex space-x-10">
+                <a href="/" class="text-xs tracking-wide text-[#86868b] hover:text-[#1d1d1f] font-normal transition-colors">Visión General</a>
+                <a href="/search" class="text-xs tracking-wide text-[#86868b] hover:text-[#1d1d1f] font-normal transition-colors">Tienda</a>
+            </nav>
+            
+            <div class="flex items-center space-x-6">
+                <a href="/search" class="text-[#86868b] hover:text-[#1d1d1f] transition-colors text-sm">
+                    <i class="fas fa-search"></i>
+                </a>
+                <% if(site.contact && site.contact.whatsapp) { %>
+                <a href="https://wa.me/<%= site.contact.whatsapp %>" target="_blank" class="bg-[#0071e3] hover:bg-[#0077ed] text-white px-4 py-1.5 rounded-full text-xs font-medium tracking-tight transition-all">
+                    Comprar
+                </a>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</header>

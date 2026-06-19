@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="es" class="bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuración de Tienda - Wuepy</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/js/api.js"></script>
+
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; background-color: #f1f5f9; }
+        [x-cloak] { display: none !important; }
+        .tab-btn { transition: all 0.2s ease; }
+        .tab-btn.active { background-color: #4f46e5; color: white; box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2); border-color: transparent; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    </style>
+</head>
+<body class="text-slate-800 flex flex-col min-h-screen" x-data="settingsManager()">
+
+    <nav class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm" x-show="user" x-cloak>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <a href="/dashboard/index.html" class="flex items-center gap-2 group">
+                    <div class="w-8 h-8 bg-blue-600 rounded flex items-center justify-center text-white font-bold text-lg shadow-md group-hover:bg-blue-700 transition">W</div>
+                    <span class="text-xl font-extrabold text-slate-900 tracking-tight">Wuepy</span>
+                </a>
+                <div class="flex items-center gap-4">
+                    <div class="hidden sm:block text-sm text-slate-500 font-medium">Hola, <span class="font-bold text-slate-900" x-text="user?.name"></span></div>
+                    <div class="h-8 w-px bg-slate-200 mx-2 hidden sm:block"></div>
+                    <a href="#" @click.prevent="WuepyAPI.logoutLocal()" class="text-slate-400 hover:text-red-500 p-2 transition flex items-center gap-2"><i class="fas fa-sign-out-alt text-lg"></i></a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <template x-if="isLoading">
+        <div class="flex flex-col items-center justify-center py-32 flex-grow">
+            <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-indigo-600 mb-4"></div>
+            <p class="text-slate-500 font-bold animate-pulse">Cargando configuración...</p>
+        </div>
+    </template>
+
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mb-20 flex-grow" x-show="!isLoading" x-cloak>
+        
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+            <div>
+                <div class="flex items-center gap-2 text-sm font-bold text-slate-400 mb-3">
+                    <a href="/dashboard/index.html" class="hover:text-indigo-600 transition"><i class="fas fa-home"></i> Panel</a>
+                    <i class="fas fa-chevron-right text-[10px]"></i>
+                    <a :href="'/dashboard/site-overview.html?id=' + site?._id" class="hover:text-indigo-600 transition" x-text="site?.name"></a>
+                    <i class="fas fa-chevron-right text-[10px]"></i>
+                    <span class="text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md">Configuración</span>
+                </div>
+                <h1 class="text-3xl md:text-4xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+                    <i class="fas fa-cog text-indigo-500"></i> Ajustes de Tienda
+                </h1>
+            </div>
+            <a :href="'https://' + site?.subdomain + '.wuepy.com'" target="_blank" class="bg-white border-2 border-indigo-100 text-indigo-600 hover:bg-indigo-50 px-5 py-3 rounded-xl font-bold shadow-sm transition flex items-center gap-2 shrink-0">
+                Ver Tienda Web <i class="fas fa-external-link-alt text-sm"></i>
+            </a>
+        </div>
+
+        <template x-if="successMsg">
+            <div class="bg-emerald-50 border border-emerald-200 text-emerald-700 p-4 rounded-xl mb-6 shadow-sm flex items-center gap-3">
+                <i class="fas fa-check-circle text-2xl text-emerald-500"></i>
+                <p class="font-bold text-sm" x-text="successMsg"></p>
+            </div>
+        </template>
+        <template x-if="errorMsg">
+            <div class="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl mb-6 shadow-sm flex items-center gap-3">
+                <i class="fas fa-exclamation-circle text-2xl text-red-500"></i>
+                <p class="font-bold text-sm" x-text="errorMsg"></p>
+            </div>
+        </template>
+
+        <div class="flex overflow-x-auto gap-3 pb-4 mb-6 hide-scroll border-b border-slate-200">
+            <button @click="activeTab = 'general'" :class="{'active': activeTab === 'general'}" class="tab-btn px-6 py-3 rounded-xl font-bold text-sm border-2 border-slate-200 text-slate-600 hover:border-indigo-300 bg-white flex items-center gap-2 whitespace-nowrap">
+                <i class="fas fa-info-circle"></i> General & Textos
+            </button>
+            <button @click="activeTab = 'design'" :class="{'active': activeTab === 'design'}" class="tab-btn px-6 py-3 rounded-xl font-bold text-sm border-2 border-slate-200 text-slate-600 hover:border-indigo-300 bg-white flex items-center gap-2 whitespace-nowrap">
+                <i class="fas fa-paint-brush"></i> Diseño Web
+            </button>
+            <button @click="activeTab = 'team'" :class="{'active': activeTab === 'team'}" class="tab-btn px-6 py-3 rounded-xl font-bold text-sm border-2 border-slate-200 text-slate-600 hover:border-indigo-300 bg-white flex items-center gap-2 whitespace-nowrap">
+                <i class="fas fa-users"></i> Equipo (Empleados)
+            </button>
+        </div>
+
+        <div x-show="activeTab === 'general'" x-cloak class="bg-white rounded-3xl p-8 shadow-sm border border-slate-200">
+            <form @submit.prevent="updateGeneral" class="space-y-8">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="space-y-5">
+                        <h3 class="text-lg font-black text-slate-900 border-b border-slate-100 pb-2 mb-4">Información Básica</h3>
+                        
+                        <div>
+                            <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Nombre Comercial</label>
+                            <input type="text" x-model="formData.name" required class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl focus:bg-white focus:border-indigo-500 font-bold text-slate-800 transition outline-none">
+                        </div>
+
+                        <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-4 flex items-center justify-between">
+                            <div>
+                                <h4 class="font-bold text-indigo-900 text-sm">Visibilidad en Wuepy Global</h4>
+                                <p class="text-[10px] text-indigo-700 mt-0.5">Permite que tus productos salgan en el Mega Buscador.</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" x-model="formData.showInMarketplace" class="sr-only peer">
+                                <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                            </label>
+                        </div>
+
+                        <h3 class="text-lg font-black text-slate-900 border-b border-slate-100 pb-2 mb-4 mt-8">Redes Sociales</h3>
+                        <div>
+                            <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1.5"><i class="fab fa-facebook text-blue-600 mr-1"></i> Enlace Facebook</label>
+                            <input type="url" x-model="formData.facebook" placeholder="https://facebook.com/tutienda" class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl focus:bg-white focus:border-indigo-500 font-medium text-slate-600 transition outline-none text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1.5"><i class="fab fa-instagram text-pink-600 mr-1"></i> Enlace Instagram</label>
+                            <input type="url" x-model="formData.instagram" placeholder="https://instagram.com/tutienda" class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl focus:bg-white focus:border-indigo-500 font-medium text-slate-600 transition outline-none text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1.5"><i class="fab fa-tiktok text-black mr-1"></i> Enlace TikTok</label>
+                            <input type="url" x-model="formData.tiktok" placeholder="https://tiktok.com/@tutienda" class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl focus:bg-white focus:border-indigo-500 font-medium text-slate-600 transition outline-none text-sm">
+                        </div>
+                    </div>
+
+                    <div class="space-y-5">
+                        <h3 class="text-lg font-black text-slate-900 border-b border-slate-100 pb-2 mb-4">Textos y Contacto</h3>
+
+                        <div>
+                            <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Título de Portada (Hero)</label>
+                            <input type="text" x-model="formData.heroTitle" placeholder="Ej: La mejor moda a un click" class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl focus:bg-white focus:border-indigo-500 font-bold text-slate-800 transition outline-none">
+                        </div>
+
+                        <div>
+                            <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1.5">WhatsApp de Ventas <span class="text-red-500">*</span></label>
+                            <input type="text" x-model="formData.whatsapp" required class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl focus:bg-white focus:border-emerald-500 font-black text-emerald-700 transition outline-none">
+                            <p class="text-[10px] text-slate-400 mt-1 font-bold">Aquí llegarán los pedidos de tu tienda.</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Dirección del Local</label>
+                            <input type="text" x-model="formData.address" class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl focus:bg-white focus:border-indigo-500 font-medium text-slate-600 transition outline-none text-sm">
+                        </div>
+
+                        <div>
+                            <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Acerca de nosotros (Nosotros)</label>
+                            <textarea x-model="formData.aboutText" rows="4" class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl focus:bg-white focus:border-indigo-500 font-medium text-slate-600 transition outline-none text-sm resize-none"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-6 border-t border-slate-100 flex justify-end">
+                    <button type="submit" :disabled="isSaving" class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-xl font-black shadow-lg shadow-indigo-600/30 transition transform hover:-translate-y-0.5 flex items-center gap-2 uppercase tracking-widest text-sm disabled:opacity-70">
+                        <i class="fas" :class="isSaving ? 'fa-spinner fa-spin' : 'fa-save'"></i> <span x-text="isSaving ? 'Guardando...' : 'Guardar Cambios'"></span>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div x-show="activeTab === 'design'" x-cloak class="bg-white rounded-3xl p-8 shadow-sm border border-slate-200">
+            <form id="designForm" @submit.prevent="updateDesign" enctype="multipart/form-data" class="space-y-8">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    
+                    <div class="space-y-5">
+                        <h3 class="text-lg font-black text-slate-900 border-b border-slate-100 pb-2 mb-4">Apariencia</h3>
+                        
+                        <div class="relative" x-data="{ open: false }">
+                            <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Moneda del Catálogo</label>
+                            <button type="button" @click="open = !open" @click.away="open = false" 
+                                    class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl focus:bg-white focus:border-indigo-500 font-bold text-slate-800 transition outline-none flex items-center justify-between">
+                                <span x-text="formDesign.currency === 'PYG' ? 'Guaraníes (Gs.)' : 'Dólares Estadounidenses ($)'"></span>
+                                <i class="fas fa-chevron-down transition-transform duration-200" :class="open ? 'rotate-180 text-indigo-500' : 'text-slate-400'"></i>
+                            </button>
+                            <div x-show="open" x-transition.opacity style="display: none;" class="absolute z-50 w-full mt-2 bg-white border border-slate-200 rounded-xl shadow-xl py-2">
+                                <button type="button" @click="formDesign.currency = 'PYG'; open = false" class="w-full text-left px-5 py-3 hover:bg-indigo-50 font-bold flex justify-between items-center" :class="formDesign.currency === 'PYG' ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600'">
+                                    <span>Guaraníes (Gs.)</span><i class="fas fa-check text-indigo-500" x-show="formDesign.currency === 'PYG'"></i>
+                                </button>
+                                <button type="button" @click="formDesign.currency = 'USD'; open = false" class="w-full text-left px-5 py-3 hover:bg-indigo-50 font-bold flex justify-between items-center" :class="formDesign.currency === 'USD' ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600'">
+                                    <span>Dólares Estadounidenses ($)</span><i class="fas fa-check text-indigo-500" x-show="formDesign.currency === 'USD'"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="relative" x-data="{ open: false }">
+                            <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Plantilla Base</label>
+                            <button type="button" @click="open = !open" @click.away="open = false" 
+                                    class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl focus:bg-white focus:border-indigo-500 font-bold text-slate-800 transition outline-none flex items-center justify-between">
+                                <span x-text="templateOptions.find(t => t.id === formDesign.template)?.name || 'Selecciona una plantilla'"></span>
+                                <i class="fas fa-chevron-down transition-transform duration-200" :class="open ? 'rotate-180 text-indigo-500' : 'text-slate-400'"></i>
+                            </button>
+                            <div x-show="open" x-transition.opacity style="display: none;" class="absolute z-50 w-full mt-2 bg-white border border-slate-200 rounded-xl shadow-2xl py-2 max-h-64 overflow-y-auto custom-scrollbar">
+                                <template x-for="tpl in templateOptions" :key="tpl.id">
+                                    <button type="button" @click="formDesign.template = tpl.id; open = false" class="w-full text-left px-4 py-3 hover:bg-indigo-50 font-bold flex justify-between items-center" :class="formDesign.template === tpl.id ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600'">
+                                        <span x-text="tpl.name"></span><i class="fas fa-check text-indigo-500" x-show="formDesign.template === tpl.id"></i>
+                                    </button>
+                                </template>
+                            </div>
+                            <template x-if="site?.designMode === 'ai_generated'">
+                                <p class="text-[10px] text-purple-600 font-bold mt-2"><i class="fas fa-magic"></i> Actualmente usas un diseño IA. Si guardas, volverás al modo Plantilla.</p>
+                            </template>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4 pt-2">
+                            <div>
+                                <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-2">Color Principal</label>
+                                <div class="flex items-center gap-3 bg-slate-50 border border-slate-200 p-2 rounded-xl">
+                                    <input type="color" x-model="formDesign.primaryColor" class="w-8 h-8 rounded cursor-pointer border-none p-0 bg-transparent">
+                                    <span class="text-xs font-bold text-slate-600 uppercase" x-text="formDesign.primaryColor"></span>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-2">Color Secundario</label>
+                                <div class="flex items-center gap-3 bg-slate-50 border border-slate-200 p-2 rounded-xl">
+                                    <input type="color" x-model="formDesign.secondaryColor" class="w-8 h-8 rounded cursor-pointer border-none p-0 bg-transparent">
+                                    <span class="text-xs font-bold text-slate-600 uppercase" x-text="formDesign.secondaryColor"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-6">
+                        <h3 class="text-lg font-black text-slate-900 border-b border-slate-100 pb-2 mb-4">Multimedia (Imágenes)</h3>
+
+                        <div>
+                            <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-2">Logo Principal</label>
+                            <div class="flex items-center gap-4">
+                                <div class="w-20 h-20 bg-slate-100 rounded-xl border border-slate-200 flex items-center justify-center overflow-hidden shrink-0">
+                                    <template x-if="logoPreview"><img :src="logoPreview" class="w-full h-full object-cover"></template>
+                                    <template x-if="!logoPreview"><i class="fas fa-image text-slate-300 text-2xl"></i></template>
+                                </div>
+                                <div class="flex-1">
+                                    <input type="file" id="logoFile" accept="image/*" @change="handleLogo" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 transition cursor-pointer border border-slate-200 rounded-lg p-1 bg-white">
+                                    <p class="text-[9px] text-slate-400 font-bold mt-1">Recomendado: 500x500px (PNG sin fondo)</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-2">Banner Portada (Opcional)</label>
+                            <div class="w-full h-32 bg-slate-100 rounded-xl border-2 border-dashed border-slate-300 flex flex-col items-center justify-center relative overflow-hidden mb-2 group">
+                                <template x-if="bannerPreview"><img :src="bannerPreview" class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-30 transition"></template>
+                                <div class="relative z-10 flex flex-col items-center">
+                                    <i class="fas fa-upload text-slate-400 text-2xl mb-1"></i>
+                                    <span class="text-xs font-bold text-slate-600 bg-white/80 px-2 rounded">Subir Banner</span>
+                                </div>
+                                <input type="file" id="bannerFile" accept="image/*" @change="handleBanner" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20">
+                            </div>
+                            <p class="text-[9px] text-slate-400 font-bold">Aparece de fondo en la cabecera de tu web.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-6 border-t border-slate-100 flex justify-end">
+                    <button type="submit" :disabled="isSaving" class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-xl font-black shadow-lg shadow-indigo-600/30 transition transform hover:-translate-y-0.5 flex items-center gap-2 uppercase tracking-widest text-sm disabled:opacity-70">
+                        <i class="fas" :class="isSaving ? 'fa-spinner fa-spin' : 'fa-paint-roller'"></i> <span x-text="isSaving ? 'Actualizando...' : 'Actualizar Diseño'"></span>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div x-show="activeTab === 'team'" x-cloak class="bg-white rounded-3xl p-8 shadow-sm border border-slate-200">
+            
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 border-b border-slate-100 pb-6">
+                <div>
+                    <h3 class="text-xl font-black text-slate-900">Control de Accesos</h3>
+                    <p class="text-sm text-slate-500 font-medium">Crea usuarios para tus cajeros o repartidores.</p>
+                </div>
+                <button @click="showEmpModal = true" class="bg-slate-900 hover:bg-black text-white px-5 py-2.5 rounded-xl font-bold shadow-md transition flex items-center gap-2 text-sm">
+                    <i class="fas fa-user-plus"></i> Nuevo Empleado
+                </button>
+            </div>
+
+            <template x-if="site?.employees && site.employees.length > 0">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <template x-for="emp in site.employees" :key="emp._id">
+                        <div class="bg-slate-50 border border-slate-200 p-5 rounded-2xl relative">
+                            <button @click="deleteEmployee(emp._id)" class="absolute top-4 right-4 w-8 h-8 bg-red-100 text-red-500 hover:bg-red-500 hover:text-white rounded-full flex items-center justify-center transition" title="Revocar Acceso">
+                                <i class="fas fa-trash-alt text-xs"></i>
+                            </button>
+                            
+                            <div class="w-12 h-12 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 text-lg mb-3 shadow-sm">
+                                <i class="fas" :class="emp.role === 'delivery' ? 'fa-motorcycle text-emerald-500' : 'fa-user-tie text-indigo-500'"></i>
+                            </div>
+                            <h4 class="font-black text-slate-900 text-lg" x-text="emp.name"></h4>
+                            <p class="text-xs text-slate-500 mb-2"><i class="fas fa-envelope mr-1"></i> <span x-text="emp.email"></span></p>
+                            <template x-if="emp.phone">
+                                <p class="text-xs text-slate-500 mb-3"><i class="fas fa-phone mr-1"></i> <span x-text="emp.phone"></span></p>
+                            </template>
+                            <div class="inline-block px-3 py-1 bg-white border border-slate-200 text-slate-700 text-[10px] font-black uppercase tracking-widest rounded" x-text="'Rol: ' + emp.role">
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </template>
+            
+            <template x-if="!site?.employees || site.employees.length === 0">
+                <div class="text-center py-12">
+                    <div class="w-20 h-20 bg-slate-50 border-2 border-dashed border-slate-200 rounded-full flex items-center justify-center text-slate-300 text-3xl mx-auto mb-4">
+                        <i class="fas fa-users-slash"></i>
+                    </div>
+                    <h4 class="text-lg font-bold text-slate-800">Sin equipo registrado</h4>
+                    <p class="text-sm text-slate-500">Añade a tus cajeros o repartidores para que usen el POS.</p>
+                </div>
+            </template>
+
+        </div>
+
+        <div x-show="showEmpModal" x-cloak class="fixed z-50 inset-0 overflow-y-auto">
+            <div class="flex items-center justify-center min-h-screen p-4 text-center">
+                <div x-show="showEmpModal" x-transition.opacity class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm" @click="showEmpModal = false"></div>
+                
+                <div x-show="showEmpModal" x-transition class="inline-block bg-white rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all w-full max-w-md border border-slate-200 relative z-50">
+                    <form @submit.prevent="addEmployee">
+                        <div class="bg-slate-900 px-6 py-4 flex justify-between items-center border-b border-slate-800">
+                            <h3 class="text-lg font-black text-white">Crear Acceso</h3>
+                            <button type="button" @click="showEmpModal = false" class="text-slate-400 hover:text-white"><i class="fas fa-times"></i></button>
+                        </div>
+                        
+                        <div class="p-6 bg-slate-50 space-y-4">
+                            <div>
+                                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Nombre <span class="text-red-500">*</span></label>
+                                <input type="text" x-model="empForm.name" required class="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl focus:border-indigo-500 outline-none text-sm font-bold text-slate-800">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Email (Para Login) <span class="text-red-500">*</span></label>
+                                <input type="email" x-model="empForm.email" required class="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl focus:border-indigo-500 outline-none text-sm font-bold text-slate-800">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Contraseña Segura <span class="text-red-500">*</span></label>
+                                <input type="password" x-model="empForm.password" required class="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl focus:border-indigo-500 outline-none text-sm font-bold text-slate-800">
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Permisos</label>
+                                    <select x-model="empForm.role" required class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:border-indigo-500 outline-none text-sm font-bold text-slate-800">
+                                        <option value="ventas">Cajero (POS)</option>
+                                        <option value="delivery">Repartidor / Logística</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">WhatsApp / Cel</label>
+                                    <input type="text" x-model="empForm.phone" placeholder="Obligatorio delivery" class="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl focus:border-indigo-500 outline-none text-sm font-bold text-slate-800">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white px-6 py-4 flex gap-3 border-t border-slate-200">
+                            <button type="button" @click="showEmpModal = false" class="w-1/3 rounded-xl border border-slate-200 py-3 text-sm font-bold text-slate-600 hover:bg-slate-50 transition">Cancelar</button>
+                            <button type="submit" :disabled="isSaving" class="w-2/3 rounded-xl bg-slate-900 py-3 text-sm font-black text-white hover:bg-black shadow-lg transition disabled:opacity-70">
+                                <span x-text="isSaving ? 'Creando...' : 'Crear Usuario'"></span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <footer class="bg-white border-t border-slate-200 py-8 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p class="text-sm text-slate-400 font-medium">&copy; 2026 Wuepy by LFAFTECH. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('settingsManager', () => ({
+                user: null, site: null, isLoading: true, isSaving: false,
+                successMsg: '', errorMsg: '', activeTab: 'general', showEmpModal: false,
+                
+                templateOptions: [
+                    { id: 'template1', name: 'E-Commerce Moderno (Claro)' },
+                    { id: 'template2', name: 'Minimalista Elegante (Oscuro)' },
+                    { id: 'template3', name: 'Boutique Premium (Moda)' },
+                    { id: 'template4', name: 'Catálogo Rápido (Express)' },
+                    { id: 'template5', name: 'Estilo Corporativo (Servicios)' },
+                    { id: 'template6', name: 'Gastronomía & Food (Visual)' },
+                    { id: 'template7', name: 'Tecnología & Gadgets (Tech)' },
+                    { id: 'template8', name: 'Tienda Dinámica (Vibrante)' },
+                    { id: 'template9', name: 'Estudio de Diseño (Creativo)' },
+                    { id: 'template10', name: 'Diseño Universal (Estándar)' }
+                ],
+
+                formData: { name: '', showInMarketplace: false, facebook: '', instagram: '', tiktok: '', heroTitle: '', whatsapp: '', address: '', aboutText: '' },
+                formDesign: { currency: 'PYG', template: 'template1', primaryColor: '#3b82f6', secondaryColor: '#1e293b' },
+                empForm: { name: '', email: '', password: '', role: 'ventas', phone: '' },
+                logoPreview: null, bannerPreview: null,
+                
+                async init() {
+                    this.user = WuepyAPI.getUser();
+                    if(!this.user) { window.location.href = '/auth/login.html'; return; }
+                    
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const siteId = urlParams.get('id');
+                    if(!siteId) { window.location.href = '/dashboard/index.html'; return; }
+
+                    const hash = window.location.hash.replace('#', '');
+                    if (['general', 'design', 'team'].includes(hash)) this.activeTab = hash;
+                    this.$watch('activeTab', (val) => { window.location.hash = val; this.successMsg=''; this.errorMsg=''; });
+
+                    await this.loadSiteData(siteId);
+                },
+
+                async loadSiteData(siteId) {
+                    try {
+                        const res = await WuepyAPI.fetch(`/dashboard/site/${siteId}`);
+                        if(res.status === 200) {
+                            this.site = res.data.site;
+                            this.formData = {
+                                name: this.site.name, showInMarketplace: this.site.showInMarketplace,
+                                facebook: this.site.social?.facebook || '', instagram: this.site.social?.instagram || '', tiktok: this.site.social?.tiktok || '',
+                                heroTitle: this.site.content?.heroTitle || '', whatsapp: this.site.contact?.whatsapp || '', address: this.site.contact?.address || '', aboutText: this.site.content?.aboutText || ''
+                            };
+                            this.formDesign = {
+                                currency: this.site.currency || 'PYG', template: this.site.template || 'template1',
+                                primaryColor: this.site.primaryColor || '#3b82f6', secondaryColor: this.site.secondaryColor || '#1e293b'
+                            };
+                            this.logoPreview = (this.site.logoUrl && !this.site.logoUrl.includes('placehold')) ? this.site.logoUrl : null;
+                            this.bannerPreview = (this.site.bannerUrl && !this.site.bannerUrl.includes('placehold')) ? this.site.bannerUrl : null;
+                        } else { this.errorMsg = 'Error al cargar ajustes.'; }
+                    } catch(e) { this.errorMsg = 'Error de conexión.'; }
+                    this.isLoading = false;
+                },
+
+                async updateGeneral() {
+                    this.isSaving = true; this.successMsg = ''; this.errorMsg = '';
+                    try {
+                        const res = await WuepyAPI.fetch(`/dashboard/site/${this.site._id}/update-general`, {
+                            method: 'POST', body: JSON.stringify(this.formData)
+                        });
+                        if(res.status === 200) { this.successMsg = 'Ajustes generales actualizados.'; }
+                        else { this.errorMsg = res.data.message || 'Error al actualizar.'; }
+                    } catch(e) { this.errorMsg = 'Error de conexión.'; }
+                    this.isSaving = false;
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                },
+
+                handleLogo(e) { if(e.target.files[0]) this.logoPreview = URL.createObjectURL(e.target.files[0]); },
+                handleBanner(e) { if(e.target.files[0]) this.bannerPreview = URL.createObjectURL(e.target.files[0]); },
+
+                async updateDesign() {
+                    this.isSaving = true; this.successMsg = ''; this.errorMsg = '';
+                    try {
+                        const formPayload = new FormData();
+                        formPayload.append('currency', this.formDesign.currency);
+                        formPayload.append('template', this.formDesign.template);
+                        formPayload.append('primaryColor', this.formDesign.primaryColor);
+                        formPayload.append('secondaryColor', this.formDesign.secondaryColor);
+                        
+                        const logoFile = document.getElementById('logoFile').files[0];
+                        if(logoFile) formPayload.append('logo', logoFile);
+                        const bannerFile = document.getElementById('bannerFile').files[0];
+                        if(bannerFile) formPayload.append('banner', bannerFile);
+
+                        const res = await fetch(`${API_URL}/dashboard/site/${this.site._id}/update-design`, {
+                            method: 'POST', body: formPayload, headers: { 'Authorization': `Bearer ${this.user.token}` }
+                        });
+                        const data = await res.json();
+                        if(res.ok) { this.successMsg = 'Diseño actualizado. Ver web para revisar.'; await this.loadSiteData(this.site._id); }
+                        else { this.errorMsg = data.message || 'Error al actualizar diseño.'; }
+                    } catch(e) { this.errorMsg = 'Error de red.'; }
+                    this.isSaving = false;
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                },
+
+                async addEmployee() {
+                    this.isSaving = true; this.errorMsg = '';
+                    try {
+                        const res = await WuepyAPI.fetch(`/dashboard/site/${this.site._id}/employees/add`, {
+                            method: 'POST', body: JSON.stringify(this.empForm)
+                        });
+                        if(res.status === 200) {
+                            this.successMsg = 'Empleado agregado correctamente.';
+                            this.showEmpModal = false;
+                            this.empForm = { name: '', email: '', password: '', role: 'ventas', phone: '' };
+                            await this.loadSiteData(this.site._id);
+                        } else { alert(res.data.message || 'Error al agregar empleado.'); }
+                    } catch(e) { alert('Error de conexión.'); }
+                    this.isSaving = false;
+                },
+
+                deleteEmployee(empId) {
+                    Swal.fire({
+                        title: '¿Revocar acceso?',
+                        text: "El usuario ya no podrá entrar al sistema de la tienda.",
+                        icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', cancelButtonColor: '#94a3b8',
+                        confirmButtonText: 'Sí, quitar acceso', cancelButtonText: 'Cancelar'
+                    }).then(async (result) => {
+                        if (result.isConfirmed) {
+                            try {
+                                const res = await WuepyAPI.fetch(`/dashboard/site/${this.site._id}/employees/delete/${empId}`, { method: 'POST' });
+                                if(res.status === 200) { this.successMsg = 'Acceso revocado.'; await this.loadSiteData(this.site._id); }
+                                else { this.errorMsg = res.data.message || 'Error al borrar.'; }
+                            } catch(e) { this.errorMsg = 'Error de conexión.'; }
+                        }
+                    });
+                }
+            }));
+        });
+    </script>
+</body>
+</html>

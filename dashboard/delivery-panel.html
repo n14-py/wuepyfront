@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>App Repartidor | Wuepy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/js/api.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; overscroll-behavior: contain; }
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+<body class="text-slate-800 pb-24" x-data="deliveryApp()">
+
+    <header class="bg-slate-900 text-white shadow-xl sticky top-0 z-50" x-show="user" x-cloak>
+        <div class="px-5 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center text-lg shadow-inner">
+                    <i class="fas fa-motorcycle"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-black leading-tight" x-text="user?.name"></h1>
+                    <p class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">Repartidor Activo</p>
+                </div>
+            </div>
+            <a href="#" @click.prevent="WuepyAPI.logoutLocal()" class="w-10 h-10 bg-slate-800 text-slate-400 hover:text-white hover:bg-red-500 rounded-full flex items-center justify-center border border-slate-700 transition"><i class="fas fa-power-off"></i></a>
+        </div>
+    </header>
+
+    <template x-if="isLoading">
+        <div class="flex flex-col items-center justify-center py-32">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-4 border-emerald-500 mb-4"></div>
+            <p class="text-slate-500 font-bold">Buscando entregas pendientes...</p>
+        </div>
+    </template>
+
+    <div class="px-4 py-6 max-w-lg mx-auto" x-show="!isLoading" x-cloak>
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl font-black text-slate-900">Hojas de Ruta Asignadas</h2>
+            <span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-black uppercase"><span x-text="orders.length"></span> En cola</span>
+        </div>
+
+        <template x-if="orders.length > 0">
+            <div class="space-y-5">
+                <template x-for="order in orders" :key="order._id">
+                    <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden relative p-5 pl-6 space-y-4">
+                        <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-indigo-600"></div>
+
+                        <div class="flex justify-between items-start border-b border-slate-100 pb-3">
+                            <div>
+                                <span class="text-[9px] font-black text-slate-400 uppercase tracking-wider block">Destinatario</span>
+                                <h3 class="text-base font-black text-slate-900" x-text="order.customer?.name || 'Cliente Ocasional'"></h3>
+                                <p class="text-xs font-bold text-slate-500 mt-0.5"><i class="fas fa-phone-alt"></i> <span x-text="order.customer?.phone || 'Sin número'"></span></p>
+                            </div>
+                            <template x-if="order.customer?.phone">
+                                <a :href="'https://wa.me/' + order.customer.phone.replace(/[^0-9]/g, '')" target="_blank" class="w-10 h-10 bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white rounded-full flex items-center justify-center text-lg transition"><i class="fab fa-whatsapp"></i></a>
+                            </template>
+                        </div>
+
+                        <div>
+                            <span class="text-[9px] font-black text-slate-400 uppercase tracking-wider block mb-0.5">Indicaciones de Entrega</span>
+                            <p class="text-sm font-bold text-slate-800" x-text="order.delivery?.address || 'Consultar con el local'"></p>
+                        </div>
+
+                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 flex justify-between items-center">
+                            <div>
+                                <span class="text-[9px] font-black text-slate-400 uppercase tracking-wider block">Monto Contra-Entrega</span>
+                                <p class="text-xl font-black text-slate-900" x-text="(currency === 'PYG' ? 'Gs. ' : '$ ') + order.totalAmount.toLocaleString('es-PY')"></p>
+                            </div>
+                            <span class="text-[10px] font-black uppercase bg-white border border-slate-200 px-2 py-1 rounded text-slate-600" x-text="order.paymentMethod"></span>
+                        </div>
+
+                        <div class="pt-2 flex gap-3">
+                            <template x-if="order.delivery?.reference && (order.delivery.reference.startsWith('http://') || order.delivery.reference.startsWith('https://'))">
+                                <a :href="order.delivery.reference" target="_blank" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl text-center flex items-center justify-center gap-2 text-xs uppercase tracking-widest shadow-md transition">
+                                    <i class="fas fa-map-marked-alt text-base"></i> Abrir GPS
+                                </a>
+                            </template>
+                            <template x-if="!(order.delivery?.reference && (order.delivery.reference.startsWith('http://') || order.delivery.reference.startsWith('https://')))">
+                                <a :href="'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(order.delivery?.address || '')" target="_blank" class="flex-1 bg-slate-700 hover:bg-slate-800 text-white font-black py-4 rounded-xl text-center flex items-center justify-center gap-2 text-xs uppercase tracking-widest shadow-md transition">
+                                    <i class="fas fa-search-location text-base"></i> Buscar Dirección
+                                </a>
+                            </template>
+
+                            <button @click="markAsDelivered(order._id)" class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white font-black py-4 rounded-xl text-xs uppercase tracking-widest shadow-md flex items-center justify-center gap-2 transition active:scale-95">
+                                <i class="fas fa-check-circle text-base"></i> Entregado
+                            </button>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </template>
+
+        <template x-if="orders.length === 0">
+            <div class="text-center py-20 bg-white rounded-3xl border border-slate-200 shadow-sm">
+                <i class="fas fa-coffee text-5xl text-slate-300 mb-4 block"></i>
+                <h3 class="text-lg font-black text-slate-800">No hay entregas pendientes</h3>
+                <p class="text-xs text-slate-400 max-w-xs mx-auto mt-1">Los pedidos que el cajero cargue en la sucursal aparecerán aquí inmediatamente.</p>
+                <button @click="loadOrders()" class="mt-6 text-sm font-bold text-indigo-600 hover:text-indigo-800"><i class="fas fa-sync-alt mr-1"></i> Actualizar</button>
+            </div>
+        </template>
+    </div>
+
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('deliveryApp', () => ({
+                user: null, siteId: null, currency: 'PYG',
+                orders: [], isLoading: true,
+
+                async init() {
+                    this.user = WuepyAPI.getUser();
+                    if(!this.user || this.user.type !== 'employee') { window.location.href = '/auth/login.html'; return; }
+                    this.siteId = this.user.siteId || new URLSearchParams(window.location.search).get('id');
+                    await this.loadOrders();
+                },
+
+                async loadOrders() {
+                    this.isLoading = true;
+                    try {
+                        const res = await WuepyAPI.fetch(`/dashboard/delivery/${this.siteId}`);
+                        if(res.status === 200) {
+                            this.orders = res.data.orders || [];
+                            this.currency = res.data.site?.currency || 'PYG';
+                        }
+                    } catch(e) { console.error(e); }
+                    this.isLoading = false;
+                },
+
+                async markAsDelivered(orderId) {
+                    Swal.fire({
+                        title: '¿Confirmar Entrega?',
+                        text: 'Confirma que este pedido fue entregado y cobrado con éxito.',
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#10b981',
+                        cancelButtonColor: '#94a3b8',
+                        confirmButtonText: 'Sí, Entregado'
+                    }).then(async (result) => {
+                        if (result.isConfirmed) {
+                            try {
+                                const res = await WuepyAPI.fetch(`/dashboard/delivery/${this.siteId}/status`, {
+                                    method: 'POST', body: JSON.stringify({ orderId, status: 'completed' })
+                                });
+                                if(res.status === 200 && res.data.success) {
+                                    await this.loadOrders(); // Recargar UI
+                                } else { alert(res.data.message || 'Error al actualizar.'); }
+                            } catch(e) { alert('Error de conexión.'); }
+                        }
+                    });
+                }
+            }));
+        });
+    </script>
+</body>
+</html>

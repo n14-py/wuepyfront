@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= site.name %> | Urban Store</title>
+    <style>
+        :root {
+            /* Por defecto usa un amarillo urbano si el cliente no elige color */
+            --primary: <%= site.primaryColor || '#facc15' %>; 
+            --secondary: <%= site.secondaryColor || '#000000' %>;
+        }
+        body {
+            background-color: #f8f9fa;
+            color: var(--secondary);
+            font-family: 'Arial', sans-serif;
+        }
+        .bg-urban { background-color: var(--primary); }
+        .text-urban { color: var(--primary); }
+        
+        /* Sombras estilo Neo-Brutalismo */
+        .brutal-shadow {
+            box-shadow: 6px 6px 0px 0px var(--secondary);
+            transition: all 0.2s ease;
+        }
+        .brutal-shadow:hover {
+            box-shadow: 10px 10px 0px 0px var(--secondary);
+            transform: translate(-4px, -4px);
+        }
+        .brutal-button:active {
+            box-shadow: 2px 2px 0px 0px var(--secondary);
+            transform: translate(4px, 4px);
+        }
+    </style>
+</head>
+<body class="border-x-4 border-black max-w-[1600px] mx-auto bg-white min-h-screen flex flex-col">
+    
+    <%- include('./partials/header.html') %>
+
+    <section class="relative border-b-4 border-black bg-urban flex flex-col md:flex-row items-stretch min-h-[70vh]">
+        
+        <div class="w-full md:w-1/2 p-8 md:p-16 flex flex-col justify-center border-b-4 md:border-b-0 md:border-r-4 border-black bg-white z-10 relative">
+            <div class="inline-block border-2 border-black px-3 py-1 bg-urban font-black text-xs uppercase tracking-widest mb-6 w-max brutal-shadow">
+                <%= site.name %> OFICIAL
+            </div>
+            
+            <h1 class="text-5xl md:text-7xl font-black uppercase leading-none tracking-tighter mb-6 text-black">
+                <%= site.content.heroTitle || 'ROMPE LAS REGLAS.' %>
+            </h1>
+            
+            <p class="text-lg md:text-2xl font-bold text-gray-700 mb-10 max-w-lg">
+                <%= site.content.heroSubtitle || 'Estilo urbano, actitud única. Descubre nuestra nueva colección.' %>
+            </p>
+            
+            <div>
+                <a href="/search" class="inline-block bg-urban text-black border-4 border-black px-10 py-4 font-black text-xl uppercase tracking-wider brutal-shadow brutal-button">
+                    COMPRAR AHORA <i class="fas fa-arrow-right ml-2"></i>
+                </a>
+            </div>
+        </div>
+
+        <div class="w-full md:w-1/2 relative bg-urban min-h-[300px]">
+            <% if(site.bannerUrl && site.bannerUrl !== '') { %>
+                <img src="<%= site.bannerUrl %>" alt="Banner de <%= site.name %>" class="absolute inset-0 w-full h-full object-cover filter contrast-125 saturate-50">
+            <% } else { %>
+                <div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(#000 2px, transparent 2px); background-size: 30px 30px;"></div>
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <i class="fas fa-bolt text-black text-[150px] opacity-20"></i>
+                </div>
+            <% } %>
+        </div>
+    </section>
+
+    <div class="border-b-4 border-black bg-black text-urban overflow-hidden flex whitespace-nowrap py-3 font-black uppercase tracking-widest text-sm">
+        <div class="animate-marquee inline-block">
+            <% for(let i=0; i<10; i++) { %>
+                <span>&nbsp;/// ENVÍOS A TODO EL PAÍS /// PAGO SEGURO /// ATENCIÓN 24/7&nbsp;</span>
+            <% } %>
+        </div>
+    </div>
+    <style>
+        .animate-marquee { animation: marquee 20s linear infinite; }
+        @keyframes marquee { 0% { transform: translateX(0%); } 100% { transform: translateX(-50%); } }
+    </style>
+
+    <section id="destacados" class="py-20 px-4 md:px-8 bg-gray-100">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex flex-col md:flex-row justify-between items-end mb-12 border-b-4 border-black pb-4">
+                <h2 class="text-4xl md:text-5xl font-black uppercase tracking-tighter text-black">
+                    DESTACADOS_
+                </h2>
+                <a href="/search" class="text-black font-black uppercase text-lg hover:bg-urban px-2 transition-colors mt-4 md:mt-0">
+                    VER TODO [+]
+                </a>
+            </div>
+
+            <% if(products.length === 0) { %>
+                <div class="border-4 border-black bg-white p-16 text-center brutal-shadow">
+                    <i class="fas fa-skull text-5xl text-gray-300 mb-4 block"></i>
+                    <p class="font-black text-2xl text-gray-400 uppercase">NO HAY STOCK TODAVÍA</p>
+                </div>
+            <% } else { %>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <% products.forEach(product => { %>
+                        <div class="bg-white border-4 border-black brutal-shadow group flex flex-col relative">
+                            
+                            <div class="absolute top-0 left-0 bg-urban border-r-4 border-b-4 border-black px-3 py-1 font-black text-xs uppercase z-10">
+                                <%= product.category %>
+                            </div>
+
+                            <% if(product.stock <= 0) { %>
+                                <div class="absolute top-0 right-0 bg-black text-white border-l-4 border-b-4 border-black px-3 py-1 font-black text-xs uppercase z-10">
+                                    SOLD OUT
+                                </div>
+                            <% } %>
+
+                            <a href="/p/<%= product._id %>" class="relative aspect-square block border-b-4 border-black overflow-hidden bg-gray-200">
+                                <% if(product.imageUrl) { %>
+                                    <img src="<%= product.imageUrl %>" class="w-full h-full object-cover filter contrast-110 group-hover:scale-110 transition duration-500" alt="<%= product.name %>">
+                                <% } else { %>
+                                    <div class="w-full h-full flex items-center justify-center text-black opacity-20">
+                                        <i class="fas fa-camera text-5xl"></i>
+                                    </div>
+                                <% } %>
+                            </a>
+                            
+                            <div class="p-5 flex flex-col flex-grow bg-white">
+                                <h3 class="text-black font-black text-xl uppercase leading-tight mb-4 flex-grow group-hover:text-urban transition-colors">
+                                    <a href="/p/<%= product._id %>"><%= product.name %></a>
+                                </h3>
+                                
+                                <div class="flex items-center justify-between border-t-4 border-black pt-4 mt-auto">
+                                    <span class="font-black text-2xl text-black">
+                                        <% if(site.currency === 'USD') { %>
+                                            $<%= parseFloat(product.priceUSD).toFixed(2) %>
+                                        <% } else { %>
+                                            <%= new Intl.NumberFormat('es-PY').format(product.price) %> Gs
+                                        <% } %>
+                                    </span>
+                                    <a href="/p/<%= product._id %>" class="bg-black text-urban w-10 h-10 flex items-center justify-center hover:bg-urban hover:text-black hover:border-black hover:border-2 transition-all">
+                                        <i class="fas fa-plus"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    <% }) %>
+                </div>
+            <% } %>
+        </div>
+    </section>
+
+    <footer class="mt-auto border-t-4 border-black bg-white p-8">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center font-black uppercase text-sm">
+            <p>© <%= new Date().getFullYear() %> <%= site.name %>. TODOS LOS DERECHOS RESERVADOS.</p>
+            <div class="flex gap-4 mt-4 md:mt-0">
+                <% if(site.social && site.social.instagram) { %><a href="<%= site.social.instagram %>" target="_blank" class="hover:text-urban text-2xl"><i class="fab fa-instagram"></i></a><% } %>
+                <% if(site.social && site.social.facebook) { %><a href="<%= site.social.facebook %>" target="_blank" class="hover:text-urban text-2xl"><i class="fab fa-facebook-square"></i></a><% } %>
+                <% if(site.social && site.social.tiktok) { %><a href="<%= site.social.tiktok %>" target="_blank" class="hover:text-urban text-2xl"><i class="fab fa-tiktok"></i></a><% } %>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

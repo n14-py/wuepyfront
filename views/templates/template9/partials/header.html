@@ -1,0 +1,31 @@
+<header class="bg-[var(--secondary)] border-b-4 border-[var(--primary)] sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-20">
+            <div class="flex-shrink-0 flex items-center">
+                <a href="/" class="font-power text-3xl italic uppercase text-white tracking-widest transform -skew-x-12">
+                    <% if(site.logoUrl) { %>
+                        <img class="h-12 w-auto" src="<%= site.logoUrl %>" alt="<%= site.name %>">
+                    <% } else { %>
+                        <%= site.name %>
+                    <% } %>
+                </a>
+            </div>
+            
+            <nav class="hidden md:flex space-x-8">
+                <a href="/" class="font-power text-xl uppercase italic text-gray-300 hover:text-[var(--primary)] transition-colors transform -skew-x-6">Home</a>
+                <a href="/search" class="font-power text-xl uppercase italic text-gray-300 hover:text-[var(--primary)] transition-colors transform -skew-x-6">Catálogo</a>
+            </nav>
+            
+            <div class="flex items-center space-x-6">
+                <a href="/search" class="text-white hover:text-[var(--primary)] transition-colors text-2xl">
+                    <i class="fas fa-search"></i>
+                </a>
+                <% if(site.contact && site.contact.whatsapp) { %>
+                <a href="https://wa.me/<%= site.contact.whatsapp %>" target="_blank" class="bg-[var(--primary)] text-white px-6 py-2 font-power text-xl uppercase italic tracking-wider hover:scale-105 transition-transform transform -skew-x-12 shadow-[4px_4px_0_rgba(255,255,255,0.2)]">
+                    <i class="fab fa-whatsapp mr-1"></i> Contacto
+                </a>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</header>

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= site.name %> | Boutique</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Lato:wght@300;400;700&display=swap');
+        
+        :root {
+            /* Por defecto usa un rosa suave y gris oscuro si no hay configuración */
+            --primary: <%= site.primaryColor || '#f9a8d4' %>; 
+            --secondary: <%= site.secondaryColor || '#334155' %>;
+        }
+        
+        body {
+            background-color: #fdfbf7; /* Blanco muy suave, estilo crema/papel */
+            color: var(--secondary);
+            font-family: 'Lato', sans-serif;
+        }
+        
+        h1, h2, h3, .font-elegant {
+            font-family: 'Playfair Display', serif;
+        }
+
+        .bg-boutique { background-color: var(--primary); }
+        .text-boutique { color: var(--primary); }
+        .border-boutique { border-color: var(--primary); }
+        
+        .btn-boutique {
+            background-color: var(--primary);
+            color: #ffffff;
+            transition: all 0.3s ease;
+        }
+        .btn-boutique:hover {
+            filter: brightness(0.95);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-pink-200 selection:text-pink-900">
+    
+    <%- include('./partials/header.html') %>
+
+    <section class="relative min-h-[75vh] flex items-center justify-center overflow-hidden bg-[#fdfbf7] px-4 py-20">
+        
+        <% if(site.bannerUrl && site.bannerUrl !== '') { %>
+            <div class="absolute inset-0 z-0">
+                <img src="<%= site.bannerUrl %>" alt="Banner de <%= site.name %>" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-[#fdfbf7]/60 backdrop-blur-sm"></div>
+            </div>
+        <% } else { %>
+            <div class="absolute top-0 right-0 -mr-20 -mt-20 w-[600px] h-[600px] rounded-full opacity-20 mix-blend-multiply filter blur-[80px]" style="background-color: var(--primary);"></div>
+            <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-[500px] h-[500px] rounded-full opacity-20 mix-blend-multiply filter blur-[80px] bg-amber-100"></div>
+        <% } %>
+
+        <div class="relative z-10 text-center max-w-4xl mx-auto px-6 py-12 md:py-16 bg-white/40 backdrop-blur-md rounded-3xl border border-white/50 shadow-2xl shadow-black/5">
+            <span class="block text-sm uppercase tracking-[0.3em] mb-4 font-bold opacity-80" style="color: var(--secondary);">
+                Colección Exclusiva
+            </span>
+            <h1 class="text-5xl md:text-7xl font-bold mb-6 font-elegant leading-tight" style="color: var(--secondary);">
+                <%= site.content.heroTitle || 'Elegancia en cada detalle' %>
+            </h1>
+            <p class="text-lg md:text-xl mb-10 max-w-2xl mx-auto font-light leading-relaxed opacity-80" style="color: var(--secondary);">
+                <%= site.content.heroSubtitle || 'Descubre nuestra selección de productos premium diseñados para resaltar tu belleza única.' %>
+            </p>
+            <a href="/search" class="inline-block btn-boutique px-10 py-4 rounded-full font-bold uppercase tracking-widest text-sm shadow-lg">
+                Ver Colección
+            </a>
+        </div>
+    </section>
+
+    <section class="py-16 border-y border-black/5 relative z-10 bg-white/50">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10 text-center">
+                <div class="flex flex-col items-center group">
+                    <div class="w-16 h-16 rounded-full flex items-center justify-center bg-white shadow-sm mb-4 border border-black/5 group-hover:scale-110 transition duration-300 text-boutique text-2xl">
+                        <i class="fas fa-gift"></i>
+                    </div>
+                    <h3 class="font-elegant font-bold text-xl mb-2" style="color: var(--secondary);">Empaque Premium</h3>
+                    <p class="text-sm opacity-70" style="color: var(--secondary);">Cuidamos cada detalle de tu envío.</p>
+                </div>
+                <div class="flex flex-col items-center group">
+                    <div class="w-16 h-16 rounded-full flex items-center justify-center bg-white shadow-sm mb-4 border border-black/5 group-hover:scale-110 transition duration-300 text-boutique text-2xl">
+                        <i class="fas fa-gem"></i>
+                    </div>
+                    <h3 class="font-elegant font-bold text-xl mb-2" style="color: var(--secondary);">Calidad Superior</h3>
+                    <p class="text-sm opacity-70" style="color: var(--secondary);">Materiales seleccionados con amor.</p>
+                </div>
+                <div class="flex flex-col items-center group">
+                    <div class="w-16 h-16 rounded-full flex items-center justify-center bg-white shadow-sm mb-4 border border-black/5 group-hover:scale-110 transition duration-300 text-boutique text-2xl">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <h3 class="font-elegant font-bold text-xl mb-2" style="color: var(--secondary);">Atención Personal</h3>
+                    <p class="text-sm opacity-70" style="color: var(--secondary);">Te asesoramos en todo momento.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="destacados" class="py-24 px-4 relative z-10">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-elegant font-bold mb-4" style="color: var(--secondary);">
+                    Selección Especial
+                </h2>
+                <div class="w-12 h-0.5 mx-auto opacity-50" style="background-color: var(--secondary);"></div>
+            </div>
+
+            <% if(products.length === 0) { %>
+                <div class="bg-white/50 backdrop-blur-sm rounded-3xl p-16 text-center border border-black/5 shadow-sm">
+                    <i class="fas fa-spa text-5xl text-black/10 mb-6 block"></i>
+                    <p class="font-elegant text-2xl opacity-60 italic" style="color: var(--secondary);">Preparando nuestra colección para ti...</p>
+                </div>
+            <% } else { %>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <% products.forEach(product => { %>
+                        <div class="group flex flex-col bg-white rounded-[2rem] p-3 shadow-sm hover:shadow-xl transition duration-500 border border-black/5">
+                            
+                            <a href="/p/<%= product._id %>" class="relative aspect-[4/5] block rounded-3xl overflow-hidden mb-4 bg-[#fdfbf7]">
+                                <% if(product.imageUrl) { %>
+                                    <img src="<%= product.imageUrl %>" class="w-full h-full object-cover group-hover:scale-105 transition duration-700 ease-out" alt="<%= product.name %>">
+                                <% } else { %>
+                                    <div class="w-full h-full flex items-center justify-center text-black/10">
+                                        <i class="fas fa-image text-4xl"></i>
+                                    </div>
+                                <% } %>
+                                
+                                <% if(product.stock <= 0) { %>
+                                    <div class="absolute top-4 left-4 bg-white/90 backdrop-blur text-black text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider shadow-sm">
+                                        Agotado
+                                    </div>
+                                <% } %>
+                            </a>
+                            
+                            <div class="px-2 pb-2 flex flex-col flex-grow text-center">
+                                <p class="text-[10px] font-bold uppercase tracking-widest opacity-50 mb-2" style="color: var(--secondary);"><%= product.category %></p>
+                                <h3 class="font-elegant font-bold text-lg leading-tight mb-3 flex-grow transition-colors group-hover:text-boutique" style="color: var(--secondary);">
+                                    <a href="/p/<%= product._id %>"><%= product.name %></a>
+                                </h3>
+                                
+                                <div class="flex flex-col items-center gap-3 pt-2">
+                                    <span class="font-bold text-lg" style="color: var(--secondary);">
+                                        <% if(site.currency === 'USD') { %>
+                                            $<%= parseFloat(product.priceUSD).toFixed(2) %>
+                                        <% } else { %>
+                                            <%= new Intl.NumberFormat('es-PY').format(product.price) %> Gs
+                                        <% } %>
+                                    </span>
+                                    <a href="/p/<%= product._id %>" class="w-full py-2.5 rounded-full border border-black/10 text-sm font-bold uppercase tracking-wider hover:bg-black hover:text-white transition duration-300" style="color: var(--secondary);">
+                                        Ver Detalles
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    <% }) %>
+                </div>
+                
+                <div class="mt-16 text-center">
+                    <a href="/search" class="inline-block btn-boutique px-8 py-3 rounded-full font-bold uppercase tracking-widest text-xs shadow-md">
+                        Explorar Todo
+                    </a>
+                </div>
+            <% } %>
+        </div>
+    </section>
+
+    <footer class="mt-auto bg-white border-t border-black/5 py-12">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center text-sm opacity-70" style="color: var(--secondary);">
+            <p class="font-elegant italic text-lg mb-4 md:mb-0"><%= site.name %></p>
+            <p>© <%= new Date().getFullYear() %> Todos los derechos reservados.</p>
+            <div class="flex gap-5 mt-4 md:mt-0">
+                <% if(site.social && site.social.instagram) { %><a href="<%= site.social.instagram %>" target="_blank" class="hover:text-boutique transition text-lg"><i class="fab fa-instagram"></i></a><% } %>
+                <% if(site.social && site.social.facebook) { %><a href="<%= site.social.facebook %>" target="_blank" class="hover:text-boutique transition text-lg"><i class="fab fa-facebook-f"></i></a><% } %>
+                <% if(site.social && site.social.tiktok) { %><a href="<%= site.social.tiktok %>" target="_blank" class="hover:text-boutique transition text-lg"><i class="fab fa-tiktok"></i></a><% } %>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

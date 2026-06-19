@@ -1,0 +1,30 @@
+<footer class="bg-[#f5f5f7] text-[#1d1d1f] pt-16 pb-8 border-t border-gray-200">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-xs text-[#86868b]">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-12 pb-12 border-b border-gray-200">
+            <div>
+                <h3 class="font-semibold text-[#1d1d1f] mb-4 text-sm"><%= site.name %></h3>
+                <p class="font-light leading-relaxed max-w-xs">
+                    <%= site.content.aboutText || 'Innovación y diseño minimalista en cada detalle. Creamos tecnología intuitiva pensada para integrarse perfectamente en tu día a día.' %>
+                </p>
+            </div>
+            <div>
+                <h4 class="font-semibold text-[#1d1d1f] mb-4 text-sm">Disponibilidad</h4>
+                <p class="mb-2 flex items-center gap-2 font-light"><i class="fas fa-map-marker-alt text-gray-400"></i> <%= site.contact.address || 'Distribución Oficial' %></p>
+                <p class="flex items-center gap-2 font-light"><i class="fas fa-clock text-gray-400"></i> <%= site.contact.schedule || 'Soporte y Ventas Online 24/7' %></p>
+            </div>
+            <div>
+                <h4 class="font-semibold text-[#1d1d1f] mb-4 text-sm">Ecosistema</h4>
+                <div class="flex space-x-4">
+                    <% if(site.social && site.social.instagram) { %><a href="<%= site.social.instagram %>" target="_blank" class="text-gray-400 hover:text-[#1d1d1f] transition-colors text-base"><i class="fab fa-instagram"></i></a><% } %>
+                    <% if(site.social && site.social.facebook) { %><a href="<%= site.social.facebook %>" target="_blank" class="text-gray-400 hover:text-[#1d1d1f] transition-colors text-base"><i class="fab fa-facebook-f"></i></a><% } %>
+                    <% if(site.social && site.social.tiktok) { %><a href="<%= site.social.tiktok %>" target="_blank" class="text-gray-400 hover:text-[#1d1d1f] transition-colors text-base"><i class="fab fa-tiktok"></i></a><% } %>
+                </div>
+            </div>
+        </div>
+        
+        <div class="pt-8 flex flex-col md:flex-row justify-between items-center tracking-tight font-light">
+            <p>Copyright &copy; <%= new Date().getFullYear() %> <%= site.name %> Inc. Todos los derechos reservados.</p>
+            <p class="mt-2 md:mt-0">Wuepy Premium Cloud</p>
+        </div>
+    </div>
+</footer>

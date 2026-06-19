@@ -1,0 +1,125 @@
+</main>
+<footer class="main-footer">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div class="footer-col" data-aos="fade-up">
+                <a href="/" class="logo" style="color: #1e293b; margin-bottom: 1.5rem; display: inline-flex; font-weight: 800; font-size: 1.2rem;">
+                    <i class="fas fa-cubes" style="color: #4f46e5; margin-right: 10px;"></i>
+                    LFAF<span style="color: #4f46e5;">TECH</span>
+                </a>
+                <p style="font-size: 0.9rem; line-height: 1.8; max-width: 300px; color: #64748b;">
+                    La plataforma diseñada para el emprendedor paraguayo. Crece con herramientas que se adaptan a tu ritmo.
+                </p>
+                <div style="margin-top: 1.5rem; display: flex; gap: 1rem; font-size: 1.2rem;">
+                    <a href="#" class="nav-link text-slate-400 hover:text-indigo-600 transition" title="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="nav-link text-slate-400 hover:text-indigo-600 transition" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                    <a href="#" class="nav-link text-slate-400 hover:text-indigo-600 transition" title="Facebook"><i class="fab fa-facebook"></i></a>
+                </div>
+            </div>
+
+            <div class="footer-col" data-aos="fade-up" data-aos-delay="100">
+                <h4 class="font-bold text-slate-900 mb-4">Ecosistema</h4>
+                <ul class="space-y-2 text-sm text-slate-500">
+                    <li><a href="/#ecosistema" class="hover:text-indigo-600 transition">Web + Inventario</a></li>
+                    <li><a href="/#ecosistema" class="hover:text-indigo-600 transition">WhatsApp AI (Próximamente)</a></li>
+                    <li><a href="/#ecosistema" class="hover:text-indigo-600 transition">Super Inventario (Próximamente)</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col" data-aos="fade-up" data-aos-delay="200">
+                <h4 class="font-bold text-slate-900 mb-4">Recursos</h4>
+                <ul class="space-y-2 text-sm text-slate-500">
+                    <li><a href="/dashboard" class="hover:text-indigo-600 transition">Mi Cuenta</a></li>
+                    <li><a href="/tutoriales" class="hover:text-indigo-600 transition">Tutoriales</a></li>
+                    <li><a href="/ayuda" class="hover:text-indigo-600 transition">Centro de Ayuda</a></li>
+                    <li><a href="/contacto" class="hover:text-indigo-600 transition">Contacto Directo</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col" data-aos="fade-up" data-aos-delay="300">
+                <h4 class="font-bold text-slate-900 mb-4">Paraguay</h4>
+                <div style="background: #f8fafc; padding: 1.5rem; border-radius: 15px; border: 1px solid #e2e8f0;">
+                    <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 0.5rem;">Moneda Principal:</p>
+                    <span style="font-weight: 800; color: #1e293b; font-size: 1.1rem;">Guaraníes (Gs)</span>
+                    <p style="font-size: 0.8rem; margin-top: 1rem; color: #94a3b8;">
+                        <i class="fas fa-shield-alt"></i> Pagos seguros y locales.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div style="border-top: 1px solid #e2e8f0; margin-top: 2rem; padding-top: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <p style="font-size: 0.85rem; color: #64748b;">&copy; 2026 LFAF TECH. Todos los derechos reservados.</p>
+            <div style="display: flex; gap: 1.5rem; font-size: 0.8rem; color: #64748b;">
+                <a href="/terminos" class="hover:text-indigo-600 transition">Términos</a>
+                <a href="/privacidad" class="hover:text-indigo-600 transition">Privacidad</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<style>
+    /* Ajustes para que el footer no se pegue al contenido */
+    .main-footer {
+        margin-top: 0;
+        background-color: white;
+    }
+    .footer-col h4 {
+        position: relative;
+    }
+    .footer-col h4::after {
+        content: '';
+        position: absolute;
+        bottom: -8px;
+        left: 0;
+        width: 30px;
+        height: 2px;
+        background: #4f46e5; /* Color Indigo principal */
+    }
+    
+    @media (max-width: 768px) {
+        .footer-col h4::after {
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .footer-col {
+            text-align: center;
+        }
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const forms = document.querySelectorAll('form');
+    
+    forms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            // Esta lógica se mantiene para evitar doble submits en todos los formularios
+            const submitBtn = this.querySelector('button[type="submit"]');
+            
+            if (submitBtn) {
+                if (submitBtn.hasAttribute('data-procesando')) {
+                    e.preventDefault();
+                    return;
+                }
+                
+                submitBtn.setAttribute('data-procesando', 'true');
+                submitBtn.style.pointerEvents = 'none';
+                submitBtn.style.opacity = '0.7';
+                
+                const originalHtml = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+                
+                setTimeout(() => {
+                    submitBtn.removeAttribute('data-procesando');
+                    submitBtn.style.pointerEvents = 'auto';
+                    submitBtn.style.opacity = '1';
+                    submitBtn.innerHTML = originalHtml;
+                }, 8000);
+            }
+        });
+    });
+});
+</script>
+</body>
+</html>

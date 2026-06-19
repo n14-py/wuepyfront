@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Súper Caja POS Omnicanal | Wuepy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <script src="/js/api.js"></script>
+    <style>
+        [x-cloak] { display: none !important; }
+        body, html { height: 100%; overflow: hidden; background-color: #f1f5f9; } 
+        .pos-scroll::-webkit-scrollbar { width: 6px; }
+        .pos-scroll::-webkit-scrollbar-track { background: transparent; }
+        .pos-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .pos-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .product-card { transition: all 0.15s ease-in-out; cursor: pointer; }
+        .product-card:active { transform: scale(0.95); }
+        #reader { width: 100% !important; border: none !important; }
+        #reader video { border-radius: 1rem; object-fit: cover; }
+    </style>
+</head>
+
+<body x-data="posSystem()" class="text-slate-800 font-sans flex flex-col h-screen">
+
+    <header class="bg-slate-900 text-white shadow-md h-16 flex items-center justify-between px-4 sm:px-6 shrink-0 z-10" x-show="user" x-cloak>
+        <div class="flex items-center gap-4">
+            <a href="/dashboard/index.html" class="w-10 h-10 bg-slate-800 hover:bg-slate-700 text-white rounded-full flex items-center justify-center transition shadow-sm" title="Volver al Panel">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <div class="border-l border-slate-700 h-8 mx-1"></div>
+            <div>
+                <h1 class="text-lg font-black tracking-tight leading-none uppercase text-blue-400">Terminal POS</h1>
+                <p class="text-xs font-bold text-slate-300 uppercase tracking-widest"><i class="fas fa-store text-[10px] mr-1"></i> <span x-text="site?.name"></span></p>
+            </div>
+        </div>
+        
+        <div class="flex items-center gap-4">
+            <a :href="'/dashboard/finances.html?id=' + site?._id" class="hidden md:flex bg-purple-100 hover:bg-purple-200 text-purple-700 px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition items-center gap-2 border border-purple-200">
+                <i class="fas fa-chart-line"></i> Reportes
+            </a>
+            <button @click="showCustomModal = true" class="hidden md:flex bg-emerald-500 hover:bg-emerald-400 text-white px-4 py-2 rounded-lg text-sm font-bold shadow transition items-center gap-2">
+                <i class="fas fa-plus"></i> Venta Libre
+            </button>
+            <div class="w-10 h-10 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold shadow-md border-2 border-slate-700 uppercase" x-text="user?.name ? user.name.charAt(0) : 'W'">
+            </div>
+        </div>
+    </header>
+
+    <template x-if="isLoading">
+        <div class="flex-1 flex flex-col items-center justify-center bg-slate-50">
+            <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mb-4"></div>
+            <p class="text-slate-500 font-bold">Iniciando Terminal POS...</p>
+        </div>
+    </template>
+
+    <main class="flex-1 flex overflow-hidden relative" x-show="!isLoading" x-cloak>
+        
+        <section class="flex-1 flex flex-col bg-slate-100 w-full lg:w-[55%] xl:w-[65%] border-r border-slate-200 relative z-0">
+            
+            <div class="p-4 bg-white border-b border-slate-200 shadow-sm shrink-0 flex gap-3">
+                <div class="relative flex-1">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <i class="fas fa-search text-slate-400 text-lg"></i>
+                    </div>
+                    <input x-model="search" type="text" placeholder="Buscar producto o código..." 
+                           class="block w-full pl-12 pr-4 py-3 sm:text-lg border-2 border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:ring-0 focus:border-blue-500 transition-colors font-bold text-slate-700 shadow-inner">
+                    <button x-show="search.length > 0" @click="search = ''" class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-red-500 transition">
+                        <i class="fas fa-times-circle text-lg"></i>
+                    </button>
+                </div>
+                
+                <button @click="startScanner()" class="bg-slate-800 hover:bg-slate-700 text-white px-5 rounded-xl flex items-center justify-center shadow-md active:scale-95 transition" title="Escanear">
+                    <i class="fas fa-barcode text-xl"></i>
+                </button>
+
+                <button @click="showCustomModal = true" class="md:hidden bg-emerald-500 text-white px-4 rounded-xl flex items-center justify-center shadow-md active:scale-95 transition">
+                    <i class="fas fa-plus"></i>
+                </button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto pos-scroll p-4 sm:p-6 bg-slate-50">
+                
+                <template x-if="products.length === 0">
+                    <div class="h-full flex flex-col items-center justify-center text-center">
+                        <div class="w-24 h-24 bg-white shadow-sm rounded-full flex items-center justify-center mb-4">
+                            <i class="fas fa-box-open text-4xl text-slate-300"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-700 mb-2">Inventario Vacío</h3>
+                        <p class="text-slate-500 max-w-sm">No tienes productos registrados. Usa el botón "Venta Libre" arriba para cobrar montos personalizados.</p>
+                    </div>
+                </template>
+
+                <template x-if="products.length > 0 && filteredProducts.length === 0">
+                    <div class="py-12 text-center">
+                        <i class="fas fa-search-minus text-5xl text-slate-300 mb-4"></i>
+                        <h3 class="text-xl font-bold text-slate-700">Sin coincidencias</h3>
+                        <p class="text-slate-500">No se encontró ningún producto con ese nombre o código.</p>
+                    </div>
+                </template>
+
+                <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4 pb-20">
+                    <template x-for="product in filteredProducts" :key="product._id">
+                        
+                        <div @click="product.stock > 0 ? addToCart(product) : null" 
+                             class="product-card bg-white rounded-2xl border-2 overflow-hidden flex flex-col shadow-sm relative group"
+                             :class="{'border-slate-100 opacity-60 grayscale cursor-not-allowed': product.stock <= 0, 'border-slate-200 hover:border-blue-500 hover:shadow-lg': product.stock > 0}">
+                            
+                            <div class="absolute top-2 right-2 z-10">
+                                <template x-if="product.stock > 0">
+                                    <span class="bg-slate-900/80 backdrop-blur text-white text-[10px] font-black px-2.5 py-1 rounded-lg shadow-sm border border-slate-700 uppercase tracking-wider" x-text="'Stock: ' + product.stock"></span>
+                                </template>
+                                <template x-if="product.stock <= 0">
+                                    <span class="bg-red-600 text-white text-[10px] font-black px-2.5 py-1 rounded-lg shadow-sm uppercase tracking-wider">AGOTADO</span>
+                                </template>
+                            </div>
+
+                            <div class="aspect-square bg-slate-100 relative overflow-hidden flex items-center justify-center p-2">
+                                <template x-if="product.imageUrl && !product.imageUrl.includes('placehold')">
+                                    <img :src="product.imageUrl" class="w-full h-full object-cover rounded-xl shadow-inner">
+                                </template>
+                                <template x-if="!product.imageUrl || product.imageUrl.includes('placehold')">
+                                    <i class="fas fa-cube text-5xl text-slate-300"></i>
+                                </template>
+                            </div>
+                            
+                            <div class="p-4 flex-1 flex flex-col justify-between bg-white border-t border-slate-50">
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 line-clamp-1" x-text="product.category || 'General'"></p>
+                                <p class="text-sm font-extrabold text-slate-800 leading-tight mb-2 line-clamp-2" x-text="product.name"></p>
+                                <p class="text-lg font-black text-blue-600" x-text="formatMoney(product.price)"></p>
+                            </div>
+                        </div>
+
+                    </template>
+                </div>
+            </div>
+        </section>
+
+        <button @click="mobileCartOpen = true" class="lg:hidden fixed bottom-6 right-6 w-16 h-16 bg-blue-600 text-white rounded-full shadow-2xl flex items-center justify-center text-2xl z-20 border-4 border-white">
+            <i class="fas fa-shopping-cart"></i>
+            <span x-show="cart.length > 0" class="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-black w-7 h-7 flex items-center justify-center rounded-full shadow-lg" x-text="cartItemCount"></span>
+        </button>
+
+        <section :class="{'translate-x-0': mobileCartOpen, 'translate-x-full lg:translate-x-0': !mobileCartOpen}" 
+                 class="fixed inset-y-0 right-0 z-30 w-full sm:w-96 lg:w-[45%] xl:w-[35%] lg:static lg:flex flex-col bg-white shadow-2xl lg:shadow-none border-l border-slate-200 transition-transform duration-300">
+            
+            <div class="p-5 bg-slate-900 text-white flex justify-between items-center shrink-0">
+                <h2 class="text-lg font-black uppercase tracking-widest flex items-center gap-2">
+                    <i class="fas fa-receipt text-blue-400"></i> Ticket 
+                </h2>
+                <div class="flex items-center gap-3">
+                    <button x-show="cart.length > 0" @click="clearCart" class="text-xs font-bold bg-red-500/20 text-red-300 px-3 py-1 rounded-lg hover:bg-red-500/40 transition uppercase tracking-wider">
+                        <i class="fas fa-trash-alt"></i> Vaciar
+                    </button>
+                    <button @click="mobileCartOpen = false" class="lg:hidden w-8 h-8 bg-slate-800 rounded-full text-white flex items-center justify-center">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex-1 overflow-y-auto pos-scroll p-4 bg-slate-50 border-b border-slate-200">
+                <template x-if="cart.length === 0">
+                    <div class="h-full flex flex-col items-center justify-center text-slate-400">
+                        <i class="fas fa-shopping-basket text-6xl mb-4 opacity-30"></i>
+                        <p class="font-bold text-lg text-slate-500">Carrito Vacío</p>
+                        <p class="text-sm mt-1 text-center px-4">Toca un producto a la izquierda para agregarlo.</p>
+                    </div>
+                </template>
+
+                <div class="space-y-3">
+                    <template x-for="item in cart" :key="item._id">
+                        <div class="bg-white border border-slate-200 rounded-xl p-3 flex gap-3 shadow-sm relative">
+                            <div class="absolute left-0 top-0 bottom-0 w-1.5 rounded-l-xl" :class="item.isCustom ? 'bg-orange-400' : 'bg-blue-500'"></div>
+                            
+                            <div class="flex-1 pl-2">
+                                <div class="flex justify-between items-start mb-1">
+                                    <div class="pr-2">
+                                        <h4 class="text-sm font-extrabold text-slate-800 leading-tight" x-text="item.name"></h4>
+                                        <template x-if="item.isCustom">
+                                            <span class="text-[9px] font-bold text-orange-500 uppercase tracking-widest bg-orange-50 px-1 rounded">Venta Libre</span>
+                                        </template>
+                                    </div>
+                                    <button @click="removeFromCart(item._id)" class="text-slate-300 hover:text-red-500 transition p-1">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                <div class="flex justify-between items-end mt-2">
+                                    <p class="text-sm font-black text-slate-900" x-text="formatMoney(item.price * item.quantity)"></p>
+                                    
+                                    <div class="flex items-center bg-slate-100 rounded-lg p-1 border border-slate-200">
+                                        <button @click="updateQuantity(item._id, -1)" class="w-7 h-7 flex items-center justify-center text-slate-600 bg-white rounded shadow-sm hover:bg-red-50 hover:text-red-600 transition font-bold">-</button>
+                                        <span class="w-8 text-center font-black text-slate-800 text-sm" x-text="item.quantity"></span>
+                                        <button @click="updateQuantity(item._id, 1)" class="w-7 h-7 flex items-center justify-center text-slate-600 bg-white rounded shadow-sm hover:bg-blue-50 hover:text-blue-600 transition font-bold">+</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <div class="bg-white shrink-0 shadow-[0_-10px_20px_-5px_rgba(0,0,0,0.05)]">
+                
+                <div class="px-5 py-3 border-b border-slate-100 flex gap-3 bg-slate-50">
+                    <div class="flex-1">
+                        <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Desc. (<span x-text="site?.currency"></span>)</label>
+                        <input type="number" x-model.number="discount" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm font-bold text-slate-800 outline-none focus:border-blue-500 transition">
+                    </div>
+                    <div class="flex-1">
+                        <label class="text-[10px] font-bold text-indigo-500 uppercase tracking-wider block mb-1">¿Delivery?</label>
+                        <div class="flex items-center h-[38px] bg-white border border-slate-300 rounded-lg px-3 cursor-pointer" @click="isDelivery = !isDelivery">
+                            <input type="checkbox" x-model="isDelivery" class="w-4 h-4 accent-indigo-600 cursor-pointer">
+                            <span class="ml-2 text-sm font-bold text-slate-700 select-none">Sí</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div x-show="isDelivery" x-collapse class="bg-indigo-50/50 border-b border-indigo-100 px-5 py-4 space-y-3">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase">Cliente</label>
+                            <input type="text" x-model="customerName" placeholder="Nombre" class="w-full mt-1 bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500">
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase">WhatsApp</label>
+                            <input type="text" x-model="customerPhone" placeholder="Teléfono" class="w-full mt-1 bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-3 gap-3">
+                        <div class="col-span-2">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase">Dirección</label>
+                            <input type="text" x-model="deliveryAddress" placeholder="Ubicación" class="w-full mt-1 bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500">
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-indigo-600 uppercase">Envío</label>
+                            <input type="number" x-model.number="deliveryFee" placeholder="0" class="w-full mt-1 bg-white border border-indigo-300 rounded-lg px-3 py-2 text-sm font-bold text-indigo-700 outline-none focus:border-indigo-500">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase">Repartidor</label>
+                        <select x-model="assignedDeliveryId" class="w-full mt-1 bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500 font-medium">
+                            <option value="">Seleccionar repartidor...</option>
+                            <template x-for="d in deliveries" :key="d._id">
+                                <option :value="d._id" x-text="'🛵 ' + d.name"></option>
+                            </template>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="px-5 py-3">
+                    <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Método de Pago</p>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button @click="paymentMethod = 'efectivo'" :class="paymentMethod === 'efectivo' ? 'bg-green-100 border-green-500 text-green-700' : 'bg-slate-50 border-slate-200 text-slate-600'" class="border-2 py-2 rounded-xl font-bold text-xs flex flex-col items-center gap-1 transition">
+                            <i class="fas fa-money-bill-wave text-lg"></i> Efectivo
+                        </button>
+                        <button @click="paymentMethod = 'tarjeta'" :class="paymentMethod === 'tarjeta' ? 'bg-blue-100 border-blue-500 text-blue-700' : 'bg-slate-50 border-slate-200 text-slate-600'" class="border-2 py-2 rounded-xl font-bold text-xs flex flex-col items-center gap-1 transition">
+                            <i class="fas fa-credit-card text-lg"></i> Tarjeta
+                        </button>
+                        <button @click="paymentMethod = 'transferencia'" :class="paymentMethod === 'transferencia' ? 'bg-purple-100 border-purple-500 text-purple-700' : 'bg-slate-50 border-slate-200 text-slate-600'" class="border-2 py-2 rounded-xl font-bold text-xs flex flex-col items-center gap-1 transition">
+                            <i class="fas fa-mobile-alt text-lg"></i> Transfer
+                        </button>
+                    </div>
+                </div>
+
+                <div x-show="paymentMethod === 'efectivo' && cart.length > 0" x-collapse class="px-5 pb-3">
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="text-[11px] font-bold text-slate-700 uppercase">Monto Recibido</label>
+                            <input type="number" x-model="cashReceived" class="w-1/2 text-right font-bold bg-white border border-slate-300 rounded-lg px-2 py-1 text-sm outline-none focus:border-green-500">
+                        </div>
+                        <div class="flex items-center justify-between border-t border-slate-200 pt-2 mt-2">
+                            <span class="text-[11px] font-bold text-slate-500 uppercase">Vuelto:</span>
+                            <span class="font-black text-green-600" x-text="calculateChange()"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="px-5 pb-5 pt-2 flex justify-between items-end mb-1">
+                    <div class="flex flex-col">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Final</span>
+                        <span class="text-sm font-bold text-slate-500" x-text="cartItemCount + ' artículos'"></span>
+                    </div>
+                    <span class="text-4xl font-black text-slate-900 tracking-tight" x-text="formatMoney(total)"></span>
+                </div>
+
+                <div class="px-5 pb-5">
+                    <button type="button" @click="checkout" 
+                            :disabled="cart.length === 0 || isProcessing"
+                            :class="{'opacity-50 cursor-not-allowed bg-slate-300 text-slate-500': cart.length === 0 || isProcessing, 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-xl shadow-indigo-600/30 transform active:scale-95': cart.length > 0 && !isDelivery && !isProcessing, 'bg-emerald-500 hover:bg-emerald-400 text-white shadow-xl shadow-emerald-500/30 transform active:scale-95': cart.length > 0 && isDelivery && !isProcessing}"
+                            class="w-full rounded-2xl py-4 text-xl font-black uppercase tracking-widest transition-all flex items-center justify-center gap-3">
+                        <i class="fas" :class="isProcessing ? 'fa-spinner fa-spin' : (isDelivery ? 'fa-motorcycle' : 'fa-check-circle')"></i> 
+                        <span x-text="isProcessing ? 'PROCESANDO...' : (isDelivery ? 'ENVIAR PEDIDO' : 'COBRAR TICKET')"></span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <div x-show="showScannerModal" x-cloak class="fixed z-50 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+            <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:p-0">
+                <div x-show="showScannerModal" x-transition.opacity class="fixed inset-0 bg-slate-900/90 backdrop-blur-sm transition-opacity"></div>
+                
+                <div x-show="showScannerModal" 
+                     x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" 
+                     class="inline-block bg-white rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle w-full max-w-md border border-slate-200 relative z-50">
+                    
+                    <div id="reader" class="bg-black flex items-center justify-center min-h-[250px]"></div>
+                    <div class="p-6 text-center bg-white">
+                        <p class="text-slate-800 font-bold mb-4">Apunta la cámara al código de barras o SKU del producto</p>
+                        <button @click="stopScanner()" class="w-full py-3 bg-red-100 text-red-600 rounded-xl font-bold hover:bg-red-200 transition">Cancelar Escaneo</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div x-show="showCustomModal" x-cloak class="fixed z-50 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+            <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:p-0">
+                <div x-show="showCustomModal" x-transition.opacity class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm transition-opacity" @click="showCustomModal = false"></div>
+                
+                <div x-show="showCustomModal" 
+                     x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" 
+                     class="inline-block bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-sm w-full border border-slate-200 relative z-50">
+                    
+                    <div class="bg-white px-6 pt-6 pb-6">
+                        <div class="flex items-center justify-center h-14 w-14 rounded-full bg-orange-100 border border-orange-200 mx-auto mb-4">
+                            <i class="fas fa-tag text-2xl text-orange-600"></i>
+                        </div>
+                        <h3 class="text-xl leading-6 font-black text-slate-900 text-center uppercase tracking-tight">Venta Libre</h3>
+                        <p class="text-xs text-slate-500 text-center mb-6 font-medium mt-1">Agrega un cobro personalizado sin necesidad de que esté en el inventario.</p>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-700 mb-1 uppercase tracking-wider">Concepto</label>
+                                <input type="text" x-model="customItem.name" placeholder="Ej: Servicio extra, Reparación..." class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:ring-0 focus:border-orange-500 font-bold text-slate-800 transition outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-700 mb-1 uppercase tracking-wider">Monto (<span x-text="site?.currency"></span>)</label>
+                                <input type="number" x-model.number="customItem.price" placeholder="0" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:ring-0 focus:border-orange-500 font-black text-2xl text-slate-900 transition outline-none text-center">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-slate-50 px-6 py-4 flex flex-row-reverse gap-3 border-t border-slate-200">
+                        <button type="button" @click="addCustomItem" class="flex-1 rounded-xl shadow-lg shadow-orange-500/30 px-4 py-3 bg-orange-500 text-sm font-black text-white hover:bg-orange-600 uppercase tracking-widest transition transform active:scale-95">
+                            Agregar
+                        </button>
+                        <button type="button" @click="showCustomModal = false" class="flex-1 rounded-xl border-2 border-slate-200 px-4 py-3 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition">
+                            Cancelar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('posSystem', () => ({
+                user: null, site: null, products: [], deliveries: [],
+                isLoading: true, isProcessing: false,
+                cart: [], search: '', mobileCartOpen: false,
+                paymentMethod: 'efectivo', cashReceived: '',
+                isDelivery: false, discount: '', deliveryFee: '', customerName: '', customerPhone: '', deliveryAddress: '', assignedDeliveryId: '',
+                showCustomModal: false, customItem: { name: '', price: '' },
+                showScannerModal: false, scannerInstance: null,
+
+                async init() {
+                    this.user = WuepyAPI.getUser();
+                    if(!this.user) { window.location.href = '/auth/login.html'; return; }
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const siteId = urlParams.get('id');
+                    if(!siteId) { window.location.href = '/dashboard/index.html'; return; }
+
+                    await this.loadPOSData(siteId);
+                },
+
+                async loadPOSData(siteId) {
+                    try {
+                        const res = await WuepyAPI.fetch(`/dashboard/pos/${siteId}`);
+                        if(res.status === 200) {
+                            this.site = res.data.site;
+                            this.products = res.data.products || [];
+                            this.deliveries = res.data.deliveries || [];
+                        } else { alert('Error al cargar la caja.'); }
+                    } catch(e) { alert('Error de conexión.'); }
+                    this.isLoading = false;
+                },
+
+                get filteredProducts() {
+                    if (this.search === '') return this.products.filter(p => p.isActive !== false);
+                    const q = this.search.toLowerCase();
+                    return this.products.filter(p => p.isActive !== false && (p.name.toLowerCase().includes(q) || (p.category && p.category.toLowerCase().includes(q)) || (p.sku && p.sku.toLowerCase().includes(q))));
+                },
+
+                get cartItemCount() { return this.cart.reduce((sum, item) => sum + item.quantity, 0); },
+                
+                get total() { 
+                    let sub = this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0); 
+                    let delFee = this.isDelivery ? (parseFloat(this.deliveryFee) || 0) : 0;
+                    let desc = parseFloat(this.discount) || 0;
+                    let finalAmount = (sub + delFee) - desc;
+                    return finalAmount > 0 ? finalAmount : 0;
+                },
+
+                formatMoney(amount) { return (this.site?.currency === 'PYG' ? 'Gs. ' : '$ ') + parseFloat(amount).toLocaleString('es-PY'); },
+                calculateChange() {
+                    let received = parseFloat(this.cashReceived);
+                    if(isNaN(received) || received < this.total) return '---';
+                    return this.formatMoney(received - this.total);
+                },
+
+                addToCart(product) {
+                    let existing = this.cart.find(item => item._id === product._id);
+                    if (existing && !existing.isCustom) {
+                        if (existing.quantity < product.stock) { existing.quantity++; } 
+                        else { alert('⚠️ Límite de stock en inventario alcanzado.'); }
+                    } else {
+                        this.cart.push({ _id: product._id, name: product.name, price: parseFloat(product.price), imageUrl: product.imageUrl, stock: product.stock || 999, quantity: 1, isCustom: false });
+                    }
+                },
+
+                addCustomItem() {
+                    if(!this.customItem.name || this.customItem.price <= 0) return alert('⚠️ Ingresa un nombre y un precio válido.');
+                    this.cart.push({ _id: 'custom_' + Date.now(), name: this.customItem.name, price: parseFloat(this.customItem.price), imageUrl: '', stock: 999, quantity: 1, isCustom: true });
+                    this.customItem = { name: '', price: '' };
+                    this.showCustomModal = false;
+                },
+
+                updateQuantity(id, delta) {
+                    let item = this.cart.find(i => i._id === id);
+                    if (item) {
+                        let newQuantity = item.quantity + delta;
+                        if (newQuantity <= 0) { this.removeFromCart(id); } 
+                        else if (item.isCustom || newQuantity <= item.stock) { item.quantity = newQuantity; } 
+                        else { alert('⚠️ Límite de stock alcanzado.'); }
+                    }
+                },
+
+                removeFromCart(id) { this.cart = this.cart.filter(item => item._id !== id); },
+                
+                clearCart() { 
+                    if(confirm('¿Seguro que deseas vaciar el ticket?')) {
+                        this.cart = []; this.discount = ''; this.deliveryFee = ''; this.isDelivery = false; this.customerName = ''; this.customerPhone = ''; this.deliveryAddress = ''; this.assignedDeliveryId = ''; this.cashReceived = '';
+                    } 
+                },
+
+                startScanner() {
+                    this.showScannerModal = true;
+                    setTimeout(() => {
+                        if (!this.scannerInstance) this.scannerInstance = new Html5Qrcode("reader");
+                        this.scannerInstance.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 150 } }, (decodedText) => { this.handleScan(decodedText); }).catch(err => {
+                            alert('No se pudo acceder a la cámara. Revisa los permisos.'); this.stopScanner();
+                        });
+                    }, 200);
+                },
+
+                stopScanner() {
+                    if (this.scannerInstance) { this.scannerInstance.stop().then(() => { this.showScannerModal = false; }).catch(() => { this.showScannerModal = false; }); } 
+                    else { this.showScannerModal = false; }
+                },
+
+                handleScan(code) {
+                    this.stopScanner();
+                    const found = this.products.find(p => p.sku === code || p._id === code);
+                    if (found) { if(found.stock > 0) { this.addToCart(found); } else { alert(`El producto ${found.name} está agotado.`); } } 
+                    else { alert('El código de barras no coincide con ningún producto.'); }
+                },
+
+                async checkout() {
+                    if (this.cart.length === 0) return;
+                    if (this.isDelivery && !this.assignedDeliveryId && this.deliveries.length > 0) return alert('⚠️ Asigna un repartidor para el envío.');
+                    if (this.paymentMethod === 'efectivo' && this.cashReceived && parseFloat(this.cashReceived) < this.total) return alert('⚠️ El monto recibido es menor al total.');
+
+                    const mensaje = this.isDelivery ? `Registrarás un envío por ${this.formatMoney(this.total)}.\n¿Confirmar operación?` : `Cobrarás ${this.formatMoney(this.total)} en ${this.paymentMethod.toUpperCase()}.\n¿Confirmar venta?`;
+                    
+                    if(confirm(mensaje)) {
+                        this.isProcessing = true;
+                        try {
+                            const payload = {
+                                cartData: JSON.stringify(this.cart), totalAmount: this.total, paymentMethod: this.paymentMethod,
+                                saleChannel: this.isDelivery ? 'whatsapp' : 'pos', requiresDelivery: this.isDelivery ? 'on' : 'off',
+                                deliveryAddress: this.deliveryAddress, assignedDeliveryId: this.assignedDeliveryId, customerName: this.customerName,
+                                customerPhone: this.customerPhone, discount: this.discount, deliveryFee: this.deliveryFee
+                            };
+                            const res = await WuepyAPI.fetch(`/dashboard/pos/${this.site._id}/checkout`, {
+                                method: 'POST', body: JSON.stringify(payload)
+                            });
+                            if(res.status === 200) {
+                                alert('✅ Venta registrada con éxito.');
+                                this.cart = []; this.isDelivery = false; // Reset simple
+                                await this.loadPOSData(this.site._id); // Recargar para actualizar stock visualmente
+                            } else { alert(res.data.message || 'Error en checkout.'); }
+                        } catch(e) { alert('Error conectando al servidor.'); }
+                        this.isProcessing = false;
+                    }
+                }
+            }));
+        });
+    </script>
+</body>
+</html>

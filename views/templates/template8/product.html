@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= product.name %> | <%= site.name %></title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&display=swap');
+        :root {
+            --primary: <%= site.primaryColor || '#d6d3d1' %>; 
+            --secondary: <%= site.secondaryColor || '#1c1917' %>;
+        }
+        body { font-family: 'Outfit', sans-serif; color: var(--secondary); background-color: #ffffff; }
+        .btn-solid {
+            background: var(--secondary);
+            color: #ffffff;
+            transition: opacity 0.3s ease;
+        }
+        .btn-solid:hover { opacity: 0.9; }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+    <%- include('./partials/header.html') %>
+
+    <main class="flex-grow max-w-7xl mx-auto px-4 py-16 w-full">
+        <div class="mb-10 text-xs font-medium text-gray-400 uppercase tracking-widest">
+            <a href="/" class="hover:text-black">Inicio</a> <span class="mx-2">/</span> 
+            <a href="/search?category=<%= encodeURIComponent(product.category) %>" class="hover:text-black"><%= product.category %></a> <span class="mx-2">/</span> 
+            <span class="text-black"><%= product.name %></span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24">
+            <div class="bg-gray-50 p-8 flex items-center justify-center aspect-square">
+                <% if(product.imageUrl) { %>
+                    <img src="<%= product.imageUrl %>" class="max-w-full max-h-full object-cover shadow-sm" alt="<%= product.name %>">
+                <% } else { %>
+                    <div class="text-gray-300"><i class="fas fa-image text-6xl"></i></div>
+                <% } %>
+            </div>
+            
+            <div class="flex flex-col justify-center">
+                <h1 class="text-3xl md:text-5xl font-light text-black mb-6 tracking-tight leading-tight"><%= product.name %></h1>
+                
+                <p class="text-2xl font-medium mb-10">
+                    <% if(site.currency === 'USD') { %>$<%= parseFloat(product.priceUSD).toFixed(2)%><% } else { %><%= new Intl.NumberFormat('es-PY').format(product.price) %> Gs<% } %>
+                </p>
+                
+                <div class="text-gray-500 font-light leading-relaxed text-sm mb-12">
+                    <%= product.description || 'Detalles no especificados. Un producto diseñado con minimalismo y calidad.' %>
+                </div>
+                
+                <div class="border-t border-gray-100 pt-10">
+                    <% if(product.stock > 0) { %>
+                        <% if(site.contact && site.contact.whatsapp) { %>
+                            <a href="https://wa.me/<%= site.contact.whatsapp %>?text=Hola,%20me%20interesa%20adquirir:%20<%= encodeURIComponent(product.name) %>" target="_blank" class="block w-full py-4 text-center text-sm font-bold uppercase tracking-widest btn-solid">
+                                Consultar Disponibilidad
+                            </a>
+                        <% } else { %>
+                            <button class="block w-full py-4 text-center text-sm font-bold uppercase tracking-widest bg-gray-100 text-gray-400 cursor-not-allowed">
+                                Contacto no disponible
+                            </button>
+                        <% } %>
+                    <% } else { %>
+                        <div class="block w-full py-4 text-center text-sm font-bold uppercase tracking-widest bg-gray-100 text-gray-500">
+                            Sin Stock
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <%- include('./partials/footer.html') %>
+</body>
+</html>

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="es" class="bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro | Wuepy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="/js/api.js"></script>
+    <style>
+        @keyframes blob {
+            0% { transform: translate(0px, 0px) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+            100% { transform: translate(0px, 0px) scale(1); }
+        }
+        .animate-blob { animation: blob 10s infinite; }
+        .animation-delay-4000 { animation-delay: 4s; }
+    </style>
+</head>
+<body class="text-slate-800 antialiased flex flex-col min-h-screen">
+
+    <div class="min-h-[90vh] bg-white flex flex-1" x-data="registerForm()">
+        
+        <div class="hidden lg:flex lg:w-1/2 bg-slate-900 relative overflow-hidden items-center justify-center p-12">
+            <div class="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
+                <div class="absolute -top-32 -right-32 w-[500px] h-[500px] bg-blue-600 rounded-full mix-blend-screen filter blur-[100px] opacity-40 animate-blob"></div>
+                <div class="absolute -bottom-32 -left-32 w-[500px] h-[500px] bg-indigo-600 rounded-full mix-blend-screen filter blur-[100px] opacity-40 animate-blob animation-delay-4000"></div>
+            </div>
+
+            <div class="relative z-10 text-white max-w-lg">
+                <div class="mb-10">
+                    <span class="inline-block py-1 px-3 rounded-full bg-blue-500/20 text-blue-300 text-xs font-bold tracking-widest uppercase mb-6 border border-blue-500/30">
+                        Empieza Gratis
+                    </span>
+                    <h1 class="text-5xl font-extrabold tracking-tight mb-6 leading-tight">
+                        Digitaliza tu negocio hoy con <span class="text-blue-400">Wuepy.</span>
+                    </h1>
+                    <p class="text-lg text-slate-300 leading-relaxed font-medium">
+                        Únete a la plataforma diseñada para emprendedores en Paraguay. Crea tu tienda, controla tu inventario y vende más, sin pagar comisiones por tus ventas.
+                    </p>
+                </div>
+                
+                <div class="space-y-6">
+                    <div class="flex items-start gap-4">
+                        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-blue-600/30 flex items-center justify-center text-blue-400">
+                            <i class="fas fa-store"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-white text-lg">Tienda Web Lista</h3>
+                            <p class="text-slate-400 text-sm mt-1">Diseños optimizados para vender, configurados en minutos.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-4">
+                        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-green-600/30 flex items-center justify-center text-green-400">
+                            <i class="fas fa-boxes"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-white text-lg">Inventario Integrado</h3>
+                            <p class="text-slate-400 text-sm mt-1">Controla tu stock al instante. Soporte para Gs y USD.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-4">
+                        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-purple-600/30 flex items-center justify-center text-purple-400">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-white text-lg">Trabajo en Equipo</h3>
+                            <p class="text-slate-400 text-sm mt-1">Dale acceso a tus empleados con permisos restringidos.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12 lg:p-24 bg-slate-50 lg:bg-white relative">
+            <div class="w-full max-w-md">
+                
+                <div class="text-center mb-10">
+                    <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">Crea tu cuenta</h2>
+                    <p class="text-slate-500 font-medium">El primer mes del plan básico va por nuestra cuenta.</p>
+                </div>
+
+                <template x-if="errors.length > 0">
+                    <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-6 shadow-sm">
+                        <div class="flex items-center gap-2 mb-2">
+                            <i class="fas fa-exclamation-triangle text-red-500"></i>
+                            <p class="font-bold text-sm">Corrige lo siguiente:</p>
+                        </div>
+                        <ul class="list-disc list-inside text-sm pl-6 space-y-1">
+                            <template x-for="err in errors">
+                                <li x-text="err"></li>
+                            </template>
+                        </ul>
+                    </div>
+                </template>
+
+                <form @submit.prevent="submitRegister" class="space-y-5">
+                    <div>
+                        <label for="name" class="block text-sm font-bold text-slate-700 mb-2">Nombre Completo</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <i class="fas fa-user text-slate-400"></i>
+                            </div>
+                            <input type="text" x-model="name" id="name" required autofocus
+                                class="block w-full pl-11 pr-4 py-3 border border-slate-300 rounded-xl bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-slate-900"
+                                placeholder="Ej: Juan Pérez">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="email" class="block text-sm font-bold text-slate-700 mb-2">Correo Electrónico</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <i class="fas fa-envelope text-slate-400"></i>
+                            </div>
+                            <input type="email" x-model="email" id="email" required
+                                class="block w-full pl-11 pr-4 py-3 border border-slate-300 rounded-xl bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-slate-900"
+                                placeholder="tu@correo.com">
+                        </div>
+                    </div>
+
+                    <div x-data="{ showPassword: false }">
+                        <label for="password" class="block text-sm font-bold text-slate-700 mb-2">Contraseña</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <i class="fas fa-lock text-slate-400"></i>
+                            </div>
+                            <input :type="showPassword ? 'text' : 'password'" x-model="password" id="password" required
+                                class="block w-full pl-11 pr-12 py-3 border border-slate-300 rounded-xl bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-slate-900"
+                                placeholder="Mínimo 6 caracteres">
+                            <button type="button" @click="showPassword = !showPassword" class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-blue-600 transition-colors focus:outline-none">
+                                <i class="fas" :class="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div x-data="{ showConfirmPassword: false }">
+                        <label for="confirmPassword" class="block text-sm font-bold text-slate-700 mb-2">Confirmar Contraseña</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <i class="fas fa-shield-alt text-slate-400"></i>
+                            </div>
+                            <input :type="showConfirmPassword ? 'text' : 'password'" x-model="confirmPassword" id="confirmPassword" required
+                                class="block w-full pl-11 pr-12 py-3 border border-slate-300 rounded-xl bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-slate-900"
+                                placeholder="Repite tu contraseña">
+                            <button type="button" @click="showConfirmPassword = !showConfirmPassword" class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-blue-600 transition-colors focus:outline-none">
+                                <i class="fas" :class="showConfirmPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="pt-2">
+                        <p class="text-xs text-slate-500 mb-4 text-center">
+                            Al registrarte, aceptas nuestros Términos de Servicio y la Política de Privacidad de Wuepy.
+                        </p>
+                        <button type="submit" :disabled="isLoading" class="w-full flex justify-center items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-slate-900/20 transition-all transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-900 disabled:opacity-70">
+                            <span x-show="!isLoading">Crear mi cuenta gratis <i class="fas fa-arrow-right text-sm"></i></span>
+                            <span x-show="isLoading"><i class="fas fa-spinner fa-spin"></i> Registrando...</span>
+                        </button>
+                    </div>
+                </form>
+
+                <div class="mt-8 text-center border-t border-slate-200 pt-6">
+                    <p class="text-sm text-slate-600 font-medium">
+                        ¿Ya tienes una cuenta en Wuepy? 
+                        <a href="/auth/login.html" class="font-bold text-blue-600 hover:text-blue-800 transition-colors ml-1">Inicia sesión</a>
+                    </p>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('registerForm', () => ({
+                name: '', email: '', password: '', confirmPassword: '',
+                errors: [], isLoading: false,
+                
+                async submitRegister() {
+                    this.errors = [];
+                    if(this.password !== this.confirmPassword) {
+                        this.errors.push("Las contraseñas no coinciden");
+                        return;
+                    }
+                    this.isLoading = true;
+                    try {
+                        const res = await WuepyAPI.fetch('/auth/register', {
+                            method: 'POST',
+                            body: JSON.stringify({ name: this.name, email: this.email, password: this.password })
+                        });
+                        if (res.status === 200 && res.data.success) {
+                            WuepyAPI.setUser(res.data.user);
+                            window.location.href = '/dashboard/index.html';
+                        } else {
+                            this.errors.push(res.data.message || 'Error en el registro');
+                        }
+                    } catch (e) {
+                        this.errors.push('Error al conectar con el servidor.');
+                    } finally {
+                        this.isLoading = false;
+                    }
+                }
+            }));
+        });
+    </script>
+</body>
+</html>

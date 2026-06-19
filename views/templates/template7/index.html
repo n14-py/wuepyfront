@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= site.name %> | Gourmet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;600;700&display=swap');
+        :root {
+            /* Por defecto: Naranja apetitoso y Gris oscuro */
+            --primary: <%= site.primaryColor || '#ea580c' %>; 
+            --secondary: <%= site.secondaryColor || '#292524' %>;
+        }
+        body { font-family: 'Inter', sans-serif; color: var(--secondary); background-color: #fafaf9; }
+        .font-lora { font-family: 'Lora', serif; }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+    
+    <%- include('./partials/header.html') %>
+
+    <section class="relative bg-black h-[75vh] flex items-center justify-center overflow-hidden">
+        <% if(site.bannerUrl && site.bannerUrl !== '') { %>
+            <img src="<%= site.bannerUrl %>" class="absolute inset-0 w-full h-full object-cover opacity-60 filter brightness-75" alt="Banner de <%= site.name %>">
+        <% } else { %>
+            <div class="absolute inset-0 bg-gradient-to-tr from-[#292524] to-[#44403c] opacity-90"></div>
+            <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/food.png')]"></div>
+        <% } %>
+        
+        <div class="relative z-10 text-center px-4 max-w-4xl mx-auto">
+            <span class="font-lora italic text-[var(--primary)] text-xl md:text-3xl mb-4 block drop-shadow">Sabor incomparable</span>
+            <h1 class="text-6xl md:text-8xl font-lora font-bold text-white mb-6 leading-tight drop-shadow-2xl">
+                <%= site.content.heroTitle || 'Experiencia Gourmet' %>
+            </h1>
+            <p class="text-lg md:text-xl text-gray-200 mb-10 font-light max-w-2xl mx-auto drop-shadow-lg">
+                <%= site.content.heroSubtitle || 'Disfruta de nuestros platillos y productos elaborados con la más alta calidad, frescura y pasión.' %>
+            </p>
+            <a href="/search" class="inline-block bg-[var(--primary)] text-white px-10 py-4 rounded-full font-bold text-lg hover:brightness-110 transition-all shadow-[0_10px_25px_rgba(0,0,0,0.5)] transform hover:-translate-y-1">
+                Ver Nuestro Menú <i class="fas fa-utensils ml-2"></i>
+            </a>
+        </div>
+    </section>
+
+    <section class="py-24 px-4 max-w-7xl mx-auto">
+        <div class="text-center mb-16">
+            <p class="text-[var(--primary)] font-bold tracking-widest uppercase text-sm mb-2">Recomendaciones</p>
+            <h2 class="text-4xl md:text-5xl font-lora font-bold mb-6 text-gray-900">Especialidades de la Casa</h2>
+            <div class="w-20 h-1 bg-[var(--primary)] mx-auto rounded-full"></div>
+        </div>
+
+        <% if(products.length === 0) { %>
+            <div class="bg-white rounded-3xl p-16 text-center shadow-sm border border-gray-100">
+                <i class="fas fa-concierge-bell text-6xl text-gray-300 mb-6 block"></i>
+                <h3 class="font-lora text-2xl text-gray-500">Estamos cocinando nuestro menú...</h3>
+            </div>
+        <% } else { %>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <% products.slice(0, 8).forEach(product => { %>
+                    <div class="bg-white rounded-3xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 group flex flex-col border border-gray-100">
+                        <a href="/p/<%= product._id %>" class="relative h-64 overflow-hidden bg-gray-100 block">
+                            <% if(product.imageUrl) { %>
+                                <img src="<%= product.imageUrl %>" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="<%= product.name %>">
+                            <% } else { %>
+                                <div class="w-full h-full flex items-center justify-center text-gray-300"><i class="fas fa-camera text-4xl"></i></div>
+                            <% } %>
+                            
+                            <div class="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider text-[var(--primary)] shadow-sm">
+                                <%= product.category %>
+                            </div>
+                        </a>
+                        
+                        <div class="p-6 text-center flex flex-col flex-grow">
+                            <h3 class="font-lora font-bold text-2xl mb-2 text-gray-900 line-clamp-1 group-hover:text-[var(--primary)] transition-colors"><%= product.name %></h3>
+                            <p class="text-sm text-gray-500 line-clamp-2 mb-4 flex-grow"><%= product.description || 'Delicioso...' %></p>
+                            
+                            <p class="text-2xl font-black text-gray-900 mb-5">
+                                <% if(site.currency === 'USD') { %>$<%= parseFloat(product.priceUSD).toFixed(2)%><% } else { %><%= new Intl.NumberFormat('es-PY').format(product.price) %> Gs<% } %>
+                            </p>
+                            
+                            <a href="/p/<%= product._id %>" class="block w-full py-3 border-2 border-[var(--primary)] text-[var(--primary)] rounded-full font-bold hover:bg-[var(--primary)] hover:text-white transition-colors">
+                                Ver Detalles
+                            </a>
+                        </div>
+                    </div>
+                <% }) %>
+            </div>
+            
+            <div class="mt-16 text-center">
+                <a href="/search" class="inline-flex items-center gap-2 text-gray-600 font-bold hover:text-[var(--primary)] text-lg transition-colors">
+                    Ver catálogo completo <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        <% } %>
+    </section>
+
+    <%- include('./partials/footer.html') %>
+</body>
+</html>

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo | <%= site.name %></title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&display=swap');
+        :root {
+            --primary: <%= site.primaryColor || '#d6d3d1' %>; 
+            --secondary: <%= site.secondaryColor || '#1c1917' %>;
+        }
+        body { font-family: 'Outfit', sans-serif; color: var(--secondary); background-color: #ffffff; }
+        .image-container img { transition: transform 0.8s ease; }
+        .image-container:hover img { transform: scale(1.03); }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+    <%- include('./partials/header.html') %>
+
+    <div class="max-w-7xl mx-auto px-4 w-full py-16 border-b border-gray-100 text-center">
+        <h1 class="text-4xl font-light tracking-tight mb-4">Catálogo</h1>
+        <p class="text-gray-400 font-light text-sm max-w-lg mx-auto">Explora nuestra colección completa de objetos y diseños esenciales.</p>
+    </div>
+
+    <main class="flex-grow max-w-7xl mx-auto px-4 py-16 w-full flex flex-col md:flex-row gap-16">
+        
+        <aside class="w-full md:w-64 flex-shrink-0">
+            <div class="sticky top-32">
+                <form action="/search" method="GET" class="mb-10">
+                    <input type="text" name="q" value="<%= searchQuery || '' %>" placeholder="Buscar..." class="w-full pb-2 border-b border-gray-300 focus:border-black outline-none bg-transparent text-sm font-light placeholder-gray-400 transition-colors">
+                    <% if(currentCategory) { %><input type="hidden" name="category" value="<%= currentCategory %>"><% } %>
+                </form>
+
+                <h3 class="text-xs font-bold uppercase tracking-widest text-gray-900 mb-6">Categorías</h3>
+                <ul class="space-y-4 text-sm font-light">
+                    <li>
+                        <a href="/search<%= searchQuery ? '?q=' + searchQuery : '' %>" class="<%= !currentCategory ? 'text-black font-medium' : 'text-gray-500 hover:text-black' %> transition-colors">
+                            Todas
+                        </a>
+                    </li>
+                    <% categories.forEach(cat => { %>
+                        <li>
+                            <a href="/search?category=<%= encodeURIComponent(cat) %><%= searchQuery ? '&q=' + searchQuery : '' %>" 
+                               class="<%= currentCategory === cat ? 'text-black font-medium' : 'text-gray-500 hover:text-black' %> transition-colors">
+                                <%= cat %>
+                            </a>
+                        </li>
+                    <% }) %>
+                </ul>
+            </div>
+        </aside>
+
+        <div class="w-full">
+            <% if(products.length === 0) { %>
+                <div class="py-20 text-center">
+                    <h2 class="text-xl font-light text-gray-500 mb-2">No encontramos resultados</h2>
+                    <a href="/search" class="text-xs font-bold uppercase tracking-widest border-b border-black pb-1">Limpiar filtros</a>
+                </div>
+            <% } else { %>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16">
+                    <% products.forEach(product => { %>
+                        <div class="group flex flex-col">
+                            <a href="/p/<%= product._id %>" class="image-container relative aspect-[4/5] bg-gray-50 overflow-hidden mb-4 w-full block">
+                                <% if(product.imageUrl) { %>
+                                    <img src="<%= product.imageUrl %>" class="w-full h-full object-cover" alt="<%= product.name %>">
+                                <% } else { %>
+                                    <div class="w-full h-full flex items-center justify-center text-gray-300"><i class="fas fa-cube text-2xl"></i></div>
+                                <% } %>
+                            </a>
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h3 class="text-sm font-medium mb-1"><a href="/p/<%= product._id %>" class="hover:underline decoration-1 underline-offset-4"><%= product.name %></a></h3>
+                                    <p class="text-[10px] text-gray-400 uppercase tracking-widest"><%= product.category %></p>
+                                </div>
+                                <span class="text-sm font-medium">
+                                    <% if(site.currency === 'USD') { %>$<%= parseFloat(product.priceUSD).toFixed(2)%><% } else { %><%= new Intl.NumberFormat('es-PY').format(product.price) %> Gs<% } %>
+                                </span>
+                            </div>
+                        </div>
+                    <% }) %>
+                </div>
+            <% } %>
+        </div>
+    </main>
+
+    <%- include('./partials/footer.html') %>
+</body>
+</html>

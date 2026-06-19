@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="es" class="bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finanzas y Reportes - Wuepy</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/js/api.js"></script>
+    
+    <style>
+        [x-cloak] { display: none !important; }
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background-color: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .table-row-hover { transition: all 0.2s ease; }
+        .table-row-hover:hover { background-color: #f8fafc; }
+    </style>
+</head>
+<body class="text-slate-800 flex flex-col min-h-screen" x-data="financeManager()">
+
+    <nav class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm" x-show="user" x-cloak>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <a href="/dashboard/index.html" class="flex items-center gap-2 group">
+                    <div class="w-8 h-8 bg-blue-600 rounded flex items-center justify-center text-white font-bold text-lg shadow-md group-hover:bg-blue-700 transition">W</div>
+                    <span class="text-xl font-extrabold text-slate-900 tracking-tight">Wuepy</span>
+                </a>
+                <div class="flex items-center gap-4">
+                    <div class="hidden sm:block text-sm text-slate-500 font-medium">Hola, <span class="font-bold text-slate-900" x-text="user?.name"></span></div>
+                    <div class="h-8 w-px bg-slate-200 mx-2 hidden sm:block"></div>
+                    <a href="#" @click.prevent="WuepyAPI.logoutLocal()" class="text-slate-400 hover:text-red-500 p-2 transition flex items-center gap-2"><i class="fas fa-sign-out-alt text-lg"></i></a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <template x-if="isLoading">
+        <div class="flex flex-col items-center justify-center py-32 flex-grow">
+            <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-purple-600 mb-4"></div>
+            <p class="text-slate-500 font-bold animate-pulse">Cargando reporte financiero...</p>
+        </div>
+    </template>
+
+    <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow" x-show="!isLoading" x-cloak>
+        
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+            <div>
+                <div class="flex items-center gap-2 text-sm font-bold text-slate-400 mb-3">
+                    <a href="/dashboard/index.html" class="hover:text-purple-600 transition"><i class="fas fa-home"></i> Panel</a>
+                    <i class="fas fa-chevron-right text-[10px]"></i>
+                    <a :href="'/dashboard/site-overview.html?id=' + site?._id" class="hover:text-purple-600 transition" x-text="site?.name"></a>
+                    <i class="fas fa-chevron-right text-[10px]"></i>
+                    <span class="text-purple-600 bg-purple-50 px-2 py-0.5 rounded-md">Finanzas</span>
+                </div>
+                <h1 class="text-3xl md:text-4xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+                    <i class="fas fa-chart-line text-purple-500"></i> Control Financiero
+                </h1>
+                <p class="text-slate-500 mt-2 text-lg">Monitorea tus ingresos, asienta tus gastos y exporta tus reportes mensuales.</p>
+            </div>
+            
+            <div class="flex flex-wrap gap-3">
+                <button @click="openExpenseModal()" class="bg-white border-2 border-slate-200 hover:border-slate-300 text-slate-700 px-5 py-3 rounded-xl font-bold shadow-sm transition flex items-center gap-2">
+                    <i class="fas fa-minus-circle text-red-500"></i> Registrar Egreso
+                </button>
+                <a :href="`${API_URL}/dashboard/site/${site?._id}/finances/export?token=${user?.token}`" target="_blank" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl font-black shadow-lg shadow-purple-600/30 transition transform hover:-translate-y-0.5 flex items-center gap-2">
+                    <i class="fas fa-file-pdf text-lg"></i> Exportar Mes a PDF
+                </a>
+            </div>
+        </div>
+
+        <template x-if="successMsg">
+            <div class="bg-emerald-50 border border-emerald-200 text-emerald-700 p-4 rounded-xl mb-8 shadow-sm flex items-center gap-3">
+                <i class="fas fa-check-circle text-2xl text-emerald-500"></i>
+                <p class="font-bold text-sm" x-text="successMsg"></p>
+            </div>
+        </template>
+        <template x-if="errorMsg">
+            <div class="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl mb-8 shadow-sm flex items-center gap-3">
+                <i class="fas fa-exclamation-circle text-2xl text-red-500"></i>
+                <p class="font-bold text-sm" x-text="errorMsg"></p>
+            </div>
+        </template>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            
+            <div class="bg-white rounded-[2rem] p-6 border border-slate-200 shadow-sm relative overflow-hidden">
+                <div class="absolute top-0 right-0 p-6 opacity-10"><i class="fas fa-calendar-day text-6xl text-blue-600"></i></div>
+                <p class="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 relative z-10">Ingresos de Hoy</p>
+                <h3 class="text-3xl font-black text-slate-900 relative z-10 mb-1" x-text="formatMoney(stats.dailyTotal)"></h3>
+                <p class="text-sm font-bold text-blue-600 relative z-10" x-text="stats.dailyCount + ' tickets cerrados'"></p>
+            </div>
+            
+            <div class="bg-white rounded-[2rem] p-6 border border-slate-200 shadow-sm relative overflow-hidden">
+                <div class="absolute top-0 right-0 p-6 opacity-10"><i class="fas fa-calendar-alt text-6xl text-emerald-600"></i></div>
+                <p class="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 relative z-10">Ingresos del Mes</p>
+                <h3 class="text-3xl font-black text-slate-900 relative z-10 mb-1" x-text="formatMoney(stats.monthlyTotal)"></h3>
+                <p class="text-sm font-bold text-emerald-600 relative z-10" x-text="stats.monthlyCount + ' operaciones exitosas'"></p>
+            </div>
+
+            <div class="bg-white rounded-[2rem] p-6 border border-slate-200 shadow-sm relative overflow-hidden">
+                <div class="absolute top-0 right-0 p-6 opacity-10"><i class="fas fa-receipt text-6xl text-red-600"></i></div>
+                <p class="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 relative z-10">Egresos / Gastos (Mes)</p>
+                <h3 class="text-3xl font-black text-slate-900 relative z-10 mb-1" x-text="formatMoney(stats.monthlyExpenses)"></h3>
+                <p class="text-sm font-bold text-red-500 relative z-10">Dinero saliente</p>
+            </div>
+
+            <div class="rounded-[2rem] p-6 shadow-lg relative overflow-hidden text-white"
+                 :class="netProfit >= 0 ? 'bg-gradient-to-br from-slate-800 to-slate-900' : 'bg-gradient-to-br from-red-800 to-red-900'"
+                 :style="netProfit >= 0 ? 'background: linear-gradient(135deg, #1e293b, #0f172a);' : 'background: linear-gradient(135deg, #991b1b, #7f1d1d);'">
+                <div class="absolute top-0 right-0 p-6 opacity-20"><i class="fas fa-piggy-bank text-6xl"></i></div>
+                <p class="text-xs font-black text-slate-300 uppercase tracking-widest mb-2 relative z-10">Ganancia Neta (Mes)</p>
+                <h3 class="text-3xl font-black relative z-10 mb-1" x-text="formatMoney(netProfit)"></h3>
+                <p class="text-sm font-bold relative z-10" :class="netProfit >= 0 ? 'text-emerald-400' : 'text-red-300'" x-text="netProfit >= 0 ? '¡Buen trabajo! Estás en verde.' : 'Atención: Egresos superan ingresos.'"></p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            
+            <div class="lg:col-span-2 bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm">
+                <div class="flex justify-between items-center mb-6 border-b border-slate-100 pb-4">
+                    <h3 class="text-lg font-black text-slate-900 uppercase tracking-tight flex items-center gap-2">
+                        <i class="fas fa-chart-bar text-purple-500"></i> Resumen de Flujo
+                    </h3>
+                </div>
+                <div class="h-64 w-full relative">
+                    <canvas id="financeChart"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-indigo-600 p-8 rounded-[2rem] shadow-xl text-white relative overflow-hidden flex flex-col justify-center">
+                <div class="absolute -right-10 -bottom-10 opacity-10">
+                    <i class="fas fa-cubes text-9xl"></i>
+                </div>
+                <div class="relative z-10">
+                    <span class="inline-block px-3 py-1 bg-indigo-500/50 border border-indigo-400 rounded-full text-[10px] font-black uppercase tracking-widest mb-6 shadow-sm">Activos Fijos</span>
+                    <h3 class="text-sm font-bold text-indigo-200 uppercase tracking-wider mb-2">Capital en Mercadería</h3>
+                    <p class="text-4xl md:text-5xl font-black tracking-tight mb-4">
+                        <span class="text-xl text-indigo-300" x-text="site?.currency === 'PYG' ? 'Gs.' : '$'"></span><br>
+                        <span x-text="(stats.stockValue || 0).toLocaleString('es-PY')"></span>
+                    </p>
+                    <p class="text-sm text-indigo-100 font-medium">Este es el valor total proyectado si vendes todo el stock que tienes actualmente en Wuepy.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+            
+            <div class="bg-white border border-slate-200 rounded-[2rem] shadow-sm overflow-hidden flex flex-col">
+                <div class="p-6 border-b border-slate-100 bg-slate-50 flex justify-between items-center shrink-0">
+                    <h3 class="text-lg font-black text-slate-900 uppercase tracking-tight flex items-center gap-2">
+                        <i class="fas fa-arrow-down text-emerald-500"></i> Últimos Ingresos
+                    </h3>
+                    <span class="text-xs font-bold text-slate-400 uppercase">Top 10</span>
+                </div>
+                <div class="overflow-x-auto custom-scrollbar flex-1">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-white border-b border-slate-100 text-slate-400 text-[10px] uppercase tracking-widest font-black">
+                                <th class="px-6 py-4">Fecha</th>
+                                <th class="px-6 py-4">Cliente / Tipo</th>
+                                <th class="px-6 py-4 text-center">Método</th>
+                                <th class="px-6 py-4 text-right">Monto</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-50">
+                            <template x-for="sale in recentSales" :key="sale._id">
+                                <tr class="table-row-hover">
+                                    <td class="px-6 py-4 whitespace-nowrap text-xs font-bold text-slate-500" x-text="new Date(sale.createdAt).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', hour: '2-digit', minute:'2-digit' })"></td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <p class="text-sm font-black text-slate-800" x-text="sale.customer?.name || 'Ocasional'"></p>
+                                        <p class="text-[10px] font-bold text-slate-400 uppercase" x-text="sale.saleChannel === 'whatsapp' ? 'Delivery / Web' : 'POS Mostrador'"></p>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                                        <template x-if="sale.paymentMethod === 'efectivo'"><span class="bg-emerald-50 text-emerald-600 px-2 py-1 rounded text-[10px] font-black uppercase tracking-widest"><i class="fas fa-money-bill-wave mr-1"></i> Efectivo</span></template>
+                                        <template x-if="sale.paymentMethod === 'transferencia'"><span class="bg-purple-50 text-purple-600 px-2 py-1 rounded text-[10px] font-black uppercase tracking-widest"><i class="fas fa-mobile-alt mr-1"></i> Transfer</span></template>
+                                        <template x-if="sale.paymentMethod !== 'efectivo' && sale.paymentMethod !== 'transferencia'"><span class="bg-blue-50 text-blue-600 px-2 py-1 rounded text-[10px] font-black uppercase tracking-widest"><i class="fas fa-credit-card mr-1"></i> Tarjeta</span></template>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right font-black text-emerald-600" x-text="'+ ' + formatMoney(sale.totalAmount)"></td>
+                                </tr>
+                            </template>
+                            <template x-if="recentSales.length === 0">
+                                <tr>
+                                    <td colspan="4" class="px-6 py-12 text-center text-slate-400">
+                                        <i class="fas fa-receipt text-4xl mb-3 opacity-50"></i>
+                                        <p class="font-bold text-sm">No hay ventas registradas aún.</p>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-[2rem] shadow-sm overflow-hidden flex flex-col">
+                <div class="p-6 border-b border-slate-100 bg-slate-50 flex justify-between items-center shrink-0">
+                    <h3 class="text-lg font-black text-slate-900 uppercase tracking-tight flex items-center gap-2">
+                        <i class="fas fa-arrow-up text-red-500"></i> Últimos Egresos
+                    </h3>
+                    <button @click="openExpenseModal()" class="text-xs font-bold text-red-600 bg-red-100 hover:bg-red-200 px-3 py-1.5 rounded-lg transition uppercase tracking-widest">
+                        Añadir Gasto
+                    </button>
+                </div>
+                <div class="overflow-x-auto custom-scrollbar flex-1">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-white border-b border-slate-100 text-slate-400 text-[10px] uppercase tracking-widest font-black">
+                                <th class="px-6 py-4">Fecha</th>
+                                <th class="px-6 py-4">Concepto / Categoría</th>
+                                <th class="px-6 py-4 text-right">Monto</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-50">
+                            <template x-for="exp in recentExpenses" :key="exp._id">
+                                <tr class="table-row-hover">
+                                    <td class="px-6 py-4 whitespace-nowrap text-xs font-bold text-slate-500" x-text="new Date(exp.date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })"></td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <p class="text-sm font-black text-slate-800" x-text="exp.description"></p>
+                                        <span class="inline-block mt-1 bg-slate-100 text-slate-500 px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest" x-text="exp.category"></span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right font-black text-red-500" x-text="'- ' + formatMoney(exp.amount)"></td>
+                                </tr>
+                            </template>
+                            <template x-if="recentExpenses.length === 0">
+                                <tr>
+                                    <td colspan="3" class="px-6 py-12 text-center text-slate-400">
+                                        <i class="fas fa-file-invoice-dollar text-4xl mb-3 opacity-50"></i>
+                                        <p class="font-bold text-sm">No has registrado ningún gasto.</p>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div x-show="isExpenseModalOpen" x-cloak class="fixed z-50 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div x-show="isExpenseModalOpen" x-transition.opacity class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm transition-opacity" @click="closeExpenseModal()"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            
+            <div x-show="isExpenseModalOpen" 
+                 x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" 
+                 class="inline-block align-bottom bg-white rounded-[2rem] text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle max-w-lg w-full border border-slate-200">
+                
+                <form @submit.prevent="submitExpense">
+                    <div class="bg-slate-900 px-6 sm:px-8 py-6 flex justify-between items-center border-b border-slate-800">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center text-red-400">
+                                <i class="fas fa-minus-circle"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-black text-white">Registrar Gasto</h3>
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-0.5">Asienta facturas o pagos</p>
+                            </div>
+                        </div>
+                        <button type="button" @click="closeExpenseModal()" class="text-slate-400 hover:text-white bg-slate-800 rounded-full w-8 h-8 flex items-center justify-center transition">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+
+                    <div class="px-6 sm:px-8 py-8 bg-slate-50 space-y-5">
+                        <div>
+                            <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Concepto / Descripción <span class="text-red-500">*</span></label>
+                            <input type="text" x-model="expenseForm.description" required placeholder="Ej: Pago de Luz ANDE, Salario Repartidor..." class="w-full px-4 py-3 bg-white border-2 border-slate-200 rounded-xl focus:border-red-500 outline-none font-bold text-slate-800 transition">
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Monto (<span x-text="site?.currency"></span>) <span class="text-red-500">*</span></label>
+                                <input type="number" x-model.number="expenseForm.amount" required min="1" placeholder="0" class="w-full px-4 py-3 bg-white border-2 border-slate-200 rounded-xl focus:border-red-500 outline-none font-black text-slate-900 text-lg transition">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Categoría</label>
+                                <select x-model="expenseForm.category" class="w-full px-4 py-3 bg-white border-2 border-slate-200 rounded-xl focus:border-red-500 outline-none font-bold text-slate-700 transition appearance-none cursor-pointer">
+                                    <option value="Operativo">Gasto Operativo</option>
+                                    <option value="Logística">Logística / Envíos</option>
+                                    <option value="Marketing">Marketing / Publicidad</option>
+                                    <option value="Insumos">Compra de Insumos</option>
+                                    <option value="Servicios">Servicios (Luz, Agua, Internet)</option>
+                                    <option value="Otros">Otros</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white px-6 sm:px-8 py-5 flex flex-col sm:flex-row-reverse gap-3 border-t border-slate-200">
+                        <button type="submit" :disabled="isSaving" class="w-full sm:w-auto inline-flex justify-center items-center gap-2 rounded-xl shadow-lg shadow-red-500/30 px-6 py-3 bg-red-500 text-sm font-black text-white hover:bg-red-600 transition uppercase tracking-widest disabled:opacity-70">
+                            <i class="fas" :class="isSaving ? 'fa-spinner fa-spin' : 'fa-save'"></i> Guardar Egreso
+                        </button>
+                        <button type="button" @click="closeExpenseModal()" class="w-full sm:w-auto inline-flex justify-center items-center rounded-xl border border-slate-300 px-6 py-3 bg-white text-sm font-bold text-slate-600 hover:bg-slate-50 transition uppercase tracking-widest">
+                            Cancelar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-white border-t border-slate-200 py-8 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p class="text-sm text-slate-400 font-medium">&copy; 2026 Wuepy by LFAFTECH. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('financeManager', () => ({
+                user: null, site: null, 
+                stats: { dailyTotal: 0, dailyCount: 0, monthlyTotal: 0, monthlyCount: 0, monthlyExpenses: 0, stockValue: 0 },
+                recentSales: [], recentExpenses: [],
+                isLoading: true, isSaving: false,
+                isExpenseModalOpen: false,
+                successMsg: '', errorMsg: '',
+                expenseForm: { description: '', amount: '', category: 'Operativo' },
+                chartInstance: null,
+                API_URL: window.API_URL || 'http://localhost:3000/api', // Asegurar que toma tu API URL
+
+                get netProfit() { return this.stats.monthlyTotal - this.stats.monthlyExpenses; },
+
+                formatMoney(amount) {
+                    const num = parseInt(amount) || 0;
+                    return (this.site?.currency === 'PYG' ? 'Gs. ' : '$ ') + num.toLocaleString('es-PY');
+                },
+
+                async init() {
+                    this.user = WuepyAPI.getUser();
+                    if(!this.user) { window.location.href = '/auth/login.html'; return; }
+                    
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const siteId = urlParams.get('id');
+                    if(!siteId) { window.location.href = '/dashboard/index.html'; return; }
+
+                    await this.loadFinances(siteId);
+                },
+
+                async loadFinances(siteId) {
+                    this.isLoading = true;
+                    try {
+                        const res = await WuepyAPI.fetch(`/dashboard/finances/${siteId}`);
+                        if(res.status === 200) {
+                            this.site = res.data.site;
+                            this.stats = res.data.stats || this.stats;
+                            this.recentSales = res.data.recentSales || [];
+                            this.recentExpenses = res.data.recentExpenses || [];
+                            
+                            // Render Chart after alpine updates DOM
+                            setTimeout(() => this.renderChart(), 100);
+                        } else {
+                            this.errorMsg = 'Error al cargar finanzas.';
+                        }
+                    } catch(e) { this.errorMsg = 'Error de conexión.'; }
+                    this.isLoading = false;
+                },
+
+                renderChart() {
+                    const canvas = document.getElementById('financeChart');
+                    if(!canvas) return;
+                    if(this.chartInstance) this.chartInstance.destroy();
+
+                    const ctx = canvas.getContext('2d');
+                    this.chartInstance = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['Resumen del Mes Actual'],
+                            datasets: [
+                                { label: 'Ingresos Brutos', data: [this.stats.monthlyTotal], backgroundColor: 'rgba(16, 185, 129, 0.8)', borderRadius: 8, barPercentage: 0.5, categoryPercentage: 0.4 },
+                                { label: 'Gastos / Egresos', data: [this.stats.monthlyExpenses], backgroundColor: 'rgba(239, 68, 68, 0.8)', borderRadius: 8, barPercentage: 0.5, categoryPercentage: 0.4 },
+                                { label: 'Ganancia Neta', data: [this.netProfit], backgroundColor: this.netProfit >= 0 ? 'rgba(59, 130, 246, 0.8)' : 'rgba(245, 158, 11, 0.8)', borderRadius: 8, barPercentage: 0.5, categoryPercentage: 0.4 }
+                            ]
+                        },
+                        options: {
+                            responsive: true, maintainAspectRatio: false,
+                            plugins: {
+                                legend: { position: 'bottom', labels: { font: { family: "'Inter', sans-serif", weight: 'bold', size: 12 }, color: '#64748b', usePointStyle: true, padding: 20 } },
+                                tooltip: {
+                                    backgroundColor: '#1e293b', titleFont: { family: "'Inter', sans-serif", size: 13 }, bodyFont: { family: "'Inter', sans-serif", size: 14, weight: 'bold' }, padding: 12, cornerRadius: 8,
+                                    callbacks: {
+                                        label: (context) => {
+                                            let label = context.dataset.label || '';
+                                            if (label) label += ': ';
+                                            if (context.parsed.y !== null) label += (this.site?.currency === "PYG" ? "Gs. " : "$ ") + context.parsed.y.toLocaleString('es-PY');
+                                            return label;
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                y: { beginAtZero: true, grid: { color: '#f1f5f9', drawBorder: false }, ticks: { font: { family: "'Inter', sans-serif", size: 11, weight: 'bold' }, color: '#94a3b8', callback: (val) => val >= 1000 ? (val/1000) + 'k' : val } },
+                                x: { grid: { display: false, drawBorder: false }, ticks: { font: { family: "'Inter', sans-serif", size: 12, weight: 'bold' }, color: '#64748b' } }
+                            }
+                        }
+                    });
+                },
+
+                openExpenseModal() { this.expenseForm = { description: '', amount: '', category: 'Operativo' }; this.isExpenseModalOpen = true; },
+                closeExpenseModal() { this.isExpenseModalOpen = false; },
+
+                async submitExpense() {
+                    this.isSaving = true; this.errorMsg = ''; this.successMsg = '';
+                    try {
+                        const res = await WuepyAPI.fetch(`/dashboard/finances/${this.site._id}/expenses`, {
+                            method: 'POST', body: JSON.stringify(this.expenseForm)
+                        });
+                        if(res.status === 200) {
+                            this.successMsg = 'Egreso registrado correctamente.';
+                            this.closeExpenseModal();
+                            await this.loadFinances(this.site._id);
+                        } else { alert(res.data.message || 'Error al guardar.'); }
+                    } catch(e) { alert('Error de conexión.'); }
+                    this.isSaving = false;
+                }
+            }));
+        });
+    </script>
+</body>
+</html>

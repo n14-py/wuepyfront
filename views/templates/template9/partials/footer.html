@@ -1,0 +1,35 @@
+<footer class="bg-[var(--secondary)] pt-16 pb-8 border-t-[10px] border-[var(--primary)] relative overflow-hidden">
+    <div class="absolute inset-0 opacity-5 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPjxyZWN0IHdpZHRoPSI0IiBoZWlnaHQ9IjQiIGZpbGw9IiNmZmYiLz48cmVjdCB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjMDAwIi8+PC9zdmc+')]"></div>
+    
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-12 text-center md:text-left mb-12">
+            <div>
+                <h3 class="font-power text-4xl uppercase italic text-white tracking-widest mb-4 transform -skew-x-6"><%= site.name %></h3>
+                <p class="text-gray-400 font-bold max-w-sm mx-auto md:mx-0 uppercase">
+                    <%= site.content.aboutText || 'Supera tus límites. Equípate con lo mejor para alcanzar tu máximo rendimiento.' %>
+                </p>
+            </div>
+            
+            <div>
+                <h4 class="font-power text-2xl uppercase italic text-[var(--primary)] tracking-wider mb-6 transform -skew-x-6">Base de Operaciones</h4>
+                <ul class="space-y-3 text-white font-bold uppercase text-sm">
+                    <li><i class="fas fa-map-marker-alt text-[var(--primary)] w-6"></i> <%= site.contact.address || 'Gimnasio Central' %></li>
+                    <li><i class="fas fa-clock text-[var(--primary)] w-6"></i> <%= site.contact.schedule || 'Entrena sin parar' %></li>
+                </ul>
+            </div>
+            
+            <div>
+                <h4 class="font-power text-2xl uppercase italic text-[var(--primary)] tracking-wider mb-6 transform -skew-x-6">Súmate al Equipo</h4>
+                <div class="flex justify-center md:justify-start space-x-4">
+                    <% if(site.social && site.social.instagram) { %><a href="<%= site.social.instagram %>" target="_blank" class="w-12 h-12 bg-white text-[var(--secondary)] flex items-center justify-center text-2xl hover:bg-[var(--primary)] hover:text-white transition-all transform -skew-x-12"><i class="fab fa-instagram"></i></a><% } %>
+                    <% if(site.social && site.social.facebook) { %><a href="<%= site.social.facebook %>" target="_blank" class="w-12 h-12 bg-white text-[var(--secondary)] flex items-center justify-center text-2xl hover:bg-[var(--primary)] hover:text-white transition-all transform -skew-x-12"><i class="fab fa-facebook-f"></i></a><% } %>
+                    <% if(site.social && site.social.tiktok) { %><a href="<%= site.social.tiktok %>" target="_blank" class="w-12 h-12 bg-white text-[var(--secondary)] flex items-center justify-center text-2xl hover:bg-[var(--primary)] hover:text-white transition-all transform -skew-x-12"><i class="fab fa-tiktok"></i></a><% } %>
+                </div>
+            </div>
+        </div>
+        
+        <div class="border-t-2 border-gray-800 pt-8 text-center text-gray-500 font-power text-xl uppercase tracking-widest italic">
+            <p>&copy; <%= new Date().getFullYear() %> <%= site.name %>. NO PAIN, NO GAIN.</p>
+        </div>
+    </div>
+</footer>

@@ -1,0 +1,34 @@
+<footer class="bg-gray-900 text-white pt-16 pb-8 border-t-[8px]" style="border-color: var(--primary);">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-12 text-center md:text-left">
+            <div>
+                <h3 class="font-lora text-3xl font-bold mb-4" style="color: var(--primary);"><%= site.name %></h3>
+                <p class="text-gray-400 font-light max-w-sm mx-auto md:mx-0 leading-relaxed">
+                    <%= site.content.aboutText || 'Ingredientes frescos, sabor auténtico y la mejor calidad directa a tu mesa. Cocinamos con pasión.' %>
+                </p>
+            </div>
+            <div>
+                <h4 class="font-lora text-xl font-bold mb-6 text-white">Horarios y Ubicación</h4>
+                <p class="text-gray-400 mb-3 flex items-center justify-center md:justify-start gap-3">
+                    <i class="fas fa-map-marker-alt text-[var(--primary)] text-lg"></i> 
+                    <%= site.contact.address || 'Local Principal, Ciudad' %>
+                </p>
+                <p class="text-gray-400 flex items-center justify-center md:justify-start gap-3">
+                    <i class="fas fa-clock text-[var(--primary)] text-lg"></i> 
+                    <%= site.contact.schedule || 'Abierto de Lunes a Domingo' %>
+                </p>
+            </div>
+            <div>
+                <h4 class="font-lora text-xl font-bold mb-6 text-white">Síguenos</h4>
+                <div class="flex justify-center md:justify-start space-x-4">
+                    <% if(site.social && site.social.instagram) { %><a href="<%= site.social.instagram %>" target="_blank" class="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center text-xl hover:bg-[var(--primary)] hover:text-white transition-all"><i class="fab fa-instagram"></i></a><% } %>
+                    <% if(site.social && site.social.facebook) { %><a href="<%= site.social.facebook %>" target="_blank" class="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center text-xl hover:bg-[var(--primary)] hover:text-white transition-all"><i class="fab fa-facebook-f"></i></a><% } %>
+                    <% if(site.social && site.social.tiktok) { %><a href="<%= site.social.tiktok %>" target="_blank" class="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center text-xl hover:bg-[var(--primary)] hover:text-white transition-all"><i class="fab fa-tiktok"></i></a><% } %>
+                </div>
+            </div>
+        </div>
+        <div class="border-t border-gray-800 mt-12 pt-8 text-center text-gray-500 text-sm font-light">
+            <p>&copy; <%= new Date().getFullYear() %> <%= site.name %>. Todos los derechos reservados.</p>
+        </div>
+    </div>
+</footer>

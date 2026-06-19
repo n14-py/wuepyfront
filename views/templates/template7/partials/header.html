@@ -1,0 +1,28 @@
+<header class="bg-white shadow-sm sticky top-0 z-50 border-b-4" style="border-color: var(--primary);">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-20">
+            <div class="flex-shrink-0 flex items-center">
+                <a href="/" class="font-lora text-2xl font-bold tracking-tight text-gray-900 flex items-center gap-2">
+                    <% if(site.logoUrl) { %>
+                        <img class="h-12 w-auto rounded" src="<%= site.logoUrl %>" alt="<%= site.name %>">
+                    <% } %>
+                    <span><%= site.name %></span>
+                </a>
+            </div>
+            <nav class="hidden md:flex space-x-8">
+                <a href="/" class="text-gray-600 hover:text-[var(--primary)] px-3 py-2 font-medium transition-colors">Inicio</a>
+                <a href="/search" class="text-gray-600 hover:text-[var(--primary)] px-3 py-2 font-medium transition-colors">Ver Menú</a>
+            </nav>
+            <div class="flex items-center">
+                <a href="/search" class="p-2 text-gray-400 hover:text-[var(--primary)] transition-colors">
+                    <i class="fas fa-search text-xl"></i>
+                </a>
+                <% if(site.contact && site.contact.whatsapp) { %>
+                <a href="https://wa.me/<%= site.contact.whatsapp %>" target="_blank" class="ml-4 bg-[var(--primary)] text-white px-5 py-2.5 rounded-full font-bold shadow hover:shadow-lg hover:opacity-90 transition-all transform hover:-translate-y-0.5 flex items-center gap-2">
+                    <i class="fab fa-whatsapp text-lg"></i> Pedir
+                </a>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</header>

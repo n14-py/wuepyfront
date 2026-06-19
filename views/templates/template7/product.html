@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= product.name %> | <%= site.name %></title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;600;700&display=swap');
+        :root {
+            --primary: <%= site.primaryColor || '#ea580c' %>; 
+            --secondary: <%= site.secondaryColor || '#292524' %>;
+        }
+        body { font-family: 'Inter', sans-serif; color: var(--secondary); background-color: #fafaf9; }
+        .font-lora { font-family: 'Lora', serif; }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+    <%- include('./partials/header.html') %>
+
+    <main class="flex-grow max-w-6xl mx-auto px-4 py-12 w-full">
+        <a href="/search" class="inline-flex items-center gap-2 text-gray-500 hover:text-[var(--primary)] mb-8 font-medium transition-colors">
+            <i class="fas fa-arrow-left"></i> Volver al Menú
+        </a>
+
+        <div class="bg-white rounded-[2.5rem] shadow-xl overflow-hidden border border-gray-100">
+            <div class="grid grid-cols-1 lg:grid-cols-2">
+                <div class="h-[400px] lg:h-auto bg-gray-50 relative p-8 flex items-center justify-center">
+                    <% if(product.imageUrl) { %>
+                        <img src="<%= product.imageUrl %>" class="max-w-full max-h-full object-cover rounded-2xl shadow-lg" alt="<%= product.name %>">
+                    <% } else { %>
+                        <div class="w-full h-full flex items-center justify-center text-gray-300"><i class="fas fa-image text-6xl"></i></div>
+                    <% } %>
+                </div>
+                
+                <div class="p-10 lg:p-16 flex flex-col justify-center bg-white">
+                    <span class="text-[var(--primary)] font-black tracking-widest text-xs uppercase mb-3 block"><%= product.category %></span>
+                    
+                    <h1 class="text-4xl lg:text-5xl font-lora font-bold text-gray-900 mb-4 leading-tight"><%= product.name %></h1>
+                    
+                    <p class="text-4xl font-black text-gray-900 mb-8">
+                        <% if(site.currency === 'USD') { %>$<%= parseFloat(product.priceUSD).toFixed(2)%><% } else { %><%= new Intl.NumberFormat('es-PY').format(product.price) %> Gs<% } %>
+                    </p>
+                    
+                    <div class="text-gray-600 mb-10 font-light leading-relaxed text-lg border-t border-b border-gray-100 py-6">
+                        <%= product.description || 'Una deliciosa opción preparada con los mejores ingredientes, pensando en tu paladar.' %>
+                    </div>
+                    
+                    <% if(product.stock > 0) { %>
+                        <% if(site.contact && site.contact.whatsapp) { %>
+                            <a href="https://wa.me/<%= site.contact.whatsapp %>?text=Hola,%20me%20interesa%20ordenar%20el%20platillo:%20<%= encodeURIComponent(product.name) %>" target="_blank" class="bg-[#25D366] text-white px-8 py-4 rounded-full font-bold text-center text-lg hover:bg-[#128C7E] transition-all shadow-[0_10px_20px_rgba(37,211,102,0.3)] transform hover:-translate-y-1 flex items-center justify-center gap-3">
+                                <i class="fab fa-whatsapp text-2xl"></i> Pedir por WhatsApp
+                            </a>
+                        <% } else { %>
+                            <button class="bg-gray-300 text-gray-500 px-8 py-4 rounded-full font-bold text-center text-lg cursor-not-allowed">
+                                WhatsApp no configurado
+                            </button>
+                        <% } %>
+                    <% } else { %>
+                        <div class="bg-red-50 text-red-600 border border-red-200 px-8 py-4 rounded-full font-bold text-center text-lg">
+                            Temporalmente Agotado
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+        
+        <% if(related && related.length > 0) { %>
+        <div class="mt-24">
+            <h3 class="font-lora text-3xl font-bold mb-10 text-center text-gray-900">Complementa tu pedido</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                <% related.forEach(rel => { %>
+                    <a href="/p/<%= rel._id %>" class="block bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all border border-gray-100 group">
+                        <div class="h-48 bg-gray-100 overflow-hidden">
+                            <% if(rel.imageUrl) { %><img src="<%= rel.imageUrl %>" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"><% } %>
+                        </div>
+                        <div class="p-5 text-center">
+                            <h4 class="font-lora font-bold text-xl text-gray-900 truncate mb-2"><%= rel.name %></h4>
+                            <p class="text-[var(--primary)] font-black"><% if(site.currency === 'USD') { %>$<%= parseFloat(rel.priceUSD).toFixed(2)%><% } else { %><%= new Intl.NumberFormat('es-PY').format(rel.price) %> Gs<% } %></p>
+                        </div>
+                    </a>
+                <% }) %>
+            </div>
+        </div>
+        <% } %>
+    </main>
+
+    <%- include('./partials/footer.html') %>
+</body>
+</html>

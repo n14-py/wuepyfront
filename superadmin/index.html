@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Súper Admin | Wuepy Master</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/js/api.js"></script>
+
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; background-color: #0f172a; color: #f8fafc; }
+        [x-cloak] { display: none !important; }
+        .glass-panel { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .table-row-hover:hover { background-color: rgba(255, 255, 255, 0.05); }
+        .custom-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
+    </style>
+</head>
+<body x-data="superAdmin()" class="min-h-screen flex flex-col">
+
+<header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-40 shadow-2xl" x-show="user" x-cloak>
+    <div class="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-gradient-to-br from-amber-400 to-amber-600 rounded-xl flex items-center justify-center text-slate-900 font-black text-2xl shadow-lg shadow-amber-500/20">W</div>
+            <div>
+                <h1 class="text-xl font-black text-white tracking-tight uppercase">Master Panel</h1>
+                <p class="text-xs font-bold text-amber-500 uppercase tracking-widest">Wuepy Core</p>
+            </div>
+        </div>
+        
+        <div class="flex items-center gap-6">
+            <div class="hidden md:flex flex-col text-right">
+                <span class="text-sm font-bold text-white" x-text="user?.name"></span>
+                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Súper Administrador</span>
+            </div>
+            <a href="#" @click.prevent="WuepyAPI.logoutLocal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-lg font-bold text-sm transition border border-slate-700">
+                Salir <i class="fas fa-sign-out-alt ml-1"></i>
+            </a>
+        </div>
+    </div>
+</header>
+
+<template x-if="isLoading">
+    <div class="flex-1 flex flex-col items-center justify-center py-32">
+        <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-amber-500 mb-4"></div>
+        <p class="text-slate-400 font-bold">Cargando base de datos de Wuepy...</p>
+    </div>
+</template>
+
+<div class="flex-1 max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full" x-show="!isLoading" x-cloak>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        
+        <div class="glass-panel rounded-2xl p-6 relative overflow-hidden">
+            <div class="absolute top-0 right-0 p-6 opacity-20"><i class="fas fa-store text-6xl text-blue-400"></i></div>
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 relative z-10">Tiendas Activas</p>
+            <h3 class="text-4xl font-black text-white relative z-10" x-text="metrics.activeSites || 0"></h3>
+            <p class="text-xs font-bold text-emerald-400 mt-2 relative z-10">+ Crecimiento estable</p>
+        </div>
+
+        <div class="glass-panel rounded-2xl p-6 relative overflow-hidden">
+            <div class="absolute top-0 right-0 p-6 opacity-20"><i class="fas fa-gift text-6xl text-emerald-400"></i></div>
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 relative z-10">En Período de Prueba</p>
+            <h3 class="text-4xl font-black text-white relative z-10" x-text="metrics.trialSites || 0"></h3>
+            <p class="text-xs font-bold text-blue-400 mt-2 relative z-10">Potenciales clientes</p>
+        </div>
+
+        <div class="glass-panel rounded-2xl p-6 relative overflow-hidden border-red-500/30">
+            <div class="absolute top-0 right-0 p-6 opacity-20"><i class="fas fa-lock text-6xl text-red-400"></i></div>
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 relative z-10">Expiradas / Suspendidas</p>
+            <h3 class="text-4xl font-black text-red-400 relative z-10" x-text="metrics.suspendedSites || 0"></h3>
+            <p class="text-xs font-bold text-red-400 mt-2 relative z-10">Requieren seguimiento</p>
+        </div>
+
+        <div class="glass-panel rounded-2xl p-6 relative overflow-hidden border-amber-500/30">
+            <div class="absolute top-0 right-0 p-6 opacity-20"><i class="fas fa-chart-line text-6xl text-amber-400"></i></div>
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 relative z-10">MRR Estimado (Gs.)</p>
+            <h3 class="text-4xl font-black text-amber-400 relative z-10" x-text="(metrics.mrr || 0).toLocaleString('es-PY')"></h3>
+            <p class="text-xs font-bold text-amber-500 mt-2 relative z-10">Suma de planes activos</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-8">
+
+        <div class="xl:col-span-1">
+            <div class="glass-panel rounded-[2rem] overflow-hidden flex flex-col h-full max-h-[800px]">
+                <div class="p-6 border-b border-slate-700/50 flex justify-between items-center bg-slate-800/50">
+                    <div>
+                        <h3 class="text-lg font-black text-white uppercase tracking-tight flex items-center gap-2">
+                            <i class="fas fa-bell text-amber-500"></i> Verificar Pagos
+                        </h3>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase mt-1">Comprobantes subidos</p>
+                    </div>
+                    <span class="bg-red-500 text-white text-xs font-black px-3 py-1 rounded-full shadow-lg shadow-red-500/30">
+                        <span x-text="pendingReceipts.length"></span> Pendientes
+                    </span>
+                </div>
+                
+                <div class="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-4">
+                    <template x-if="pendingReceipts.length > 0">
+                        <template x-for="receipt in pendingReceipts" :key="receipt._id">
+                            <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-2xl hover:border-slate-600 transition">
+                                <div class="flex justify-between items-start mb-3">
+                                    <div>
+                                        <h4 class="font-black text-white text-sm" x-text="receipt.siteName"></h4>
+                                        <p class="text-[10px] text-slate-400 font-bold uppercase" x-text="new Date(receipt.submittedAt).toLocaleDateString('es-PY', {hour: '2-digit', minute:'2-digit'})"></p>
+                                    </div>
+                                    <span class="text-emerald-400 font-black text-sm" x-text="receipt.amount.toLocaleString('es-PY') + ' Gs'"></span>
+                                </div>
+                                
+                                <div class="grid grid-cols-2 gap-2 mb-4 text-xs">
+                                    <div class="bg-slate-900/50 p-2 rounded-lg">
+                                        <p class="text-[9px] text-slate-500 font-bold uppercase">Plan Pedido</p>
+                                        <p class="font-bold text-slate-300" x-text="receipt.planRequested"></p>
+                                    </div>
+                                    <div class="bg-slate-900/50 p-2 rounded-lg">
+                                        <p class="text-[9px] text-slate-500 font-bold uppercase">Meses</p>
+                                        <p class="font-bold text-slate-300" x-text="receipt.monthsPaid + ' mes(es)'"></p>
+                                    </div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <p class="text-[10px] text-slate-500 font-bold uppercase mb-1">Alias/Cta usada:</p>
+                                    <p class="text-xs font-bold text-amber-400 bg-amber-500/10 px-2 py-1 rounded border border-amber-500/20" x-text="receipt.aliasOrBankUsed"></p>
+                                </div>
+
+                                <div class="flex gap-2">
+                                    <a :href="receipt.receiptUrl" target="_blank" class="flex-1 text-center bg-slate-700 hover:bg-slate-600 text-white text-xs font-bold py-2.5 rounded-xl transition">
+                                        <i class="fas fa-image"></i> Ver Foto
+                                    </a>
+                                    <button @click="approvePayment(receipt._id, receipt.siteId)" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black py-2.5 rounded-xl shadow-lg shadow-emerald-600/20 transition">
+                                        Aprobar
+                                    </button>
+                                    <button @click="rejectPayment(receipt._id, receipt.siteId)" class="w-10 bg-red-600 hover:bg-red-500 text-white text-xs font-black py-2.5 rounded-xl shadow-lg shadow-red-600/20 transition flex items-center justify-center">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </template>
+                    </template>
+                    <template x-if="pendingReceipts.length === 0">
+                        <div class="h-full flex flex-col items-center justify-center text-center p-8 opacity-50">
+                            <i class="fas fa-check-double text-5xl text-slate-500 mb-4"></i>
+                            <p class="font-bold text-slate-300">Todo al día</p>
+                            <p class="text-xs text-slate-500">No hay pagos pendientes de verificación.</p>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+
+        <div class="xl:col-span-2">
+            <div class="glass-panel rounded-[2rem] overflow-hidden flex flex-col h-full max-h-[800px]">
+                <div class="p-6 border-b border-slate-700/50 flex flex-col sm:flex-row justify-between items-center gap-4 bg-slate-800/50">
+                    <div>
+                        <h3 class="text-lg font-black text-white uppercase tracking-tight flex items-center gap-2">
+                            <i class="fas fa-server text-blue-500"></i> Infraestructura Global
+                        </h3>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase mt-1">Directorio de tiendas creadas</p>
+                    </div>
+                    
+                    <div class="relative w-full sm:w-64">
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
+                        <input x-model="searchQuery" type="text" placeholder="Buscar tienda o subdominio..." class="w-full pl-9 pr-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl focus:border-blue-500 outline-none text-sm font-bold text-white transition">
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto custom-scrollbar flex-1">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-900/50 border-b border-slate-700/50 text-slate-400 text-[10px] uppercase tracking-widest font-black">
+                                <th class="px-6 py-4">Tienda / Dueño</th>
+                                <th class="px-6 py-4 text-center">Plan</th>
+                                <th class="px-6 py-4 text-center">Estado / Vencimiento</th>
+                                <th class="px-6 py-4 text-right">Control Maestro</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-800/50">
+                            <template x-for="site in filteredSites" :key="site._id">
+                                <tr class="table-row-hover transition">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 font-bold shrink-0">
+                                                <span x-text="site.name.charAt(0)"></span>
+                                            </div>
+                                            <div>
+                                                <p class="text-sm font-black text-white" x-text="site.name"></p>
+                                                <a :href="'https://' + site.subdomain + '.wuepy.com'" target="_blank" class="text-[10px] font-bold text-blue-400 hover:underline inline-flex items-center gap-1">
+                                                    <span x-text="site.subdomain + '.wuepy.com'"></span> <i class="fas fa-external-link-alt text-[8px]"></i>
+                                                </a>
+                                                <p class="text-[9px] text-slate-500 font-bold mt-0.5" x-text="site.ownerEmail"></p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    
+                                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                                        <span class="inline-block px-2 py-1 bg-slate-800 border border-slate-700 rounded text-[10px] font-black uppercase tracking-widest text-slate-300" x-text="site.plan"></span>
+                                    </td>
+
+                                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                                        <div class="flex flex-col items-center">
+                                            <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border mb-1"
+                                                  :class="site.subscriptionStatus === 'active' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' : (site.subscriptionStatus === 'trial' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20')">
+                                                <i class="fas mr-1" :class="site.subscriptionStatus === 'active' ? 'fa-check' : (site.subscriptionStatus === 'trial' ? 'fa-gift' : 'fa-lock')"></i>
+                                                <span x-text="site.subscriptionStatus"></span>
+                                            </span>
+                                            <span class="text-[10px] font-bold text-slate-400" x-text="'Vence: ' + formatDate(site.subscriptionStatus === 'trial' ? site.trialEndsAt : site.nextBillingDate)"></span>
+                                        </div>
+                                    </td>
+
+                                    <td class="px-6 py-4 whitespace-nowrap text-right">
+                                        <div class="flex items-center justify-end gap-2">
+                                            <button @click="openManageModal(site)" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-indigo-600 text-slate-400 hover:text-white transition flex items-center justify-center border border-slate-700" title="Editar Suscripción">
+                                                <i class="fas fa-edit text-xs"></i>
+                                            </button>
+                                            
+                                            <template x-if="site.subscriptionStatus !== 'suspended'">
+                                                <button @click="toggleSuspend(site._id, 'suspend')" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-red-600 text-slate-400 hover:text-white transition flex items-center justify-center border border-slate-700" title="Suspender Tienda">
+                                                    <i class="fas fa-ban text-xs"></i>
+                                                </button>
+                                            </template>
+                                            <template x-if="site.subscriptionStatus === 'suspended'">
+                                                <button @click="toggleSuspend(site._id, 'activate')" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-emerald-600 text-red-400 hover:text-white transition flex items-center justify-center border border-slate-700" title="Reactivar Tienda">
+                                                    <i class="fas fa-unlock text-xs"></i>
+                                                </button>
+                                            </template>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </template>
+                            <tr x-show="filteredSites.length === 0" x-cloak>
+                                <td colspan="4" class="px-6 py-12 text-center text-slate-500 font-bold">No se encontraron tiendas.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="glass-panel rounded-[2rem] overflow-hidden flex flex-col mb-8">
+        <div class="p-6 border-b border-slate-700/50 flex justify-between items-center bg-slate-800/50">
+            <div>
+                <h3 class="text-lg font-black text-white uppercase tracking-tight flex items-center gap-2">
+                    <i class="fas fa-video text-pink-500"></i> Wuepy Apoya (Videos UGC)
+                </h3>
+                <p class="text-[10px] font-bold text-slate-400 uppercase mt-1">Revisar menciones y otorgar beneficios</p>
+            </div>
+            <span class="bg-pink-500 text-white text-xs font-black px-3 py-1 rounded-full shadow-lg shadow-pink-500/30">
+                <span x-text="pendingApoya.length"></span> Pendientes
+            </span>
+        </div>
+
+        <div class="p-6">
+            <template x-if="pendingApoya.length > 0">
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    <template x-for="apoya in pendingApoya" :key="apoya.siteId">
+                        <div class="bg-slate-800/80 border border-slate-700 p-5 rounded-2xl hover:border-slate-600 transition flex flex-col justify-between">
+                            <div>
+                                <div class="flex justify-between items-start mb-4">
+                                    <div>
+                                        <h4 class="font-black text-white text-lg" x-text="apoya.siteName"></h4>
+                                        <p class="text-[10px] text-slate-400 font-bold" x-text="apoya.ownerEmail"></p>
+                                    </div>
+                                    <a :href="apoya.videoUrl" target="_blank" class="w-12 h-12 bg-pink-500/20 border border-pink-500/30 text-pink-400 rounded-full flex items-center justify-center hover:bg-pink-500 hover:text-white transition shadow-lg" title="Ver Video / Post">
+                                        <i class="fas fa-play"></i>
+                                    </a>
+                                </div>
+                                <div class="mb-4 bg-slate-900/50 p-3 rounded-xl border border-slate-700/50">
+                                    <p class="text-[9px] text-slate-500 font-bold uppercase mb-1">Comentario del usuario:</p>
+                                    <p class="text-xs text-slate-300 italic" x-text="'&quot;' + (apoya.story || 'Sin comentarios adicionales.') + '&quot;'"></p>
+                                </div>
+                            </div>
+                            <div class="flex gap-2 mt-2 pt-4 border-t border-slate-700/50">
+                                <button @click="approveApoya(apoya.siteId, apoya.siteName)" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black py-3 rounded-xl shadow-lg shadow-emerald-600/20 transition flex justify-center items-center gap-1.5">
+                                    <i class="fas fa-gift"></i> Otorgar 6 Meses
+                                </button>
+                                <button @click="rejectApoya(apoya.siteId, apoya.siteName)" class="w-12 bg-red-600 hover:bg-red-500 text-white text-xs font-black py-3 rounded-xl shadow-lg shadow-red-600/20 transition flex items-center justify-center" title="Rechazar Video">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </template>
+            <template x-if="pendingApoya.length === 0">
+                <div class="flex flex-col items-center justify-center text-center p-12 opacity-50">
+                    <i class="fas fa-video-slash text-5xl text-slate-600 mb-4"></i>
+                    <p class="font-bold text-slate-400 text-lg">No hay videos pendientes</p>
+                    <p class="text-sm text-slate-500 mt-1">Cuando los usuarios envíen sus enlaces de redes sociales, aparecerán aquí para revisión.</p>
+                </div>
+            </template>
+        </div>
+    </div>
+
+</div>
+
+<div x-show="isManageModalOpen" x-cloak class="fixed z-50 inset-0 overflow-y-auto">
+    <div class="flex items-center justify-center min-h-screen p-4 text-center sm:p-0">
+        <div x-show="isManageModalOpen" x-transition.opacity class="fixed inset-0 bg-slate-900/90 backdrop-blur-sm" @click="isManageModalOpen = false"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+        
+        <div x-show="isManageModalOpen" 
+             x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" 
+             class="inline-block align-bottom bg-slate-800 rounded-[2rem] text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle w-full max-w-md border border-slate-700 relative z-50">
+            
+            <form @submit.prevent="updateSiteSubscription">
+                <div class="px-6 py-5 border-b border-slate-700 flex justify-between items-center bg-slate-900">
+                    <h3 class="text-lg font-black text-white uppercase tracking-tight">Gestionar <span x-text="manageData.name" class="text-blue-400"></span></h3>
+                    <button type="button" @click="isManageModalOpen = false" class="text-slate-400 hover:text-white"><i class="fas fa-times"></i></button>
+                </div>
+
+                <div class="p-6 space-y-5">
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Estado de Cuenta</label>
+                        <select x-model="manageData.status" class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl outline-none font-bold text-white focus:border-blue-500 transition">
+                            <option value="trial">Trial (Prueba Gratis)</option>
+                            <option value="active">Activo (Pagado)</option>
+                            <option value="suspended">Suspendido (Bloqueado)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Forzar Plan</label>
+                        <select x-model="manageData.plan" class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl outline-none font-bold text-white focus:border-blue-500 transition">
+                            <option value="basico">Básico</option>
+                            <option value="medio">Inteligente</option>
+                            <option value="profesional">Profesional</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Fecha Vencimiento Trial (Si aplica)</label>
+                        <input type="date" x-model="manageData.trialDate" class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl outline-none font-bold text-white focus:border-blue-500 transition">
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Próximo Cobro (Si activo)</label>
+                        <input type="date" x-model="manageData.billingDate" class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl outline-none font-bold text-white focus:border-blue-500 transition">
+                    </div>
+                </div>
+
+                <div class="px-6 py-4 bg-slate-900 border-t border-slate-700 flex justify-end gap-3">
+                    <button type="button" @click="isManageModalOpen = false" class="px-5 py-2.5 rounded-xl border border-slate-600 text-sm font-bold text-slate-300 hover:bg-slate-800 transition">Cancelar</button>
+                    <button type="submit" class="px-6 py-2.5 rounded-xl bg-blue-600 text-sm font-black text-white hover:bg-blue-500 shadow-lg transition shadow-blue-500/20">Aplicar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('superAdmin', () => ({
+            user: null, isLoading: true,
+            metrics: {}, pendingReceipts: [], allSites: [], pendingApoya: [],
+            
+            searchQuery: '',
+            isManageModalOpen: false,
+            manageData: { id: '', name: '', status: '', plan: '', trialDate: '', billingDate: '' },
+
+            async init() {
+                this.user = WuepyAPI.getUser();
+                if(!this.user || this.user.role !== 'superadmin') { window.location.href = '/auth/login.html'; return; }
+                await this.loadDashboard();
+            },
+
+            async loadDashboard() {
+                this.isLoading = true;
+                try {
+                    const res = await WuepyAPI.fetch('/superadmin');
+                    if(res.status === 200) {
+                        this.metrics = res.data.metrics || {};
+                        this.pendingReceipts = res.data.pendingReceipts || [];
+                        this.allSites = res.data.allSites || [];
+                        this.pendingApoya = res.data.pendingApoya || [];
+                    } else { alert('Acceso denegado o error de carga.'); }
+                } catch(e) { console.error(e); }
+                this.isLoading = false;
+            },
+
+            get filteredSites() {
+                if(this.searchQuery.trim() === '') return this.allSites;
+                const q = this.searchQuery.toLowerCase();
+                return this.allSites.filter(s => 
+                    s.name.toLowerCase().includes(q) || 
+                    s.subdomain.toLowerCase().includes(q) ||
+                    (s.ownerEmail && s.ownerEmail.toLowerCase().includes(q))
+                );
+            },
+
+            formatDate(dateStr) {
+                if(!dateStr) return 'N/A';
+                return new Date(dateStr).toLocaleDateString('es-PY');
+            },
+
+            openManageModal(site) {
+                this.manageData = {
+                    id: site._id, name: site.name, status: site.subscriptionStatus, plan: site.plan,
+                    trialDate: site.trialEndsAt ? new Date(site.trialEndsAt).toISOString().split('T')[0] : '',
+                    billingDate: site.nextBillingDate ? new Date(site.nextBillingDate).toISOString().split('T')[0] : ''
+                };
+                this.isManageModalOpen = true;
+            },
+
+            async updateSiteSubscription() {
+                try {
+                    const res = await WuepyAPI.fetch('/superadmin/sites/update-subscription', {
+                        method: 'POST', body: JSON.stringify({
+                            siteId: this.manageData.id, status: this.manageData.status, plan: this.manageData.plan,
+                            trialEndsAt: this.manageData.trialDate, nextBillingDate: this.manageData.billingDate
+                        })
+                    });
+                    if(res.status === 200) { Swal.fire('Éxito', 'Tienda actualizada', 'success'); this.isManageModalOpen = false; this.loadDashboard(); }
+                    else { Swal.fire('Error', res.data.message, 'error'); }
+                } catch(e) { Swal.fire('Error', 'Problema de conexión', 'error'); }
+            },
+            
+            approvePayment(receiptId, siteId) {
+                Swal.fire({
+                    title: '¿Aprobar este pago?', text: "Esto activará la tienda y actualizará su fecha de vencimiento automáticamente.",
+                    icon: 'question', showCancelButton: true, confirmButtonColor: '#10b981', cancelButtonColor: '#475569', confirmButtonText: 'Sí, Aprobar Pago'
+                }).then(async (result) => {
+                    if (result.isConfirmed) {
+                        const res = await WuepyAPI.fetch('/superadmin/billing/approve', { method: 'POST', body: JSON.stringify({ receiptId, siteId }) });
+                        if(res.status === 200) { Swal.fire('Aprobado', '', 'success'); this.loadDashboard(); }
+                    }
+                });
+            },
+
+            rejectPayment(receiptId, siteId) {
+                Swal.fire({
+                    title: 'Rechazar Pago', input: 'text', inputLabel: 'Motivo del rechazo (Opcional)', inputPlaceholder: 'Ej: Comprobante borroso...',
+                    icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', cancelButtonColor: '#475569', confirmButtonText: 'Rechazar'
+                }).then(async (result) => {
+                    if (result.isConfirmed) {
+                        const res = await WuepyAPI.fetch('/superadmin/billing/reject', { method: 'POST', body: JSON.stringify({ receiptId, siteId, reason: result.value || '' }) });
+                        if(res.status === 200) { Swal.fire('Rechazado', '', 'success'); this.loadDashboard(); }
+                    }
+                });
+            },
+
+            toggleSuspend(siteId, action) {
+                const text = action === 'suspend' ? 'La tienda quedará bloqueada al público.' : 'La tienda volverá a estar en línea inmediatamente.';
+                Swal.fire({
+                    title: action === 'suspend' ? '¿Suspender Tienda?' : '¿Reactivar Tienda?', text: text,
+                    icon: 'warning', showCancelButton: true, confirmButtonColor: action === 'suspend' ? '#ef4444' : '#10b981', cancelButtonColor: '#475569',
+                    confirmButtonText: action === 'suspend' ? 'Sí, Suspender' : 'Sí, Reactivar'
+                }).then(async (result) => {
+                    if (result.isConfirmed) {
+                        const res = await WuepyAPI.fetch('/superadmin/sites/toggle-suspend', { method: 'POST', body: JSON.stringify({ siteId, action }) });
+                        if(res.status === 200) { Swal.fire('Listo', '', 'success'); this.loadDashboard(); }
+                    }
+                });
+            },
+
+            approveApoya(siteId, siteName) {
+                Swal.fire({
+                    title: '¿Aprobar mención de ' + siteName + '?', text: "Esto activará la tienda y le sumará 6 MESES GRATIS.",
+                    icon: 'question', showCancelButton: true, confirmButtonColor: '#059669', cancelButtonColor: '#475569', confirmButtonText: 'Sí, Otorgar 6 Meses'
+                }).then(async (result) => {
+                    if (result.isConfirmed) {
+                        const res = await WuepyAPI.fetch('/superadmin/programs/apoya/approve', { method: 'POST', body: JSON.stringify({ siteId }) });
+                        if(res.status === 200) { Swal.fire('Aprobado', '', 'success'); this.loadDashboard(); }
+                    }
+                });
+            },
+
+            rejectApoya(siteId, siteName) {
+                Swal.fire({
+                    title: 'Rechazar enlace de ' + siteName, text: "Se marcará como rechazado.",
+                    icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc2626', cancelButtonColor: '#475569', confirmButtonText: 'Rechazar'
+                }).then(async (result) => {
+                    if (result.isConfirmed) {
+                        const res = await WuepyAPI.fetch('/superadmin/programs/apoya/reject', { method: 'POST', body: JSON.stringify({ siteId }) });
+                        if(res.status === 200) { Swal.fire('Rechazado', '', 'success'); this.loadDashboard(); }
+                    }
+                });
+            }
+        }));
+    });
+</script>
+</body>
+</html>
