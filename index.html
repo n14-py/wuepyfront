@@ -425,20 +425,15 @@
 <script>
     document.addEventListener('DOMContentLoaded', async () => {
         const hostname = window.location.hostname;
-        // IMPORTANTE: Cambia esto por tu dominio real en producción
         const mainDomain = 'wuepy.com'; 
         
         const isLocal = hostname === 'localhost' || hostname === '127.0.0.1';
-        // Consideramos dominio principal a wuepy.com, www.wuepy.com y los dominios de prueba de Cloudflare
         const isMainDomain = isLocal || hostname === mainDomain || hostname === `www.${mainDomain}` || hostname.includes('pages.dev');
 
-        // SI NO ES EL DOMINIO PRINCIPAL (Es un subdominio de una tienda)
+        // SI NO ES EL DOMINIO PRINCIPAL (Es una tienda de un cliente)
         if (!isMainDomain) {
             
-            // 1. Ocultar la Landing Page Hermosa
             document.getElementById('landing-view').style.display = 'none';
-            
-            // 2. Mostrar la Vista de la Tienda
             const storeView = document.getElementById('store-view');
             storeView.style.display = 'block';
             
@@ -465,55 +460,55 @@
                 }
 
                 const data = await response.json();
-
-                // Si la tienda fue creada con Inteligencia Artificial y tiene su propia carpeta estática
                 if (data.isAiGenerated && data.aiFolder) {
                     window.location.replace(`/${data.aiFolder}/index.html`);
                     return;
                 }
 
                 // =========================================================
-                // BLINDAJE DE URL LIMPIA CON IFRAME INTELIGENTE (100% SEO)
+                // IFRAME INTELIGENTE CON ROMPE-CACHÉ Y SINCRONIZACIÓN DE URL
                 // =========================================================
                 const template = data.site.template || 'template1';
                 
-                // Determinar a qué página quiere ir el usuario
                 let currentPath = window.location.pathname;
                 if (currentPath === '/') currentPath = '/index.html';
                 const currentSearch = window.location.search;
 
                 const iframe = document.createElement('iframe');
-                iframe.className = "fixed inset-0 w-full h-full border-none z-50";
+                iframe.className = "fixed inset-0 w-full h-full border-none z-50 bg-slate-950";
                 
-                // Sincronizar la URL limpia cada vez que el iframe navega
+                // Función mágica que engaña al navegador y sincroniza la URL limpia arriba
                 iframe.onload = function() {
                     try {
                         const iframeWindow = iframe.contentWindow;
                         const iframePath = iframeWindow.location.pathname;
                         const iframeSearch = iframeWindow.location.search;
                         
-                        // Limpiar la ruta para esconder la carpeta de templates
+                        // Limpiamos la ruta fea de la carpeta
                         let cleanPath = iframePath.replace(/\/views\/templates\/[^\/]+/i, '');
                         if (cleanPath === '/index.html' || cleanPath === '') cleanPath = '/';
                         
-                        // Actualizar la URL de arriba sin recargar
-                        window.history.replaceState(null, '', cleanPath + iframeSearch);
+                        // Ocultamos el parámetro de nocache de la barra de direcciones para que quede hermosa
+                        let cleanSearchUrl = iframeSearch.replace(/([?&])nocache=[^&]+(&|$)/, '$1');
+                        if(cleanSearchUrl.endsWith('?') || cleanSearchUrl.endsWith('&')) cleanSearchUrl = cleanSearchUrl.slice(0, -1);
                         
-                        // Actualizar el título de la pestaña
+                        // Actualizamos la URL del navegador sin recargar la página
+                        window.history.replaceState(null, '', cleanPath + cleanSearchUrl);
                         document.title = iframeWindow.document.title;
                     } catch(e) {
-                        console.warn("No se pudo sincronizar la URL", e);
+                        console.warn("Seguridad del navegador impidió sincronizar URL", e);
                     }
                 };
 
-                // Cargar la vista correcta dentro del iframe
-                iframe.src = `/views/templates/${template}${currentPath}${currentSearch}`;
+                // ROMPE-CACHÉ: Le agregamos la hora exacta al final para obligar a Cloudflare a darte la plantilla más fresca
+                const timestamp = new Date().getTime();
+                const joiner = currentSearch ? '&' : '?';
+                iframe.src = `/views/templates/${template}${currentPath}${currentSearch}${joiner}nocache=${timestamp}`;
                 
                 storeView.innerHTML = '';
                 storeView.appendChild(iframe);
 
             } catch (error) {
-                console.error("Error crítico conectando con el servidor:", error);
                 storeView.innerHTML = `
                     <div class="h-screen flex flex-col items-center justify-center bg-slate-50">
                         <i class="fas fa-wifi text-5xl text-red-500 mb-4"></i>
