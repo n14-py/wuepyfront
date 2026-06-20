@@ -419,10 +419,8 @@
     </footer>
 </div>
 
-<div id="store-view" style="display: none;" class="min-h-screen bg-gray-50">
+<div id="store-view" style="display: none;" class="min-h-screen bg-slate-950">
 </div>
-
-
 
 <script>
     document.addEventListener('DOMContentLoaded', async () => {
@@ -431,6 +429,7 @@
         const mainDomain = 'wuepy.com'; 
         
         const isLocal = hostname === 'localhost' || hostname === '127.0.0.1';
+        // Consideramos dominio principal a wuepy.com, www.wuepy.com y los dominios de prueba de Cloudflare
         const isMainDomain = isLocal || hostname === mainDomain || hostname === `www.${mainDomain}` || hostname.includes('pages.dev');
 
         // SI NO ES EL DOMINIO PRINCIPAL (Es un subdominio de una tienda)
@@ -467,32 +466,51 @@
 
                 const data = await response.json();
 
-                // 3. ENRUTADOR VIRTUAL (MAGIA SEO)
-                // Obtenemos qué ruta quiere ver el cliente (ej: /product.html o /search.html)
-                let path = window.location.pathname;
-                if (path === '/' || path === '') {
-                    path = '/index.html';
+                // Si la tienda fue creada con Inteligencia Artificial y tiene su propia carpeta estática
+                if (data.isAiGenerated && data.aiFolder) {
+                    window.location.replace(`/${data.aiFolder}/index.html`);
+                    return;
                 }
 
+                // =========================================================
+                // BLINDAJE DE URL LIMPIA CON IFRAME INTELIGENTE (100% SEO)
+                // =========================================================
                 const template = data.site.template || 'template1';
                 
-                // Vamos a buscar el código HTML real a la carpeta de la plantilla
-                let tplResponse = await fetch(`/views/templates/${template}${path}`);
+                // Determinar a qué página quiere ir el usuario
+                let currentPath = window.location.pathname;
+                if (currentPath === '/') currentPath = '/index.html';
+                const currentSearch = window.location.search;
+
+                const iframe = document.createElement('iframe');
+                iframe.className = "fixed inset-0 w-full h-full border-none z-50";
                 
-                // Si el cliente inventó una URL que no existe, lo mandamos al inicio de la tienda
-                if (!tplResponse.ok) {
-                    tplResponse = await fetch(`/views/templates/${template}/index.html`);
-                }
+                // Sincronizar la URL limpia cada vez que el iframe navega
+                iframe.onload = function() {
+                    try {
+                        const iframeWindow = iframe.contentWindow;
+                        const iframePath = iframeWindow.location.pathname;
+                        const iframeSearch = iframeWindow.location.search;
+                        
+                        // Limpiar la ruta para esconder la carpeta de templates
+                        let cleanPath = iframePath.replace(/\/views\/templates\/[^\/]+/i, '');
+                        if (cleanPath === '/index.html' || cleanPath === '') cleanPath = '/';
+                        
+                        // Actualizar la URL de arriba sin recargar
+                        window.history.replaceState(null, '', cleanPath + iframeSearch);
+                        
+                        // Actualizar el título de la pestaña
+                        document.title = iframeWindow.document.title;
+                    } catch(e) {
+                        console.warn("No se pudo sincronizar la URL", e);
+                    }
+                };
 
-                // Extraemos el código fuente de la plantilla
-                const htmlContent = await tplResponse.text();
-
-                // INYECCIÓN PROFUNDA: Reemplazamos todo el documento actual con la plantilla
-                // Esto destruye el index.html base y lo convierte en el template, sin cambiar la URL.
-                // Googlebot leerá esto perfectamente y lo indexará.
-                document.open();
-                document.write(htmlContent);
-                document.close();
+                // Cargar la vista correcta dentro del iframe
+                iframe.src = `/views/templates/${template}${currentPath}${currentSearch}`;
+                
+                storeView.innerHTML = '';
+                storeView.appendChild(iframe);
 
             } catch (error) {
                 console.error("Error crítico conectando con el servidor:", error);

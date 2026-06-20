@@ -1,4 +1,4 @@
-# Redirecciones (Rewrites) para el Panel de Control de Wuepy
+# Redirecciones para el Panel de Control
 /dashboard/site/*/inventory    /dashboard/inventory.html    200
 /dashboard/site/*/pos          /dashboard/pos.html          200
 /dashboard/site/*/settings     /dashboard/site-settings.html 200
@@ -6,5 +6,5 @@
 /dashboard/site/*/finances     /dashboard/finances.html     200
 /dashboard/site/* /dashboard/site-overview.html 200
 
-# Catch-all para Enrutador Virtual SEO (Tiendas y Productos)
-/* /index.html                  200
+# Catch-all para que funcionen las URLs limpias de las tiendas
+/* /index.html 200
