@@ -3,133 +3,370 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= site.name %> | Inicio</title>
-</head>
-<body class="bg-slate-950 text-slate-200">
+    <title x-text="site ? site.name + ' | Inicio' : 'Cargando Tienda...'"></title>
     
-    <%- include('./partials/header.html') %>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="/js/api.js"></script>
 
-    <section class="relative py-24 lg:py-32 overflow-hidden bg-slate-950">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Space Grotesk"', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Variables CSS dinámicas inyectadas por Alpine.js */
+        :root {
+            --brand-color: #4f46e5; /* Color por defecto */
+            --dark-color: #0f172a;
+        }
         
-        <% if(site.bannerUrl && site.bannerUrl !== '') { %>
-            <div class="absolute inset-0 z-0">
-                <img src="<%= site.bannerUrl %>" alt="Banner de <%= site.name %>" class="w-full h-full object-cover opacity-40">
-                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-transparent"></div>
-            </div>
-        <% } else { %>
-            <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-brand opacity-10 blur-[120px] rounded-full pointer-events-none z-0"></div>
-        <% } %>
-                 
-        <div class="max-w-7xl mx-auto px-4 text-center relative z-10">
-            <span class="inline-block px-4 py-1.5 rounded-full bg-slate-900 border border-slate-800 text-brand text-xs font-bold uppercase tracking-widest mb-6 animate-pulse">
-                Bienvenidos a <%= site.name %>
-            </span>
-            
-            <h1 class="text-5xl md:text-7xl font-bold text-white mb-8 leading-tight tracking-tight">
-                <%= site.content.heroTitle || 'Bienvenido a nuestra tienda' %>
-            </h1>
-            
-            <p class="text-xl text-slate-400 mb-10 max-w-2xl mx-auto">
-                <%= site.content.heroSubtitle || 'Explora nuestro catálogo y descubre los mejores productos.' %>
-            </p>
-            
-            <div class="flex flex-col sm:flex-row justify-center gap-4">
-                <a href="/search" class="bg-brand text-white px-8 py-4 rounded-xl font-bold text-lg hover:brightness-110 transition shadow-lg shadow-brand/20">
-                    Ver Catálogo
+        .text-brand { color: var(--brand-color); }
+        .bg-brand { background-color: var(--brand-color); }
+        .border-brand { border-color: var(--brand-color); }
+        .hover-bg-brand:hover { background-color: var(--brand-color); filter: brightness(1.1); }
+        .ring-brand:focus { --tw-ring-color: var(--brand-color); }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--brand-color); }
+        
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-200" x-data="storefrontApp()" x-cloak>
+    
+    <nav class="fixed w-full z-50 top-0 start-0 bg-slate-950/80 backdrop-blur-md border-b border-slate-800" x-data="{ mobileMenuOpen: false, searchOpen: false }">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-wrap items-center justify-between h-20">
+                
+                <a href="index.html" class="flex items-center gap-3 group">
+                    <template x-if="site?.logoUrl && !site.logoUrl.includes('placehold')">
+                        <img :src="site.logoUrl" class="h-10 w-auto rounded-lg object-contain group-hover:scale-105 transition">
+                    </template>
+                    <template x-if="!site?.logoUrl || site.logoUrl.includes('placehold')">
+                        <div class="h-10 w-10 bg-brand rounded-lg flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-brand/20" x-text="site?.name ? site.name.charAt(0).toUpperCase() : 'W'">
+                        </div>
+                    </template>
+                    <span class="text-xl font-bold text-white tracking-tight group-hover:text-brand transition" x-text="site?.name || 'Cargando...'"></span>
                 </a>
-                <a href="#destacados" class="bg-slate-900 text-white border border-slate-800 px-8 py-4 rounded-xl font-bold text-lg hover:bg-slate-800 transition">
-                    Explorar
-                </a>
-            </div>
-        </div>
-    </section>
 
-    <section class="border-y border-slate-900 bg-slate-900/30">
-        <div class="max-w-7xl mx-auto px-4 py-12">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-                <div class="p-6">
-                    <div class="w-14 h-14 mx-auto bg-slate-900 rounded-full flex items-center justify-center text-brand text-2xl mb-4 border border-slate-800">
-                        <i class="fas fa-shipping-fast"></i>
-                    </div>
-                    <h3 class="text-white font-bold mb-2">Envío Rápido</h3>
-                    <p class="text-sm text-slate-500">Entregas seguras en todo el país.</p>
+                <div class="hidden md:flex flex-1 max-w-lg mx-8">
+                    <form action="search.html" method="GET" class="w-full relative group">
+                        <input type="text" name="q" placeholder="Buscar productos..." class="w-full bg-slate-900 text-white border border-slate-700 rounded-full py-2.5 pl-5 pr-12 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all placeholder-slate-500 group-hover:bg-slate-800">
+                        <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-slate-700 rounded-full text-slate-300 flex items-center justify-center hover:bg-brand hover:text-white transition">
+                            <i class="fas fa-search text-xs"></i>
+                        </button>
+                    </form>
                 </div>
-                <div class="p-6">
-                    <div class="w-14 h-14 mx-auto bg-slate-900 rounded-full flex items-center justify-center text-brand text-2xl mb-4 border border-slate-800">
-                        <i class="fas fa-lock"></i>
-                    </div>
-                    <h3 class="text-white font-bold mb-2">Pago Seguro</h3>
-                    <p class="text-sm text-slate-500">Transacciones y acuerdos 100% protegidos.</p>
-                </div>
-                <div class="p-6">
-                    <div class="w-14 h-14 mx-auto bg-slate-900 rounded-full flex items-center justify-center text-brand text-2xl mb-4 border border-slate-800">
-                        <i class="fab fa-whatsapp"></i>
-                    </div>
-                    <h3 class="text-white font-bold mb-2">Atención Directa</h3>
-                    <p class="text-sm text-slate-500">Trato directo con nosotros vía WhatsApp.</p>
-                </div>
-            </div>
-        </div>
-    </section>
 
-    <section id="destacados" class="py-24">
-        <div class="max-w-7xl mx-auto px-4">
-            <div class="flex justify-between items-end mb-10">
-                <div>
-                    <h2 class="text-3xl font-bold text-white">Destacados</h2>
-                    <p class="text-slate-400 mt-2">Nuestros productos favoritos.</p>
-                </div>
-                <a href="/search" class="text-brand font-bold hover:underline hidden md:block">Ver todos &rarr;</a>
-            </div>
-            
-            <% if(products.length === 0) { %>
-                <div class="bg-slate-900 rounded-2xl p-12 text-center border border-slate-800 border-dashed">
-                    <i class="fas fa-box-open text-4xl text-slate-600 mb-4 block"></i>
-                    <p class="text-slate-500 text-lg">Próximamente agregaremos productos a nuestro catálogo...</p>
-                </div>
-            <% } else { %>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                    <% products.forEach(product => { %>
-                        <a href="/p/<%= product._id %>" class="group block bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden hover:border-brand transition-all duration-300 hover:shadow-2xl hover:shadow-brand/5 relative">
-                            
-                            <div class="aspect-square bg-slate-800 overflow-hidden relative">
-                                <% if(product.imageUrl) { %>
-                                    <img src="<%= product.imageUrl %>" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-700" alt="<%= product.name %>">
-                                <% } else { %>
-                                    <div class="w-full h-full flex items-center justify-center bg-slate-800 text-slate-600">
-                                        <i class="fas fa-image text-4xl"></i>
-                                    </div>
-                                <% } %>
-                                
-                                <% if(product.stock <= 0) { %>
-                                    <span class="absolute top-3 right-3 bg-red-600 text-white text-[10px] font-bold px-3 py-1.5 rounded uppercase tracking-wider shadow-lg">AGOTADO</span>
-                                <% } %>
-                            </div>
-                            
-                            <div class="p-5">
-                                <p class="text-xs font-bold text-slate-500 uppercase mb-1"><%= product.category %></p>
-                                <h3 class="text-lg font-bold text-white truncate mb-2 group-hover:text-brand transition"><%= product.name %></h3>
-                                
-                                <p class="text-xl font-bold text-white">
-                                    <% if(site.currency === 'USD') { %>
-                                        $<%= parseFloat(product.priceUSD).toFixed(2) %>
-                                    <% } else { %>
-                                        <%= new Intl.NumberFormat('es-PY').format(product.price) %> Gs
-                                    <% } %>
-                                </p>
-                            </div>
+                <div class="flex items-center gap-4">
+                    <button @click="searchOpen = !searchOpen" class="md:hidden text-slate-300 hover:text-white p-2">
+                        <i class="fas fa-search text-lg"></i>
+                    </button>
+
+                    <div class="hidden md:flex items-center gap-6 text-sm font-medium text-slate-300">
+                        <a href="index.html" class="hover:text-white transition">Inicio</a>
+                        <a href="search.html" class="hover:text-white transition">Catálogo</a>
+                    </div>
+
+                    <template x-if="site?.whatsappNumber || site?.contact?.whatsapp">
+                        <a :href="'https://wa.me/' + (site.whatsappNumber || site.contact.whatsapp).replace(/[^0-9]/g, '')" target="_blank" class="hidden sm:flex bg-brand text-white px-5 py-2.5 rounded-full font-bold shadow-lg shadow-brand/20 items-center gap-2 text-sm hover:brightness-110 transition transform hover:-translate-y-1">
+                            <i class="fab fa-whatsapp text-lg"></i> <span class="hidden lg:inline">Contacto</span>
                         </a>
-                    <% }) %>
+                    </template>
+
+                    <button @click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden text-slate-300 hover:text-white p-2 focus:outline-none">
+                        <i class="fas" :class="mobileMenuOpen ? 'fa-times' : 'fa-bars'"></i>
+                    </button>
                 </div>
-            <% } %>
-                         
-            <div class="mt-10 text-center md:hidden">
-                <a href="/search" class="inline-block bg-slate-800 text-white px-8 py-4 rounded-xl w-full font-bold hover:bg-slate-700 transition">Ver Todo el Catálogo</a>
+            </div>
+
+            <div x-show="searchOpen" x-transition class="md:hidden py-4 border-t border-slate-800">
+                <form action="search.html" method="GET" class="relative">
+                    <input type="text" name="q" placeholder="¿Qué buscas hoy?" class="w-full bg-slate-900 text-white border border-slate-700 rounded-lg py-3 pl-4 pr-12 focus:outline-none focus:ring-2 focus:ring-brand">
+                    <button type="submit" class="absolute right-3 top-1/2 -translate-y-1/2 text-brand font-bold">IR</button>
+                </form>
             </div>
         </div>
-    </section>
 
-    <%- include('./partials/footer.html') %>
+        <div x-show="mobileMenuOpen" x-transition.origin.top class="md:hidden bg-slate-900 border-b border-slate-800 absolute w-full left-0 shadow-2xl">
+            <div class="px-4 pt-4 pb-6 space-y-2">
+                <a href="index.html" class="block px-4 py-3 rounded-lg bg-slate-800 text-white font-medium border-l-4 border-brand">Inicio</a>
+                <a href="search.html" class="block px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition">Ver Catálogo Completo</a>
+                
+                <template x-if="site?.social?.instagram">
+                    <a :href="site.social.instagram" target="_blank" class="block px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition"><i class="fab fa-instagram mr-2"></i> Instagram</a>
+                </template>
+                
+                <template x-if="site?.whatsappNumber || site?.contact?.whatsapp">
+                    <div class="pt-4 mt-4 border-t border-slate-800">
+                        <a :href="'https://wa.me/' + (site.whatsappNumber || site.contact.whatsapp).replace(/[^0-9]/g, '')" class="flex w-full items-center justify-center gap-2 bg-green-600 text-white py-3 rounded-lg font-bold">
+                            <i class="fab fa-whatsapp text-lg"></i> Hablar por WhatsApp
+                        </a>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </nav>
+    <div class="h-20"></div>
 
+    <template x-if="isLoading">
+        <div class="min-h-[60vh] flex flex-col items-center justify-center">
+            <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-white mb-4" :style="'border-color: var(--brand-color)'"></div>
+            <p class="text-slate-400 font-bold">Cargando tienda...</p>
+        </div>
+    </template>
+
+    <div x-show="!isLoading" x-transition.opacity>
+        <section class="relative py-24 lg:py-32 overflow-hidden bg-slate-950">
+            
+            <template x-if="site?.bannerUrl && site.bannerUrl !== ''">
+                <div class="absolute inset-0 z-0">
+                    <img :src="site.bannerUrl" alt="Banner" class="w-full h-full object-cover opacity-40">
+                    <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-transparent"></div>
+                </div>
+            </template>
+            <template x-if="!site?.bannerUrl || site.bannerUrl === ''">
+                <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-brand opacity-10 blur-[120px] rounded-full pointer-events-none z-0"></div>
+            </template>
+                     
+            <div class="max-w-7xl mx-auto px-4 text-center relative z-10">
+                <span class="inline-block px-4 py-1.5 rounded-full bg-slate-900 border border-slate-800 text-brand text-xs font-bold uppercase tracking-widest mb-6 animate-pulse" x-text="'Bienvenidos a ' + (site?.name || 'nuestra tienda')"></span>
+                
+                <h1 class="text-5xl md:text-7xl font-bold text-white mb-8 leading-tight tracking-tight" x-text="site?.content?.heroTitle || 'Bienvenido a nuestra tienda'"></h1>
+                
+                <p class="text-xl text-slate-400 mb-10 max-w-2xl mx-auto" x-text="site?.content?.heroSubtitle || 'Explora nuestro catálogo y descubre los mejores productos.'"></p>
+                
+                <div class="flex flex-col sm:flex-row justify-center gap-4">
+                    <a href="search.html" class="bg-brand text-white px-8 py-4 rounded-xl font-bold text-lg hover:brightness-110 transition shadow-lg shadow-brand/20">
+                        Ver Catálogo
+                    </a>
+                    <a href="#destacados" class="bg-slate-900 text-white border border-slate-800 px-8 py-4 rounded-xl font-bold text-lg hover:bg-slate-800 transition">
+                        Explorar
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <section class="border-y border-slate-900 bg-slate-900/30">
+            <div class="max-w-7xl mx-auto px-4 py-12">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                    <div class="p-6">
+                        <div class="w-14 h-14 mx-auto bg-slate-900 rounded-full flex items-center justify-center text-brand text-2xl mb-4 border border-slate-800">
+                            <i class="fas fa-shipping-fast"></i>
+                        </div>
+                        <h3 class="text-white font-bold mb-2">Envío Rápido</h3>
+                        <p class="text-sm text-slate-500">Entregas seguras en todo el país.</p>
+                    </div>
+                    <div class="p-6">
+                        <div class="w-14 h-14 mx-auto bg-slate-900 rounded-full flex items-center justify-center text-brand text-2xl mb-4 border border-slate-800">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <h3 class="text-white font-bold mb-2">Pago Seguro</h3>
+                        <p class="text-sm text-slate-500">Transacciones y acuerdos 100% protegidos.</p>
+                    </div>
+                    <div class="p-6">
+                        <div class="w-14 h-14 mx-auto bg-slate-900 rounded-full flex items-center justify-center text-brand text-2xl mb-4 border border-slate-800">
+                            <i class="fab fa-whatsapp"></i>
+                        </div>
+                        <h3 class="text-white font-bold mb-2">Atención Directa</h3>
+                        <p class="text-sm text-slate-500">Trato directo con nosotros vía WhatsApp.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="destacados" class="py-24">
+            <div class="max-w-7xl mx-auto px-4">
+                <div class="flex justify-between items-end mb-10">
+                    <div>
+                        <h2 class="text-3xl font-bold text-white">Destacados</h2>
+                        <p class="text-slate-400 mt-2">Nuestros productos favoritos.</p>
+                    </div>
+                    <a href="search.html" class="text-brand font-bold hover:underline hidden md:block">Ver todos &rarr;</a>
+                </div>
+                
+                <template x-if="products.length === 0">
+                    <div class="bg-slate-900 rounded-2xl p-12 text-center border border-slate-800 border-dashed">
+                        <i class="fas fa-box-open text-4xl text-slate-600 mb-4 block"></i>
+                        <p class="text-slate-500 text-lg">Próximamente agregaremos productos a nuestro catálogo...</p>
+                    </div>
+                </template>
+
+                <template x-if="products.length > 0">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                        <template x-for="product in products.slice(0, 8)" :key="product._id">
+                            <a :href="'product.html?id=' + product._id" class="group block bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-brand/5 relative" style="transition: border-color 0.3s; cursor: pointer;" onmouseover="this.style.borderColor='var(--brand-color)'" onmouseout="this.style.borderColor='inherit'">
+                                
+                                <div class="aspect-square bg-slate-800 overflow-hidden relative">
+                                    <template x-if="product.imageUrl && !product.imageUrl.includes('placehold')">
+                                        <img :src="product.imageUrl" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-700" :alt="product.name">
+                                    </template>
+                                    <template x-if="!product.imageUrl || product.imageUrl.includes('placehold')">
+                                        <div class="w-full h-full flex items-center justify-center bg-slate-800 text-slate-600">
+                                            <i class="fas fa-image text-4xl"></i>
+                                        </div>
+                                    </template>
+                                    
+                                    <template x-if="product.stock <= 0">
+                                        <span class="absolute top-3 right-3 bg-red-600 text-white text-[10px] font-bold px-3 py-1.5 rounded uppercase tracking-wider shadow-lg">AGOTADO</span>
+                                    </template>
+                                </div>
+                                
+                                <div class="p-5">
+                                    <p class="text-xs font-bold text-slate-500 uppercase mb-1" x-text="product.category || 'General'"></p>
+                                    <h3 class="text-lg font-bold text-white truncate mb-2 transition" onmouseover="this.style.color='var(--brand-color)'" onmouseout="this.style.color='inherit'" x-text="product.name"></h3>
+                                    
+                                    <p class="text-xl font-bold text-white" x-text="formatMoney(product.price)"></p>
+                                </div>
+                            </a>
+                        </template>
+                    </div>
+                </template>
+                             
+                <div class="mt-10 text-center md:hidden">
+                    <a href="search.html" class="inline-block bg-slate-800 text-white px-8 py-4 rounded-xl w-full font-bold hover:bg-slate-700 transition">Ver Todo el Catálogo</a>
+                </div>
+            </div>
+        </section>
+
+        <footer class="bg-slate-950 border-t border-slate-900 pt-16 pb-8 text-slate-400 text-sm relative">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                
+                <div class="mb-16 p-8 rounded-2xl bg-slate-900 border border-slate-800 relative overflow-hidden text-center md:text-left md:flex md:items-center md:justify-between gap-6 group">
+                    <div class="absolute top-0 right-0 w-64 h-64 bg-brand opacity-5 rounded-full blur-3xl -mr-16 -mt-16 transition group-hover:opacity-10"></div>
+                    
+                    <div class="relative z-10">
+                        <h3 class="text-xl font-bold text-white mb-1">¿Te gusta esta tienda?</h3>
+                        <p class="text-slate-400">Crea tu propio sitio web profesional como este en minutos.</p>
+                    </div>
+                    
+                    <a href="http://lfaftech.com" class="relative z-10 inline-flex items-center gap-2 bg-white text-slate-950 px-6 py-3 rounded-xl font-bold hover-bg-brand hover:text-white transition shadow-lg transform hover:-translate-y-1">
+                        <i class="fas fa-magic"></i> Crear mi tienda ahora
+                    </a>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+                    
+                    <div class="space-y-4">
+                        <h3 class="text-2xl font-bold text-white" x-text="site?.name"></h3>
+                        <p class="leading-relaxed" x-text="site?.content?.aboutText || 'Bienvenido a nuestra tienda oficial.'"></p>
+                        <div class="flex gap-4 pt-2">
+                            <template x-if="site?.social?.facebook"> <a :href="site.social.facebook" target="_blank" class="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center hover-bg-brand hover:text-white transition"><i class="fab fa-facebook-f"></i></a> </template>
+                            <template x-if="site?.social?.instagram"> <a :href="site.social.instagram" target="_blank" class="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center hover-bg-brand hover:text-white transition"><i class="fab fa-instagram"></i></a> </template>
+                            <template x-if="site?.social?.tiktok"> <a :href="site.social.tiktok" target="_blank" class="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center hover-bg-brand hover:text-white transition"><i class="fab fa-tiktok"></i></a> </template>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 class="text-white font-bold mb-6 text-lg">Tienda</h4>
+                        <ul class="space-y-3">
+                            <li><a href="index.html" class="hover:text-white transition flex items-center gap-2" onmouseover="this.style.color='var(--brand-color)'" onmouseout="this.style.color='inherit'"><i class="fas fa-chevron-right text-xs"></i> Inicio</a></li>
+                            <li><a href="search.html" class="hover:text-white transition flex items-center gap-2" onmouseover="this.style.color='var(--brand-color)'" onmouseout="this.style.color='inherit'"><i class="fas fa-chevron-right text-xs"></i> Catálogo</a></li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h4 class="text-white font-bold mb-6 text-lg">Contáctanos</h4>
+                        <ul class="space-y-4">
+                            <template x-if="site?.contact?.address">
+                                <li class="flex items-start gap-3">
+                                    <i class="fas fa-map-marker-alt mt-1 text-brand"></i>
+                                    <span x-text="site.contact.address"></span>
+                                </li>
+                            </template>
+                            <template x-if="site?.whatsappNumber || site?.contact?.whatsapp || site?.contact?.phone">
+                                <li class="flex items-start gap-3">
+                                    <i class="fab fa-whatsapp mt-1 text-brand"></i>
+                                    <span x-text="site.whatsappNumber || site.contact?.whatsapp || site.contact?.phone"></span>
+                                </li>
+                            </template>
+                            <template x-if="site?.contact?.email">
+                                <li class="flex items-start gap-3">
+                                    <i class="far fa-envelope mt-1 text-brand"></i>
+                                    <span x-text="site.contact.email"></span>
+                                </li>
+                            </template>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h4 class="text-white font-bold mb-6 text-lg">Novedades</h4>
+                        <p class="mb-4 text-xs">Suscríbete para recibir ofertas.</p>
+                        <form onsubmit="event.preventDefault(); alert('Gracias por suscribirte!');" class="space-y-2">
+                            <input type="email" placeholder="Tu correo" required class="w-full bg-slate-900 border border-slate-800 rounded px-4 py-2 focus:ring-1 focus:ring-brand focus:border-transparent outline-none text-white">
+                            <button class="w-full bg-slate-800 hover-bg-brand hover:text-white text-slate-300 py-2 rounded font-bold transition">Suscribirse</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="border-t border-slate-900 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs">
+                    <p>&copy; <span x-text="new Date().getFullYear()"></span> <span x-text="site?.name"></span>. Todos los derechos reservados.</p>
+                    <p>Tecnología por <a href="http://lfaftech.com" class="text-slate-500 hover:text-white font-bold">LFAFTECH</a></p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('storefrontApp', () => ({
+                site: null,
+                products: [],
+                isLoading: true,
+
+                async init() {
+                    try {
+                        // 1. Obtener el subdominio actual (ej: "mitienda" de "mitienda.wuepy.com")
+                        // Para desarrollo local, usaremos un fallback si no detecta subdominio válido
+                        const hostname = window.location.hostname;
+                        let subdomain = hostname.split('.')[0];
+                        
+                        if (hostname === 'localhost' || hostname === '127.0.0.1') {
+                            // EN DESARROLLO LOCAL: Cambia 'mitienda' por el subdominio de una tienda real tuya
+                            subdomain = 'demo'; 
+                        }
+
+                        // 2. Consultar la API Pública de la tienda (Asegúrate de crear este endpoint en tu backend)
+                        // Ej: router.get('/api/store/public/:subdomain', storeController.getPublicStore)
+                        const res = await fetch(`${window.API_URL || 'https://wuepyback.onrender.com/api'}/store/public/${subdomain}`);
+                        const data = await res.json();
+                        
+                        if (data.success) {
+                            this.site = data.site;
+                            this.products = data.products || [];
+                            
+                            // Inyectar colores dinámicamente en las variables CSS
+                            if(this.site.primaryColor) {
+                                document.documentElement.style.setProperty('--brand-color', this.site.primaryColor);
+                            }
+                            if(this.site.secondaryColor) {
+                                document.documentElement.style.setProperty('--dark-color', this.site.secondaryColor);
+                            }
+                        } else {
+                            console.error("Tienda no encontrada");
+                        }
+                    } catch (error) {
+                        console.error('Error al cargar la tienda:', error);
+                    }
+                    this.isLoading = false;
+                },
+
+                formatMoney(amount) {
+                    if(!amount) return '0';
+                    return (this.site?.currency === 'PYG' ? 'Gs. ' : '$ ') + parseInt(amount).toLocaleString('es-PY');
+                }
+            }));
+        });
+    </script>
 </body>
 </html>
