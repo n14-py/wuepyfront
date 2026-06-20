@@ -173,7 +173,7 @@
         </div>
     </div>
 
-    <script>
+<script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('registerForm', () => ({
                 name: '', email: '', password: '', confirmPassword: '',
@@ -181,6 +181,7 @@
                 
                 async submitRegister() {
                     this.errors = [];
+                    // Validación en el Frontend
                     if(this.password !== this.confirmPassword) {
                         this.errors.push("Las contraseñas no coinciden");
                         return;
@@ -189,11 +190,19 @@
                     try {
                         const res = await WuepyAPI.fetch('/auth/register', {
                             method: 'POST',
-                            body: JSON.stringify({ name: this.name, email: this.email, password: this.password })
+                            // CORRECCIÓN 1: Enviar confirmPassword al backend también
+                            body: JSON.stringify({ 
+                                name: this.name, 
+                                email: this.email, 
+                                password: this.password,
+                                confirmPassword: this.confirmPassword
+                            })
                         });
-                        if (res.status === 200 && res.data.success) {
-                            WuepyAPI.setUser(res.data.user);
-                            window.location.href = '/dashboard/index.html';
+                        
+                        // CORRECCIÓN 2: El backend devuelve 201 al crear, no 200. Y redirigimos al Login.
+                        if ((res.status === 200 || res.status === 201) && res.data.success) {
+                            alert("¡Cuenta creada con éxito! Por favor, inicia sesión para entrar a tu panel.");
+                            window.location.href = '/auth/login.html';
                         } else {
                             this.errors.push(res.data.message || 'Error en el registro');
                         }
