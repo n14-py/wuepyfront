@@ -368,7 +368,7 @@
                 showCustomModal: false, customItem: { name: '', price: '' },
                 showScannerModal: false, scannerInstance: null,
 
-async init() {
+                async init() {
                     this.user = WuepyAPI.getUser();
                     if(!this.user) { window.location.href = '/auth/login.html'; return; }
                     
@@ -392,12 +392,12 @@ async init() {
                         return; 
                     }
 
-                    await this.loadData();
+                    await this.loadPOSData(this.siteId);
                 },
 
                 async loadPOSData(siteId) {
                     try {
-                        const res = await WuepyAPI.fetch(`/dashboard/pos/${siteId}`);
+                        const res = await WuepyAPI.fetch(`/dashboard/site/${siteId}/pos`);
                         if(res.status === 200) {
                             this.site = res.data.site;
                             this.products = res.data.products || [];
@@ -503,14 +503,14 @@ async init() {
                                 deliveryAddress: this.deliveryAddress, assignedDeliveryId: this.assignedDeliveryId, customerName: this.customerName,
                                 customerPhone: this.customerPhone, discount: this.discount, deliveryFee: this.deliveryFee
                             };
-                            const res = await WuepyAPI.fetch(`/dashboard/pos/${this.site._id}/checkout`, {
+                            const res = await WuepyAPI.fetch(`/dashboard/site/${this.site._id}/pos/checkout`, {
                                 method: 'POST', body: JSON.stringify(payload)
                             });
-                            if(res.status === 200) {
+                            if(res.status === 200 || res.status === 201) {
                                 alert('✅ Venta registrada con éxito.');
                                 this.cart = []; this.isDelivery = false; // Reset simple
                                 await this.loadPOSData(this.site._id); // Recargar para actualizar stock visualmente
-                            } else { alert(res.data.message || 'Error en checkout.'); }
+                            } else { alert(res.data?.message || 'Error en checkout.'); }
                         } catch(e) { alert('Error conectando al servidor.'); }
                         this.isProcessing = false;
                     }

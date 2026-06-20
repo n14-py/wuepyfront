@@ -166,9 +166,9 @@
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('siteOverview', () => ({
-                user: null, site: null, stats: null, isLoading: true,
+                user: null, site: null, stats: null, isLoading: true, siteId: null,
                 
-             async init() {
+                async init() {
                     this.user = WuepyAPI.getUser();
                     if(!this.user) { window.location.href = '/auth/login.html'; return; }
                     
@@ -194,6 +194,23 @@
 
                     await this.loadData();
                 },
+
+                async loadData() {
+                    this.isLoading = true;
+                    try {
+                        const res = await WuepyAPI.fetch(`/dashboard/site/${this.siteId}`);
+                        if(res.status === 200) {
+                            this.site = res.data.site;
+                            this.stats = res.data.stats;
+                        } else {
+                            window.location.href = '/dashboard/index.html';
+                        }
+                    } catch(e) {
+                        window.location.href = '/dashboard/index.html';
+                    } finally {
+                        this.isLoading = false;
+                    }
+                }
             }));
         });
     </script>
