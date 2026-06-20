@@ -113,9 +113,15 @@
 
                 async init() {
                     this.user = WuepyAPI.getUser();
-                    if(!this.user || this.user.type !== 'employee') { window.location.href = '/auth/login.html'; return; }
-                    this.siteId = this.user.siteId || new URLSearchParams(window.location.search).get('id');
-                    await this.loadOrders();
+                    if(!this.user) { window.location.href = '/auth/login.html'; return; }
+                    
+                    const pathSegments = window.location.pathname.split('/');
+                    const siteIdx = pathSegments.indexOf('site');
+                    this.siteId = siteIdx !== -1 ? pathSegments[siteIdx + 1] : null;
+
+                    if(!this.siteId) { window.location.href = '/dashboard/index.html'; return; }
+
+                    await this.loadData();
                 },
 
                 async loadOrders() {

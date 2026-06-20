@@ -334,11 +334,13 @@
                     this.user = WuepyAPI.getUser();
                     if(!this.user) { window.location.href = '/auth/login.html'; return; }
                     
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const siteId = urlParams.get('id');
-                    if(!siteId) { window.location.href = '/dashboard/index.html'; return; }
+                    const pathSegments = window.location.pathname.split('/');
+                    const siteIdx = pathSegments.indexOf('site');
+                    this.siteId = siteIdx !== -1 ? pathSegments[siteIdx + 1] : null;
 
-                    await this.loadFinances(siteId);
+                    if(!this.siteId) { window.location.href = '/dashboard/index.html'; return; }
+
+                    await this.loadData();
                 },
 
                 async loadFinances(siteId) {

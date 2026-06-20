@@ -172,21 +172,14 @@
                     this.user = WuepyAPI.getUser();
                     if(!this.user) { window.location.href = '/auth/login.html'; return; }
                     
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const siteId = urlParams.get('id');
-                    if(!siteId) { window.location.href = '/dashboard/index.html'; return; }
+                    const pathSegments = window.location.pathname.split('/');
+                    const siteIdx = pathSegments.indexOf('site');
+                    this.siteId = siteIdx !== -1 ? pathSegments[siteIdx + 1] : null;
 
-                    try {
-                        const res = await WuepyAPI.fetch(`/dashboard/site/${siteId}`);
-                        if(res.status === 200) {
-                            this.site = res.data.site;
-                            this.stats = res.data.stats;
-                        } else {
-                            alert('No se pudo cargar la tienda');
-                        }
-                    } catch(e) { console.error(e); }
-                    this.isLoading = false;
-                }
+                    if(!this.siteId) { window.location.href = '/dashboard/index.html'; return; }
+
+                    await this.loadData();
+                },
             }));
         });
     </script>
