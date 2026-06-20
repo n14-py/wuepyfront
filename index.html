@@ -435,51 +435,48 @@
         // SI NO ES EL DOMINIO PRINCIPAL (Es un subdominio de una tienda)
         if (!isMainDomain) {
             
-            // 1. Ocultar la Landing Page Hermosa
+            // 1. Ocultar la Landing Page de Wuepy
             document.getElementById('landing-view').style.display = 'none';
             
-            // 2. Mostrar la Vista de la Tienda
+            // 2. Mostrar la Vista de la Tienda con un loader temporal
             const storeView = document.getElementById('store-view');
             storeView.style.display = 'block';
-            
-            // 3. Pantalla de carga mientras trae los productos del backend
             storeView.innerHTML = `
                 <div class="h-screen w-full flex flex-col items-center justify-center">
                     <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-indigo-600 mb-4"></div>
-                    <h2 class="text-xl font-semibold text-gray-700 animate-pulse">Abriendo tienda...</h2>
+                    <h2 class="text-xl font-semibold text-gray-700 animate-pulse">Cargando tienda...</h2>
                 </div>
             `;
 
             try {
-                // Hacemos la petición a la API (tu backend sabe el subdominio por los headers que configuramos antes)
-                const response = await WuepyAPI.fetch('/');
+                // Hacemos la petición a la API Pública para saber qué plantilla usa la tienda
+                const response = await fetch(`${window.API_URL || 'https://wuepyback.onrender.com/api'}/store/public/${hostname.split('.')[0]}`);
+                const data = await response.json();
 
-                // Si la tienda no existe, fue borrada o está suspendida por falta de pago
-                if (!response.ok) {
+                if (!data.success) {
                     storeView.innerHTML = `
                         <div class="h-screen flex flex-col items-center justify-center text-center px-4">
                             <h1 class="text-6xl text-gray-300 font-bold mb-4">404</h1>
                             <h2 class="text-2xl text-gray-700 font-semibold mb-2">Tienda no encontrada</h2>
-                            <p class="text-gray-500 mb-6">La tienda que buscas no existe o se encuentra inactiva.</p>
+                            <p class="text-gray-500 mb-6">La tienda que buscas no existe o se encuentra suspendida.</p>
                             <a href="https://${mainDomain}" class="px-6 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition">Crear mi propia tienda en Wuepy</a>
                         </div>`;
                     return;
                 }
 
-                const data = response.data;
-
-                // Si la tienda fue creada con Inteligencia Artificial y tiene su propia carpeta estática
+                // REDIRECCIÓN A LA PLANTILLA CORRECTA
+                const site = data.site;
+                
+                // Si fue creada con IA y tiene su propia carpeta
                 if (data.isAiGenerated && data.aiFolder) {
                     window.location.replace(`/${data.aiFolder}/index.html`);
                     return;
                 }
-
-                // Cambiar el título de la pestaña por el nombre del emprendimiento
-                document.title = data.site.name + " - Wuepy";
                 
-                // Dibujar la tienda dinámicamente
-                renderStore(data.site, data.products, data.categories, storeView);
-
+                // Si usa una plantilla estándar (como template1)
+                const template = site.template || 'template1'; 
+                window.location.replace(`/views/templates/${template}/index.html`);
+                
             } catch (error) {
                 console.error("Error crítico conectando con el servidor:", error);
                 storeView.innerHTML = `
@@ -491,75 +488,6 @@
             }
         }
     });
-
-    // ==========================================================================
-    // FUNCIÓN PARA DIBUJAR LA TIENDA DINÁMICA
-    // ==========================================================================
-    function renderStore(site, products, categories, container) {
-        // Obtenemos los colores configurados por el dueño o usamos los de Wuepy por defecto
-        const primary = site.primaryColor || '#4f46e5'; // Indigo-600
-        const secondary = site.secondaryColor || '#1e293b'; // Slate-800
-        const heroTitle = site.content?.heroTitle || 'Explora nuestro catálogo completo';
-        
-        let html = `
-            <style>
-                :root {
-                    --store-primary: ${primary};
-                    --store-secondary: ${secondary};
-                }
-                .bg-store { background-color: var(--store-primary); }
-                .text-store { color: var(--store-primary); }
-                .border-store { border-color: var(--store-primary); }
-            </style>
-
-            <header class="bg-store text-white shadow-md">
-                <div class="max-w-7xl mx-auto px-4 py-12 text-center">
-                    ${site.logoUrl ? `<img src="${site.logoUrl}" class="h-28 w-28 mx-auto mb-6 rounded-full object-cover border-4 border-white shadow-lg">` : ''}
-                    <h1 class="text-4xl md:text-5xl font-black tracking-tight mb-4">${site.name}</h1>
-                    <p class="text-lg opacity-90 max-w-2xl mx-auto font-medium">${heroTitle}</p>
-                </div>
-            </header>
-
-            <main class="max-w-7xl mx-auto px-4 py-12 min-h-screen">
-                <div class="flex justify-between items-center mb-8 border-b border-gray-200 pb-4">
-                    <h2 class="text-2xl font-bold text-gray-800">Nuestros Productos</h2>
-                    <span class="text-sm font-medium text-gray-500">${products ? products.length : 0} artículos</span>
-                </div>
-
-                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-        `;
-
-        // LISTA DE PRODUCTOS
-        if (!products || products.length === 0) {
-            html += `<div class="col-span-full text-center py-20 text-gray-500 font-medium">Aún no hemos agregado productos.</div>`;
-        } else {
-            products.forEach(p => {
-                const img = (p.images && p.images.length > 0) ? p.images[0] : 'https://via.placeholder.com/300x300?text=Sin+Imagen';
-                html += `
-                    <a href="/p.html?id=${p._id}" class="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col group overflow-hidden">
-                        <div class="relative pb-[100%] bg-gray-50 overflow-hidden">
-                            <img src="${img}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
-                        </div>
-                        <div class="p-4 md:p-5 flex flex-col flex-grow text-center">
-                            <h4 class="font-medium text-gray-800 line-clamp-2 mb-2 flex-grow text-sm md:text-base">${p.name}</h4>
-                            <p class="text-lg md:text-xl font-black text-store">Gs. ${p.price.toLocaleString('es-PY')}</p>
-                        </div>
-                    </a>
-                `;
-            });
-        }
-
-        html += `
-                </div>
-            </main>
-
-            <footer class="bg-gray-900 text-white text-center py-8">
-                <p class="text-sm text-gray-400 font-medium">Tienda impulsada por <a href="https://wuepy.com" class="font-black text-white hover:text-indigo-400 transition ml-1">Wuepy</a></p>
-            </footer>
-        `;
-        
-        container.innerHTML = html;
-    }
 </script>
 
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
