@@ -634,9 +634,10 @@
                     formDataPayload.append('isActive', this.formData.isActive);
                     formDataPayload.append('siteId', this.site?._id);
                     
+                    // CORRECCIÓN CRÍTICA: Pasamos el siteId por la URL para que el middleware lo vea antes que multer
                     const endpoint = this.isEditing 
-                        ? `/dashboard/inventory/edit/${this.editingId}` 
-                        : `/dashboard/inventory/add`;
+                        ? `/dashboard/inventory/edit/${this.editingId}?siteId=${this.site?._id}` 
+                        : `/dashboard/inventory/add?siteId=${this.site?._id}`;
 
                     try {
                         const response = await fetch(`${API_URL}${endpoint}`, {
@@ -678,7 +679,7 @@
                     }).then(async (result) => {
                         if (result.isConfirmed) {
                             try {
-                                const response = await WuepyAPI.fetch(`/dashboard/inventory/delete/${id}`, {
+                                const response = await WuepyAPI.fetch(`/dashboard/inventory/delete/${id}?siteId=${this.site._id}`, {
                                     method: 'POST',
                                     body: JSON.stringify({ siteId: this.site._id })
                                 });
@@ -687,7 +688,7 @@
                                     this.successMsg = 'Producto eliminado.';
                                     await this.loadInventory(this.site._id);
                                 } else {
-                                    this.errorMsg = response.data.message || 'Error al eliminar.';
+                                    this.errorMsg = response.data?.message || 'Error al eliminar.';
                                 }
                             } catch (e) {
                                 this.errorMsg = 'Error de conexión.';

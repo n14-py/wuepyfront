@@ -111,31 +111,29 @@
                 user: null, siteId: null, currency: 'PYG',
                 orders: [], isLoading: true,
 
-async init() {
+                async init() {
                     this.user = WuepyAPI.getUser();
                     if(!this.user) { window.location.href = '/auth/login.html'; return; }
                     
-                    // MÉTODO UNIVERSAL: Busca el ID tanto en rutas limpias como en parámetros antiguos
-                    const pathSegments = window.location.pathname.split('/');
-                    const siteIdx = pathSegments.indexOf('site');
-                    let urlSiteId = siteIdx !== -1 ? pathSegments[siteIdx + 1] : null;
+                    // MÉTODO UNIVERSAL
+                    const urlParams = new URLSearchParams(window.location.search);
+                    let urlSiteId = urlParams.get('id') || urlParams.get('siteId');
 
-                    // Si no lo encuentra en la ruta limpia, lo busca en el formato ?id=...
                     if (!urlSiteId) {
-                        const urlParams = new URLSearchParams(window.location.search);
-                        urlSiteId = urlParams.get('id') || urlParams.get('siteId');
+                        const pathSegments = window.location.pathname.split('/');
+                        const siteIdx = pathSegments.indexOf('site');
+                        urlSiteId = siteIdx !== -1 ? pathSegments[siteIdx + 1] : null;
                     }
 
                     this.siteId = urlSiteId;
 
-                    // Si definitivamente no hay ID, te devuelve al panel
                     if(!this.siteId) { 
                         console.error("Error: No se encontró el ID de la tienda en la URL.");
                         window.location.href = '/dashboard/index.html'; 
                         return; 
                     }
 
-                    await this.loadData();
+                    await this.loadOrders();
                 },
 
                 async loadOrders() {
@@ -166,7 +164,7 @@ async init() {
                                     method: 'POST', body: JSON.stringify({ orderId, status: 'completed' })
                                 });
                                 if(res.status === 200 && res.data.success) {
-                                    await this.loadOrders(); // Recargar UI
+                                    await this.loadOrders();
                                 } else { alert(res.data.message || 'Error al actualizar.'); }
                             } catch(e) { alert('Error de conexión.'); }
                         }

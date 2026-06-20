@@ -321,7 +321,7 @@
                 successMsg: '', errorMsg: '',
                 expenseForm: { description: '', amount: '', category: 'Operativo' },
                 chartInstance: null,
-                API_URL: window.API_URL || 'http://localhost:3000/api', // Asegurar que toma tu API URL
+                API_URL: window.API_URL || 'http://localhost:3000/api',
 
                 get netProfit() { return this.stats.monthlyTotal - this.stats.monthlyExpenses; },
 
@@ -330,19 +330,19 @@
                     return (this.site?.currency === 'PYG' ? 'Gs. ' : '$ ') + num.toLocaleString('es-PY');
                 },
 
-async init() {
+                async init() {
                     this.user = WuepyAPI.getUser();
                     if(!this.user) { window.location.href = '/auth/login.html'; return; }
                     
                     // MÉTODO UNIVERSAL: Busca el ID tanto en rutas limpias como en parámetros antiguos
-                    const pathSegments = window.location.pathname.split('/');
-                    const siteIdx = pathSegments.indexOf('site');
-                    let urlSiteId = siteIdx !== -1 ? pathSegments[siteIdx + 1] : null;
+                    const urlParams = new URLSearchParams(window.location.search);
+                    let urlSiteId = urlParams.get('id') || urlParams.get('siteId');
 
-                    // Si no lo encuentra en la ruta limpia, lo busca en el formato ?id=...
+                    // Fallback a ruta limpia por si se llama desde el backend
                     if (!urlSiteId) {
-                        const urlParams = new URLSearchParams(window.location.search);
-                        urlSiteId = urlParams.get('id') || urlParams.get('siteId');
+                        const pathSegments = window.location.pathname.split('/');
+                        const siteIdx = pathSegments.indexOf('site');
+                        urlSiteId = siteIdx !== -1 ? pathSegments[siteIdx + 1] : null;
                     }
 
                     this.siteId = urlSiteId;
@@ -354,7 +354,7 @@ async init() {
                         return; 
                     }
 
-                    await this.loadData();
+                    await this.loadFinances(this.siteId);
                 },
 
                 async loadFinances(siteId) {
