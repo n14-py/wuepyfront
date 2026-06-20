@@ -389,11 +389,12 @@
                         const formElement = document.getElementById('createSiteForm');
                         const formDataPayload = new FormData(formElement);
                         
-                        // Enviamos usando fetch nativo apuntando a tu backend API en Contabo
+// Enviamos usando fetch nativo apuntando a tu backend API
                         const response = await fetch(`${API_URL}/dashboard/create-site`, {
                             method: 'POST',
                             body: formDataPayload,
-                            headers: { 'Authorization': `Bearer ${this.user?.token || ''}` } 
+                            headers: { 'Authorization': `Bearer ${this.user?.token || ''}` },
+                            credentials: 'include' // 🔴 LÍNEA CRÍTICA: Permite que la cookie de sesión viaje de Cloudflare a Render
                         });
                         
                         const data = await response.json();
