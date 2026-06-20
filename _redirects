@@ -5,3 +5,6 @@
 /dashboard/site/*/delivery     /dashboard/delivery-panel.html 200
 /dashboard/site/*/finances     /dashboard/finances.html     200
 /dashboard/site/* /dashboard/site-overview.html 200
+
+# Catch-all para Enrutador Virtual SEO (Tiendas y Productos)
+/* /index.html                  200
