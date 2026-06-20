@@ -330,15 +330,29 @@
                     return (this.site?.currency === 'PYG' ? 'Gs. ' : '$ ') + num.toLocaleString('es-PY');
                 },
 
-                async init() {
+async init() {
                     this.user = WuepyAPI.getUser();
                     if(!this.user) { window.location.href = '/auth/login.html'; return; }
                     
+                    // MÉTODO UNIVERSAL: Busca el ID tanto en rutas limpias como en parámetros antiguos
                     const pathSegments = window.location.pathname.split('/');
                     const siteIdx = pathSegments.indexOf('site');
-                    this.siteId = siteIdx !== -1 ? pathSegments[siteIdx + 1] : null;
+                    let urlSiteId = siteIdx !== -1 ? pathSegments[siteIdx + 1] : null;
 
-                    if(!this.siteId) { window.location.href = '/dashboard/index.html'; return; }
+                    // Si no lo encuentra en la ruta limpia, lo busca en el formato ?id=...
+                    if (!urlSiteId) {
+                        const urlParams = new URLSearchParams(window.location.search);
+                        urlSiteId = urlParams.get('id') || urlParams.get('siteId');
+                    }
+
+                    this.siteId = urlSiteId;
+
+                    // Si definitivamente no hay ID, te devuelve al panel
+                    if(!this.siteId) { 
+                        console.error("Error: No se encontró el ID de la tienda en la URL.");
+                        window.location.href = '/dashboard/index.html'; 
+                        return; 
+                    }
 
                     await this.loadData();
                 },
