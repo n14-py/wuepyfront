@@ -1,0 +1,7 @@
+# Redirecciones (Rewrites) para el Panel de Control de Wuepy
+/dashboard/site/*/inventory    /dashboard/inventory.html    200
+/dashboard/site/*/pos          /dashboard/pos.html          200
+/dashboard/site/*/settings     /dashboard/site-settings.html 200
+/dashboard/site/*/delivery     /dashboard/delivery-panel.html 200
+/dashboard/site/*/finances     /dashboard/finances.html     200
+/dashboard/site/* /dashboard/site-overview.html 200
