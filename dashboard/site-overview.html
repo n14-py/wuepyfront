@@ -173,14 +173,14 @@
                     if(!this.user) { window.location.href = '/auth/login.html'; return; }
                     
                     // MÉTODO UNIVERSAL: Busca el ID tanto en rutas limpias como en parámetros antiguos
-                    const pathSegments = window.location.pathname.split('/');
-                    const siteIdx = pathSegments.indexOf('site');
-                    let urlSiteId = siteIdx !== -1 ? pathSegments[siteIdx + 1] : null;
+                    const urlParams = new URLSearchParams(window.location.search);
+                    let urlSiteId = urlParams.get('id') || urlParams.get('siteId');
 
-                    // Si no lo encuentra en la ruta limpia, lo busca en el formato ?id=...
+                    // Fallback a ruta limpia por si se llama desde el backend
                     if (!urlSiteId) {
-                        const urlParams = new URLSearchParams(window.location.search);
-                        urlSiteId = urlParams.get('id') || urlParams.get('siteId');
+                        const pathSegments = window.location.pathname.split('/');
+                        const siteIdx = pathSegments.indexOf('site');
+                        urlSiteId = siteIdx !== -1 ? pathSegments[siteIdx + 1] : null;
                     }
 
                     this.siteId = urlSiteId;

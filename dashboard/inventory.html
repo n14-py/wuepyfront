@@ -531,13 +531,15 @@
                     this.user = WuepyAPI.getUser();
                     if(!this.user) { window.location.href = '/auth/login.html'; return; }
                     
-                    const pathSegments = window.location.pathname.split('/');
-                    const siteIdx = pathSegments.indexOf('site');
-                    let urlSiteId = siteIdx !== -1 ? pathSegments[siteIdx + 1] : null;
+                    // MÉTODO UNIVERSAL (Seguro para estáticos)
+                    const urlParams = new URLSearchParams(window.location.search);
+                    let urlSiteId = urlParams.get('id') || urlParams.get('siteId');
 
+                    // Fallback a ruta limpia por si se llama desde el backend
                     if (!urlSiteId) {
-                        const urlParams = new URLSearchParams(window.location.search);
-                        urlSiteId = urlParams.get('id') || urlParams.get('siteId');
+                        const pathSegments = window.location.pathname.split('/');
+                        const siteIdx = pathSegments.indexOf('site');
+                        urlSiteId = siteIdx !== -1 ? pathSegments[siteIdx + 1] : null;
                     }
 
                     this.siteId = urlSiteId;
