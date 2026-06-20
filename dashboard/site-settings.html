@@ -379,7 +379,8 @@
                         form.append('template', this.formData.template);
                         if (this.logoFile) form.append('logo', this.logoFile);
 
-                        const response = await fetch(`${API_URL}/dashboard/site/${this.siteId}/settings/design`, {
+                        // CORRECCIÓN: La ruta exacta del backend es /update-design
+                        const response = await fetch(`${API_URL}/dashboard/site/${this.siteId}/update-design`, {
                             method: 'POST',
                             headers: { 'Authorization': `Bearer ${this.user.token}` },
                             body: form
