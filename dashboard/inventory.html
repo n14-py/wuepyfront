@@ -533,17 +533,27 @@
                     
                     const pathSegments = window.location.pathname.split('/');
                     const siteIdx = pathSegments.indexOf('site');
-                    this.siteId = siteIdx !== -1 ? pathSegments[siteIdx + 1] : null;
+                    let urlSiteId = siteIdx !== -1 ? pathSegments[siteIdx + 1] : null;
 
-                    if(!this.siteId) { window.location.href = '/dashboard/index.html'; return; }
+                    if (!urlSiteId) {
+                        const urlParams = new URLSearchParams(window.location.search);
+                        urlSiteId = urlParams.get('id') || urlParams.get('siteId');
+                    }
 
-                    await this.loadData();
+                    this.siteId = urlSiteId;
+
+                    if(!this.siteId) { 
+                        window.location.href = '/dashboard/index.html'; 
+                        return; 
+                    }
+
+                    await this.loadInventory(this.siteId);
                 },
 
                 async loadInventory(siteId) {
                     this.isLoading = true;
                     try {
-                        const res = await WuepyAPI.fetch(`/dashboard/inventory/${siteId}`);
+                        const res = await WuepyAPI.fetch(`/dashboard/site/${siteId}/inventory`);
                         if(res.status === 200) {
                             this.products = res.data.products || [];
                             this.site = res.data.site;
