@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title x-text="site ? site.name + ' | Inicio' : 'Cargando Tienda...'"></title>
+    <title x-text="site ? site.name + ' | Inicio' : 'Wuepy Tienda'"></title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js"></script>
@@ -119,14 +119,7 @@
     </nav>
     <div class="h-20"></div>
 
-    <template x-if="isLoading">
-        <div class="min-h-[60vh] flex flex-col items-center justify-center">
-            <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-white mb-4" :style="'border-color: var(--brand-color)'"></div>
-            <p class="text-slate-400 font-bold">Cargando tienda...</p>
-        </div>
-    </template>
-
-    <div x-show="!isLoading" x-transition.opacity>
+    <div>
         <section class="relative py-24 lg:py-32 overflow-hidden bg-slate-950">
             
             <template x-if="site?.bannerUrl && site.bannerUrl !== ''">
@@ -322,43 +315,56 @@
             Alpine.data('storefrontApp', () => ({
                 site: null,
                 products: [],
-                isLoading: true,
 
                 async init() {
                     try {
-                        // 1. Obtener el subdominio actual (ej: "mitienda" de "mitienda.wuepy.com")
-                        // Para desarrollo local, usaremos un fallback si no detecta subdominio válido
                         const hostname = window.location.hostname;
                         let subdomain = hostname.split('.')[0];
                         
                         if (hostname === 'localhost' || hostname === '127.0.0.1') {
-                            // EN DESARROLLO LOCAL: Cambia 'mitienda' por el subdominio de una tienda real tuya
                             subdomain = 'demo'; 
                         }
 
-                        // 2. Consultar la API Pública de la tienda (Asegúrate de crear este endpoint en tu backend)
-                        // Ej: router.get('/api/store/public/:subdomain', storeController.getPublicStore)
-                        const res = await fetch(`${window.API_URL || 'https://wuepyback.onrender.com/api'}/store/public/${subdomain}`);
+                        // 1. CARGA A LA VELOCIDAD DE LA LUZ (Caché Local del Navegador)
+                        // Esto hace que la página cargue en 0 milisegundos para usuarios que ya la visitaron.
+                        const cacheKey = `wuepy_cache_${subdomain}`;
+                        const cachedData = localStorage.getItem(cacheKey);
+                        
+                        if (cachedData) {
+                            const parsed = JSON.parse(cachedData);
+                            this.site = parsed.site;
+                            this.products = parsed.products || [];
+                            this.applyColors();
+                        }
+
+                        // 2. ACTUALIZACIÓN EN SEGUNDO PLANO (Evitando Caché estricto de Cloudflare)
+                        // El parámetro ?_t=Date.now() fuerza a Cloudflare a saltarse la caché y traer la info fresca de la API
+                        // Solucionando así que tus productos nuevos sí aparezcan.
+                        const res = await fetch(`${window.API_URL || 'https://wuepyback.onrender.com/api'}/store/public/${subdomain}?_t=${Date.now()}`);
                         const data = await res.json();
                         
                         if (data.success) {
                             this.site = data.site;
                             this.products = data.products || [];
+                            this.applyColors();
                             
-                            // Inyectar colores dinámicamente en las variables CSS
-                            if(this.site.primaryColor) {
-                                document.documentElement.style.setProperty('--brand-color', this.site.primaryColor);
-                            }
-                            if(this.site.secondaryColor) {
-                                document.documentElement.style.setProperty('--dark-color', this.site.secondaryColor);
-                            }
+                            // Guardamos la versión nueva y fresca para que la próxima visita sea súper veloz
+                            localStorage.setItem(cacheKey, JSON.stringify(data));
                         } else {
                             console.error("Tienda no encontrada");
                         }
                     } catch (error) {
                         console.error('Error al cargar la tienda:', error);
                     }
-                    this.isLoading = false;
+                },
+
+                applyColors() {
+                    if(this.site && this.site.primaryColor) {
+                        document.documentElement.style.setProperty('--brand-color', this.site.primaryColor);
+                    }
+                    if(this.site && this.site.secondaryColor) {
+                        document.documentElement.style.setProperty('--dark-color', this.site.secondaryColor);
+                    }
                 },
 
                 formatMoney(amount) {
