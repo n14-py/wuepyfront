@@ -8,6 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="/js/api.js"></script>
     
     <style>
@@ -17,11 +18,23 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* Animación de escaneo para la IA */
+        @keyframes scanline {
+            0% { transform: translateY(-100%); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateY(1000%); opacity: 0; }
+        }
+        .ai-scanner::after {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 10px;
+            background: linear-gradient(to bottom, transparent, #8b5cf6, transparent);
+            animation: scanline 2s linear infinite; pointer-events: none;
+        }
     </style>
 </head>
 <body class="text-slate-800 flex flex-col min-h-screen" x-data="siteWizard()">
 
-    <nav class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm" x-show="user">
+    <nav class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm" x-show="user" x-cloak>
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <div class="flex items-center gap-8">
@@ -47,7 +60,26 @@
         </div>
     </nav>
 
-    <main class="flex-grow">
+    <div x-show="isGenerating" x-cloak class="fixed inset-0 z-[100] bg-slate-900 flex flex-col items-center justify-center text-white ai-scanner relative overflow-hidden">
+        <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNykiLz48L3N2Zz4=')] opacity-50"></div>
+        
+        <div class="relative z-10 flex flex-col items-center text-center px-4">
+            <div class="w-24 h-24 mb-8 relative">
+                <div class="absolute inset-0 border-4 border-violet-500/30 rounded-full"></div>
+                <div class="absolute inset-0 border-4 border-violet-500 border-t-transparent rounded-full animate-spin"></div>
+                <i class="fas fa-brain text-4xl text-violet-400 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 animate-pulse"></i>
+            </div>
+            
+            <h2 class="text-3xl md:text-4xl font-black mb-4 tracking-tight" x-text="loadingPhases[currentPhase].title"></h2>
+            <p class="text-lg text-violet-300 font-medium h-8" x-text="loadingPhases[currentPhase].desc"></p>
+            
+            <div class="w-64 h-2 bg-slate-800 rounded-full mt-8 overflow-hidden">
+                <div class="h-full bg-gradient-to-r from-violet-600 to-fuchsia-500 rounded-full transition-all duration-1000 ease-out" :style="'width: ' + ((currentPhase + 1) * 20) + '%'"></div>
+            </div>
+        </div>
+    </div>
+
+    <main class="flex-grow" x-show="!isGenerating" x-cloak>
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
             
             <div class="mb-8">
@@ -111,7 +143,7 @@
                                 </button>
 
                                 <div x-show="open" x-transition.opacity.duration.200ms style="display: none;"
-                                     class="absolute z-50 w-full mt-2 bg-white border border-slate-200 rounded-xl shadow-2xl max-h-64 overflow-y-auto py-2">
+                                     class="absolute z-50 w-full mt-2 bg-white border border-slate-200 rounded-xl shadow-2xl max-h-64 overflow-y-auto py-2 custom-scrollbar">
                                     <template x-for="item in businessOptions" :key="item.id">
                                         <button type="button" @click="formData.businessType = item.id; open = false"
                                                 class="w-full text-left px-5 py-3 hover:bg-indigo-50 hover:text-indigo-700 font-bold transition flex items-center justify-between"
@@ -198,56 +230,121 @@
                             <h2 class="text-2xl font-black text-slate-900 flex items-center gap-3"><i class="fas fa-paint-brush text-pink-500"></i> Apariencia Visual</h2>
                         </div>
                         <div class="space-y-6">
-                            <div>
-                                <label class="block text-xs font-black text-slate-600 uppercase tracking-widest mb-2">Logo de la Empresa (Opcional)</label>
-                                <div class="flex items-center gap-6">
-                                    <div class="w-24 h-24 rounded-2xl bg-slate-100 border-2 border-dashed border-slate-300 flex items-center justify-center overflow-hidden shrink-0">
-                                        <template x-if="imagePreview"><img :src="imagePreview" class="w-full h-full object-cover"></template>
-                                        <template x-if="!imagePreview"><i class="fas fa-camera text-slate-300 text-3xl"></i></template>
-                                    </div>
-                                    <input type="file" name="logo" accept="image/*" @change="previewLogo" class="block w-full text-sm text-slate-500 file:mr-4 file:py-3 file:px-6 file:rounded-xl file:border-0 file:text-xs file:font-black file:uppercase file:tracking-widest file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 transition cursor-pointer">
-                                </div>
-                            </div>
                             
-                            <input type="hidden" name="designMode" value="template">
-                            <div class="p-6 bg-slate-50 rounded-2xl border border-slate-200 mt-4 min-h-[200px]">
-                                <div class="space-y-4">
-<div>
-                                        <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Elige tu Plantilla</label>
-                                        <input type="hidden" name="template" :value="formData.template">
-                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                            <label class="relative cursor-pointer group">
-                                                <input type="radio" x-model="formData.template" value="template1" class="peer sr-only">
-                                                <div class="border-2 border-slate-200 rounded-xl p-4 bg-white hover:bg-slate-50 transition peer-checked:border-indigo-500 peer-checked:bg-indigo-50">
-                                                    <div class="w-full h-24 bg-slate-200 rounded-lg mb-3 bg-cover bg-center" style="background-image: url('https://placehold.co/400x200?text=E-Commerce+Moderno');"></div>
-                                                    <h4 class="font-black text-slate-800 text-sm">Plantilla 1: Moderna</h4>
-                                                    <p class="text-[10px] text-slate-500 mt-1">E-Commerce completo, diseño oscuro y minimalista.</p>
-                                                </div>
-                                                <div class="absolute top-3 right-3 w-5 h-5 rounded-full border-2 border-slate-300 peer-checked:border-indigo-500 peer-checked:bg-indigo-500 flex items-center justify-center transition">
-                                                    <i class="fas fa-check text-white text-[10px] opacity-0 peer-checked:opacity-100"></i>
-                                                </div>
-                                            </label>
-                                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                                <label class="relative flex flex-col p-6 cursor-pointer rounded-2xl border-2 transition-all"
+                                       :class="formData.designMode === 'template' ? 'border-blue-500 bg-blue-50/30 shadow-md' : 'border-slate-200 hover:border-slate-300 bg-white'">
+                                    <input type="radio" name="designMode" value="template" x-model="formData.designMode" class="sr-only">
+                                    <i class="fas fa-layer-group text-3xl mb-4" :class="formData.designMode === 'template' ? 'text-blue-500' : 'text-slate-400'"></i>
+                                    <span class="text-lg font-black text-slate-900 mb-1">Modo Clásico</span>
+                                    <span class="text-sm font-medium text-slate-500">Elige una plantilla prefabricada básica.</span>
+                                    <div class="absolute top-4 right-4 w-6 h-6 rounded-full border-2 flex items-center justify-center"
+                                         :class="formData.designMode === 'template' ? 'border-blue-500 bg-blue-500 text-white' : 'border-slate-300'">
+                                        <i class="fas fa-check text-xs" x-show="formData.designMode === 'template'"></i>
                                     </div>
+                                </label>
 
-                                    <div class="grid grid-cols-2 gap-4 pt-2">
+                                <label class="relative flex flex-col p-6 cursor-pointer rounded-2xl border-2 transition-all overflow-hidden group"
+                                       :class="formData.designMode === 'ai_generated' ? 'border-violet-500 shadow-xl shadow-violet-500/20' : 'border-slate-200 hover:border-violet-300 bg-white'">
+                                    <div class="absolute inset-0 bg-gradient-to-br from-violet-600 to-fuchsia-600 opacity-0 group-hover:opacity-5 transition duration-500"></div>
+                                    <input type="radio" name="designMode" value="ai_generated" x-model="formData.designMode" class="sr-only">
+                                    <div class="flex items-center gap-3 mb-4 relative z-10">
+                                        <i class="fas fa-magic text-3xl" :class="formData.designMode === 'ai_generated' ? 'text-violet-500' : 'text-slate-400'"></i>
+                                        <span class="bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white text-[10px] font-black px-2 py-1 rounded-full uppercase tracking-widest shadow-md">Wuepy AI</span>
+                                    </div>
+                                    <span class="text-lg font-black text-slate-900 mb-1 relative z-10">Orquestador IA</span>
+                                    <span class="text-sm font-medium text-slate-500 relative z-10">Construye una web única y multipágina.</span>
+                                    <div class="absolute top-4 right-4 w-6 h-6 rounded-full border-2 flex items-center justify-center z-10"
+                                         :class="formData.designMode === 'ai_generated' ? 'border-violet-500 bg-violet-500 text-white' : 'border-slate-300'">
+                                        <i class="fas fa-check text-xs" x-show="formData.designMode === 'ai_generated'"></i>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <div x-show="formData.designMode === 'template'" x-collapse>
+                                <div>
+                                    <label class="block text-xs font-black text-slate-600 uppercase tracking-widest mb-2">Logo de la Empresa (Opcional)</label>
+                                    <div class="flex items-center gap-6">
+                                        <div class="w-24 h-24 rounded-2xl bg-slate-100 border-2 border-dashed border-slate-300 flex items-center justify-center overflow-hidden shrink-0">
+                                            <template x-if="imagePreview"><img :src="imagePreview" class="w-full h-full object-cover"></template>
+                                            <template x-if="!imagePreview"><i class="fas fa-camera text-slate-300 text-3xl"></i></template>
+                                        </div>
+                                        <input type="file" name="logo" accept="image/*" @change="previewLogo" class="block w-full text-sm text-slate-500 file:mr-4 file:py-3 file:px-6 file:rounded-xl file:border-0 file:text-xs file:font-black file:uppercase file:tracking-widest file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 transition cursor-pointer">
+                                    </div>
+                                </div>
+                                
+                                <div class="p-6 bg-slate-50 rounded-2xl border border-slate-200 mt-6 min-h-[200px]">
+                                    <div class="space-y-4">
                                         <div>
-                                            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Color Principal</label>
-                                            <div class="flex items-center gap-3 bg-white border border-slate-200 rounded-xl px-4 py-2">
-                                                <input type="color" name="primaryColor" x-model="formData.primaryColor" class="w-8 h-8 rounded cursor-pointer border-none p-0 bg-transparent">
-                                                <span class="text-xs font-bold text-slate-600 uppercase" x-text="formData.primaryColor"></span>
+                                            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Elige tu Plantilla</label>
+                                            <input type="hidden" name="template" :value="formData.template">
+                                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                <label class="relative cursor-pointer group">
+                                                    <input type="radio" x-model="formData.template" value="template1" class="peer sr-only">
+                                                    <div class="border-2 border-slate-200 rounded-xl p-4 bg-white hover:bg-slate-50 transition peer-checked:border-indigo-500 peer-checked:bg-indigo-50">
+                                                        <div class="w-full h-24 bg-slate-200 rounded-lg mb-3 bg-cover bg-center" style="background-image: url('https://placehold.co/400x200?text=E-Commerce+Moderno');"></div>
+                                                        <h4 class="font-black text-slate-800 text-sm">Plantilla 1: Moderna</h4>
+                                                        <p class="text-[10px] text-slate-500 mt-1">E-Commerce completo, diseño claro y minimalista.</p>
+                                                    </div>
+                                                    <div class="absolute top-3 right-3 w-5 h-5 rounded-full border-2 border-slate-300 peer-checked:border-indigo-500 peer-checked:bg-indigo-500 flex items-center justify-center transition">
+                                                        <i class="fas fa-check text-white text-[10px] opacity-0 peer-checked:opacity-100"></i>
+                                                    </div>
+                                                </label>
+                                                <label class="relative cursor-pointer group">
+                                                    <input type="radio" x-model="formData.template" value="template2" class="peer sr-only">
+                                                    <div class="border-2 border-slate-200 rounded-xl p-4 bg-white hover:bg-slate-50 transition peer-checked:border-indigo-500 peer-checked:bg-indigo-50">
+                                                        <div class="w-full h-24 bg-slate-800 rounded-lg mb-3 bg-cover bg-center" style="background-image: url('https://placehold.co/400x200/1e293b/ffffff?text=Diseño+Oscuro');"></div>
+                                                        <h4 class="font-black text-slate-800 text-sm">Plantilla 2: Oscura</h4>
+                                                        <p class="text-[10px] text-slate-500 mt-1">Diseño agresivo y elegante, ideal para electrónica o motor.</p>
+                                                    </div>
+                                                    <div class="absolute top-3 right-3 w-5 h-5 rounded-full border-2 border-slate-300 peer-checked:border-indigo-500 peer-checked:bg-indigo-500 flex items-center justify-center transition">
+                                                        <i class="fas fa-check text-white text-[10px] opacity-0 peer-checked:opacity-100"></i>
+                                                    </div>
+                                                </label>
                                             </div>
                                         </div>
-                                        <div>
-                                            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Color Secundario</label>
-                                            <div class="flex items-center gap-3 bg-white border border-slate-200 rounded-xl px-4 py-2">
-                                                <input type="color" name="secondaryColor" x-model="formData.secondaryColor" class="w-8 h-8 rounded cursor-pointer border-none p-0 bg-transparent">
-                                                <span class="text-xs font-bold text-slate-600 uppercase" x-text="formData.secondaryColor"></span>
+
+                                        <div class="grid grid-cols-2 gap-4 pt-2">
+                                            <div>
+                                                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Color Principal</label>
+                                                <div class="flex items-center gap-3 bg-white border border-slate-200 rounded-xl px-4 py-2">
+                                                    <input type="color" name="primaryColor" x-model="formData.primaryColor" class="w-8 h-8 rounded cursor-pointer border-none p-0 bg-transparent">
+                                                    <span class="text-xs font-bold text-slate-600 uppercase" x-text="formData.primaryColor"></span>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Color Secundario</label>
+                                                <div class="flex items-center gap-3 bg-white border border-slate-200 rounded-xl px-4 py-2">
+                                                    <input type="color" name="secondaryColor" x-model="formData.secondaryColor" class="w-8 h-8 rounded cursor-pointer border-none p-0 bg-transparent">
+                                                    <span class="text-xs font-bold text-slate-600 uppercase" x-text="formData.secondaryColor"></span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
+
+                            <div x-show="formData.designMode === 'ai_generated'" x-collapse>
+                                <div class="p-1 rounded-2xl bg-gradient-to-r from-violet-500 via-fuchsia-500 to-violet-500 shadow-lg">
+                                    <div class="bg-white p-6 md:p-8 rounded-[1.4rem]">
+                                        <label class="flex items-center gap-2 text-sm font-black text-violet-600 uppercase tracking-widest mb-4">
+                                            <i class="fas fa-terminal"></i> Terminal del Arquitecto IA
+                                        </label>
+                                        
+                                        <textarea name="aiPrompt" x-model="formData.aiPrompt" rows="5" 
+                                            placeholder="Ej: Quiero una tienda para vender repuestos de motos. Diseño agresivo, oscuro con toques verdes. Agrega una sección Sobre Nosotros contando que somos apasionados por las motos desde 1990..." 
+                                            class="w-full px-5 py-4 bg-slate-900 text-slate-100 border border-slate-700 rounded-xl focus:ring-2 focus:ring-violet-500 font-medium transition outline-none resize-none placeholder-slate-500 leading-relaxed"></textarea>
+                                        
+                                        <div class="mt-4 flex flex-wrap gap-2">
+                                            <span class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mr-2 flex items-center">Tips:</span>
+                                            <button type="button" @click="appendPrompt('diseño minimalista en tonos pastel')" class="text-xs bg-slate-100 hover:bg-violet-100 hover:text-violet-700 text-slate-600 px-3 py-1.5 rounded-full font-bold transition">Minimalista/Pastel</button>
+                                            <button type="button" @click="appendPrompt('crear página de historia sobre nosotros')" class="text-xs bg-slate-100 hover:bg-violet-100 hover:text-violet-700 text-slate-600 px-3 py-1.5 rounded-full font-bold transition">Incluir Historia</button>
+                                            <button type="button" @click="appendPrompt('incluir sección de preguntas frecuentes')" class="text-xs bg-slate-100 hover:bg-violet-100 hover:text-violet-700 text-slate-600 px-3 py-1.5 rounded-full font-bold transition">Agregar FAQ</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
 
@@ -272,8 +369,8 @@
                                 <input type="text" name="address" class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold text-slate-800 outline-none">
                             </div>
 
-                            <div class="pt-4 border-t border-slate-100">
-                                <h4 class="font-black text-slate-800 mb-4 text-sm uppercase tracking-widest">Textos de la Portada</h4>
+                            <div class="pt-4 border-t border-slate-100" x-show="formData.designMode === 'template'">
+                                <h4 class="font-black text-slate-800 mb-4 text-sm uppercase tracking-widest">Textos de la Portada (Opcional si usas IA)</h4>
                                 <div class="space-y-4">
                                     <div>
                                         <input type="text" name="heroTitle" placeholder="Título Grande (Hero)" class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold text-slate-800 outline-none">
@@ -298,9 +395,10 @@
                         Siguiente <i class="fas fa-chevron-right"></i>
                     </button>
 
-                    <button type="submit" x-show="step === 4" :disabled="isLoading" class="px-10 py-4 rounded-2xl font-black text-white bg-emerald-500 hover:bg-emerald-600 shadow-xl shadow-emerald-500/30 transition transform hover:-translate-y-1 active:scale-95 flex items-center gap-3 text-lg ml-auto disabled:opacity-75">
-                        <span x-text="isLoading ? 'CONSTRUYENDO...' : 'CREAR MI NEGOCIO'"></span>
-                        <i class="fas" :class="isLoading ? 'fa-spinner fa-spin' : 'fa-rocket'"></i>
+                    <button type="submit" x-show="step === 4" :disabled="isLoading" class="px-10 py-4 rounded-2xl font-black text-white transition transform hover:-translate-y-1 active:scale-95 flex items-center gap-3 text-lg ml-auto disabled:opacity-75"
+                            :class="formData.designMode === 'ai_generated' ? 'bg-gradient-to-r from-violet-600 to-fuchsia-600 shadow-xl shadow-violet-500/30' : 'bg-emerald-500 hover:bg-emerald-600 shadow-xl shadow-emerald-500/30'">
+                        <span x-text="isLoading ? 'PROCESANDO...' : (formData.designMode === 'ai_generated' ? 'CONSTRUIR CON IA' : 'CREAR MI NEGOCIO')"></span>
+                        <i class="fas" :class="isLoading ? 'fa-spinner fa-spin' : (formData.designMode === 'ai_generated' ? 'fa-magic' : 'fa-rocket')"></i>
                     </button>
                 </div>
             </form>
@@ -321,6 +419,16 @@
                 imagePreview: null,
                 isLoading: false,
                 errorMsg: '',
+
+                isGenerating: false,
+                currentPhase: 0,
+                loadingPhases: [
+                    { title: "Analizando requerimientos", desc: "Leyendo tu idea y definiendo el nicho..." },
+                    { title: "Generando Blueprint", desc: "Diseñando la arquitectura en JSON..." },
+                    { title: "Redactando Copywriting", desc: "Escribiendo textos persuasivos para tu marca..." },
+                    { title: "Ensamblando Bloques", desc: "Conectando heros, catálogos y footers..." },
+                    { title: "Compilando Archivos", desc: "Creando index.html y rutas secundarias..." }
+                ],
                 
                 businessOptions: [
                     { id: 'tienda_online', label: 'Tienda Online / E-commerce (Ropa, Electrónica)' },
@@ -333,15 +441,12 @@
                     { id: 'inmobiliaria', label: 'Inmobiliaria / Bienes Raíces' },
                     { id: 'otro', label: 'Otro rubro' }
                 ],
-                templateOptions: [
-                    { id: 'template1', name: 'E-Commerce Moderno (Claro)' },
-                    { id: 'template2', name: 'Minimalista Elegante (Oscuro)' }
-                ],
                 
                 formData: {
                     businessType: '', name: '', subdomain: '', currency: 'PYG',
                     plan: 'basico', designMode: 'template', primaryColor: '#3b82f6',
-                    secondaryColor: '#1e293b', template: 'template1', whatsapp: '', contactEmail: ''
+                    secondaryColor: '#1e293b', template: 'template1', whatsapp: '', 
+                    contactEmail: '', aiPrompt: ''
                 },
 
                 init() {
@@ -363,20 +468,48 @@
                     if (file) this.imagePreview = URL.createObjectURL(file);
                 },
 
+                appendPrompt(text) {
+                    if (this.formData.aiPrompt.length > 0) {
+                        this.formData.aiPrompt += ', ' + text;
+                    } else {
+                        this.formData.aiPrompt = text;
+                    }
+                },
+
+                startLoadingAnimation() {
+                    this.isGenerating = true;
+                    this.currentPhase = 0;
+                    const phaseInterval = setInterval(() => {
+                        if (this.currentPhase < this.loadingPhases.length - 1) {
+                            this.currentPhase++;
+                        } else {
+                            clearInterval(phaseInterval);
+                        }
+                    }, 1500);
+                },
+
                 validateStep1() {
-                    if(!this.formData.businessType) { alert("Selecciona el Tipo de Negocio."); return false; }
-                    if(!this.formData.name || !this.formData.subdomain) { alert("Nombre y subdominio obligatorios."); return false; }
+                    if(!this.formData.businessType) { Swal.fire({ icon: 'warning', title: 'Ups', text: 'Selecciona el Tipo de Negocio.' }); return false; }
+                    if(!this.formData.name || !this.formData.subdomain) { Swal.fire({ icon: 'warning', title: 'Ups', text: 'Nombre y subdominio obligatorios.' }); return false; }
+                    return true;
+                },
+                validateStep3() {
+                    if (this.formData.designMode === 'ai_generated' && this.formData.aiPrompt.trim() === '') {
+                        Swal.fire({ icon: 'warning', title: 'Falta tu idea', text: 'Por favor dile a la IA qué tipo de tienda quieres crear en el recuadro.' });
+                        return false;
+                    }
                     return true;
                 },
                 validateStep4() {
-                    if(!this.formData.whatsapp) { alert("El WhatsApp de ventas es obligatorio."); return false; }
+                    if(!this.formData.whatsapp) { Swal.fire({ icon: 'warning', title: 'Ups', text: 'El WhatsApp de ventas es obligatorio.' }); return false; }
                     return true;
                 },
+
                 nextStep() {
-                    let valid = false;
-                    if(this.step === 1) valid = this.validateStep1();
-                    else valid = true;
-                    if(valid) { window.scrollTo({ top: 0, behavior: 'smooth' }); this.step++; }
+                    let valid = true;
+                    if (this.step === 1) valid = this.validateStep1();
+                    if (this.step === 3) valid = this.validateStep3();
+                    if (valid) { window.scrollTo({ top: 0, behavior: 'smooth' }); this.step++; }
                 },
                 prevStep() {
                     if(this.step > 1) { window.scrollTo({ top: 0, behavior: 'smooth' }); this.step--; }
@@ -384,31 +517,53 @@
 
                 async submitForm() {
                     if(!this.validateStep4()) return;
-                    this.isLoading = true;
+                    
                     this.errorMsg = '';
+                    
+                    if (this.formData.designMode === 'ai_generated') {
+                        this.startLoadingAnimation();
+                    } else {
+                        this.isLoading = true;
+                    }
                     
                     try {
                         const formElement = document.getElementById('createSiteForm');
                         const formDataPayload = new FormData(formElement);
                         
-// Enviamos usando fetch nativo apuntando a tu backend API
-                        const response = await fetch(`${API_URL}/dashboard/create-site`, {
+                        // Enviamos usando fetch nativo apuntando a tu backend API
+                        const response = await fetch(`${API_URL}/dashboard/site/create`, {
                             method: 'POST',
                             body: formDataPayload,
                             headers: { 'Authorization': `Bearer ${this.user?.token || ''}` },
-                            credentials: 'include' // 🔴 LÍNEA CRÍTICA: Permite que la cookie de sesión viaje de Cloudflare a Render
+                            credentials: 'include' // LÍNEA CRÍTICA: Permite que la cookie de sesión viaje de Cloudflare a Render
                         });
                         
                         const data = await response.json();
+                        
                         if(response.ok && data.success !== false) {
-                            window.location.href = '/dashboard/index.html';
+                            setTimeout(() => {
+                                this.isGenerating = false;
+                                this.isLoading = false;
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: '¡Tienda Creada!',
+                                    text: 'Tu plataforma está lista. Si usaste IA, puedes ver tu nueva web en vivo.',
+                                    confirmButtonText: 'Ir a mi Panel',
+                                    confirmButtonColor: '#4f46e5',
+                                    allowOutsideClick: false
+                                }).then(() => {
+                                    window.location.href = `/dashboard/site-overview.html?id=${data.siteId}`;
+                                });
+                            }, 500); // Pequeña pausa para que se vea la última animación
                         } else {
+                            this.isGenerating = false;
+                            this.isLoading = false;
                             this.errorMsg = data.message || 'Error al crear la tienda.';
                         }
                     } catch(e) {
-                        this.errorMsg = 'Error de conexión con el servidor.';
-                    } finally {
+                        this.isGenerating = false;
                         this.isLoading = false;
+                        this.errorMsg = 'Error de conexión con el servidor.';
                     }
                 }
             }));
