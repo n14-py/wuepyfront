@@ -13,6 +13,20 @@
     
     <script src="/js/api.js"></script>
 
+    <script>
+        const _hostname = window.location.hostname;
+        const _mainDomain = 'wuepy.com'; 
+        const _isLocal = _hostname === 'localhost' || _hostname === '127.0.0.1';
+        const _isMainDomain = _isLocal || _hostname === _mainDomain || _hostname === `www.${_mainDomain}` || _hostname.includes('pages.dev');
+
+        if (!_isMainDomain) {
+            // Pintamos el fondo oscuro instantáneamente para que no deslumbre
+            document.documentElement.style.backgroundColor = '#0f172a';
+            // Ocultamos todo el panel de landing page de Wuepy al instante
+            document.write('<style>#landing-view { display: none !important; } body { background-color: #0f172a !important; }</style>');
+        }
+    </script>
+
     <style>
         body {
             font-family: 'Inter', system-ui, -apple-system, sans-serif;
@@ -424,29 +438,79 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', async () => {
-        const hostname = window.location.hostname;
-        const mainDomain = 'wuepy.com'; 
-        
-        const isLocal = hostname === 'localhost' || hostname === '127.0.0.1';
-        const isMainDomain = isLocal || hostname === mainDomain || hostname === `www.${mainDomain}` || hostname.includes('pages.dev');
-
-        // SI NO ES EL DOMINIO PRINCIPAL (Es una tienda de un cliente)
-        if (!isMainDomain) {
-            
-            document.getElementById('landing-view').style.display = 'none';
+        if (!_isMainDomain) {
+            const subdomain = _hostname.split('.')[0];
             const storeView = document.getElementById('store-view');
             storeView.style.display = 'block';
-            
-            storeView.innerHTML = `
-                <div class="h-screen w-full flex flex-col items-center justify-center bg-slate-950">
-                    <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-indigo-500 mb-4"></div>
-                    <h2 class="text-xl font-semibold text-slate-300 animate-pulse">Abriendo tienda...</h2>
-                </div>
-            `;
 
+            let currentPath = window.location.pathname;
+            if (currentPath === '/') currentPath = '/index.html';
+            const currentSearch = window.location.search;
+
+            // =========================================================
+            // FUNCIÓN MAESTRA PARA INYECTAR EL IFRAME (VELOZ Y SIN CACHÉ)
+            // =========================================================
+            const mountIframe = (template) => {
+                if (document.getElementById('wuepy-store-iframe')) return; // Evita inyectar doble
+                
+                const iframe = document.createElement('iframe');
+                iframe.id = 'wuepy-store-iframe';
+                iframe.className = "fixed inset-0 w-full h-full border-none z-50 bg-slate-950";
+                
+                iframe.onload = function() {
+                    try {
+                        const iframeWindow = iframe.contentWindow;
+                        const iframePath = iframeWindow.location.pathname;
+                        const iframeSearch = iframeWindow.location.search;
+                        
+                        let cleanPath = iframePath.replace(/\/views\/templates\/[^\/]+/i, '');
+                        if (cleanPath === '/index.html' || cleanPath === '') cleanPath = '/';
+                        
+                        let cleanSearchUrl = iframeSearch.replace(/([?&])_t=[^&]+(&|$)/, '$1');
+                        if(cleanSearchUrl.endsWith('?') || cleanSearchUrl.endsWith('&')) cleanSearchUrl = cleanSearchUrl.slice(0, -1);
+                        
+                        window.history.replaceState(null, '', cleanPath + cleanSearchUrl);
+                        document.title = iframeWindow.document.title || 'Tienda Online';
+                    } catch(e) {}
+                };
+
+                // ROMPE-CACHÉ ABSOLUTO PARA EL IFRAME (_t en vez de nocache)
+                const timestamp = new Date().getTime();
+                const joiner = currentSearch ? '&' : '?';
+                iframe.src = `/views/templates/${template}${currentPath}${currentSearch}${joiner}_t=${timestamp}`;
+                
+                storeView.innerHTML = '';
+                storeView.appendChild(iframe);
+            };
+
+            // =========================================================
+            // 1. CARGA LOCAL (VELOCIDAD DE LA LUZ)
+            // =========================================================
+            const cacheKey = `wuepy_router_${subdomain}`;
+            const cachedRoute = localStorage.getItem(cacheKey);
+            
+            if (cachedRoute) {
+                const parsed = JSON.parse(cachedRoute);
+                if (parsed.isAiGenerated && parsed.aiFolder) {
+                    window.location.replace(`/${parsed.aiFolder}/index.html`);
+                    return;
+                }
+                mountIframe(parsed.template || 'template1');
+            } else {
+                // Pantalla limpia y silenciosa por si es la primerísima vez que alguien entra
+                storeView.innerHTML = `
+                    <div class="h-screen w-full flex items-center justify-center bg-slate-950">
+                        <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-slate-700"></div>
+                    </div>
+                `;
+            }
+
+            // =========================================================
+            // 2. FETCH SILENCIOSO (ROMPIENDO CACHÉ DE CLOUDFLARE EN LA API)
+            // =========================================================
             try {
-                const subdomain = hostname.split('.')[0];
-                const response = await fetch(`${window.API_URL || 'https://wuepyback.onrender.com/api'}/store/public/${subdomain}`);
+                // Aquí el _t=Date.now() obliga a que Cloudflare te dé tu tienda con los productos actualizados
+                const response = await fetch(`${window.API_URL || 'https://wuepyback.onrender.com/api'}/store/public/${subdomain}?_t=${Date.now()}`);
 
                 if (!response.ok) {
                     storeView.innerHTML = `
@@ -454,67 +518,37 @@
                             <h1 class="text-6xl text-slate-300 font-bold mb-4">404</h1>
                             <h2 class="text-2xl text-slate-700 font-semibold mb-2">Tienda no encontrada</h2>
                             <p class="text-slate-500 mb-6">La tienda que buscas no existe o se encuentra inactiva.</p>
-                            <a href="https://${mainDomain}" class="px-6 py-3 bg-indigo-600 text-white font-bold rounded-xl shadow-lg hover:bg-indigo-700 transition">Crear mi propia tienda en Wuepy</a>
+                            <a href="https://${_mainDomain}" class="px-6 py-3 bg-indigo-600 text-white font-bold rounded-xl shadow-lg hover:bg-indigo-700 transition">Crear mi propia tienda en Wuepy</a>
                         </div>`;
                     return;
                 }
 
                 const data = await response.json();
+                
+                // Guardamos el template para la próxima visita a la velocidad de la luz
+                localStorage.setItem(cacheKey, JSON.stringify({
+                    isAiGenerated: data.isAiGenerated,
+                    aiFolder: data.aiFolder,
+                    template: data.site.template || 'template1'
+                }));
+
                 if (data.isAiGenerated && data.aiFolder) {
-                    window.location.replace(`/${data.aiFolder}/index.html`);
+                    if (!cachedRoute) window.location.replace(`/${data.aiFolder}/index.html`);
                     return;
                 }
 
-                // =========================================================
-                // IFRAME INTELIGENTE CON ROMPE-CACHÉ Y SINCRONIZACIÓN DE URL
-                // =========================================================
-                const template = data.site.template || 'template1';
-                
-                let currentPath = window.location.pathname;
-                if (currentPath === '/') currentPath = '/index.html';
-                const currentSearch = window.location.search;
-
-                const iframe = document.createElement('iframe');
-                iframe.className = "fixed inset-0 w-full h-full border-none z-50 bg-slate-950";
-                
-                // Función mágica que engaña al navegador y sincroniza la URL limpia arriba
-                iframe.onload = function() {
-                    try {
-                        const iframeWindow = iframe.contentWindow;
-                        const iframePath = iframeWindow.location.pathname;
-                        const iframeSearch = iframeWindow.location.search;
-                        
-                        // Limpiamos la ruta fea de la carpeta
-                        let cleanPath = iframePath.replace(/\/views\/templates\/[^\/]+/i, '');
-                        if (cleanPath === '/index.html' || cleanPath === '') cleanPath = '/';
-                        
-                        // Ocultamos el parámetro de nocache de la barra de direcciones para que quede hermosa
-                        let cleanSearchUrl = iframeSearch.replace(/([?&])nocache=[^&]+(&|$)/, '$1');
-                        if(cleanSearchUrl.endsWith('?') || cleanSearchUrl.endsWith('&')) cleanSearchUrl = cleanSearchUrl.slice(0, -1);
-                        
-                        // Actualizamos la URL del navegador sin recargar la página
-                        window.history.replaceState(null, '', cleanPath + cleanSearchUrl);
-                        document.title = iframeWindow.document.title;
-                    } catch(e) {
-                        console.warn("Seguridad del navegador impidió sincronizar URL", e);
-                    }
-                };
-
-                // ROMPE-CACHÉ: Le agregamos la hora exacta al final para obligar a Cloudflare a darte la plantilla más fresca
-                const timestamp = new Date().getTime();
-                const joiner = currentSearch ? '&' : '?';
-                iframe.src = `/views/templates/${template}${currentPath}${currentSearch}${joiner}nocache=${timestamp}`;
-                
-                storeView.innerHTML = '';
-                storeView.appendChild(iframe);
+                // Si no había caché, montamos el iframe por primera vez
+                if (!cachedRoute) {
+                    mountIframe(data.site.template || 'template1');
+                }
 
             } catch (error) {
-                storeView.innerHTML = `
-                    <div class="h-screen flex flex-col items-center justify-center bg-slate-50">
-                        <i class="fas fa-wifi text-5xl text-red-500 mb-4"></i>
-                        <h1 class="text-2xl font-bold text-slate-800 mb-2">Error de Conexión</h1>
-                        <p class="text-slate-500">No pudimos conectar con los servidores de Wuepy.</p>
-                    </div>`;
+                if (!cachedRoute) {
+                    storeView.innerHTML = `
+                        <div class="h-screen flex items-center justify-center bg-slate-950 text-slate-500">
+                            Error de conexión a Wuepy.
+                        </div>`;
+                }
             }
         }
     });
