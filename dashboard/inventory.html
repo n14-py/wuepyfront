@@ -531,11 +531,9 @@
                     this.user = WuepyAPI.getUser();
                     if(!this.user) { window.location.href = '/auth/login.html'; return; }
                     
-                    // MÉTODO UNIVERSAL (Seguro para estáticos)
                     const urlParams = new URLSearchParams(window.location.search);
                     let urlSiteId = urlParams.get('id') || urlParams.get('siteId');
 
-                    // Fallback a ruta limpia por si se llama desde el backend
                     if (!urlSiteId) {
                         const pathSegments = window.location.pathname.split('/');
                         const siteIdx = pathSegments.indexOf('site');
@@ -631,10 +629,19 @@
                     
                     const formElement = e.target;
                     const formDataPayload = new FormData(formElement);
-                    formDataPayload.append('isActive', this.formData.isActive);
-                    formDataPayload.append('siteId', this.site?._id);
                     
-                    // CORRECCIÓN CRÍTICA: Pasamos el siteId por la URL para que el middleware lo vea antes que multer
+                    // CORRECCIÓN DEFINITIVA: Usamos .set() para limpiar duplicados y sobrescribir
+                    formDataPayload.set('isActive', this.formData.isActive);
+                    // Aseguramos que siempre tenga el permiso del marketplace
+                    formDataPayload.set('showInGlobalMarketplace', 'true');
+                    formDataPayload.set('siteId', this.site?._id);
+
+                    // Si no hay imagen, borramos el campo para que Multer y el backend no se mareen
+                    const fileInput = document.getElementById('imageInput');
+                    if (!fileInput || fileInput.files.length === 0) {
+                        formDataPayload.delete('image');
+                    }
+                    
                     const endpoint = this.isEditing 
                         ? `/dashboard/inventory/edit/${this.editingId}?siteId=${this.site?._id}` 
                         : `/dashboard/inventory/add?siteId=${this.site?._id}`;
