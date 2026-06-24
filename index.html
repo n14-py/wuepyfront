@@ -450,11 +450,12 @@
             // =========================================================
             // FUNCIÓN MAESTRA PARA INYECTAR EL IFRAME (VELOZ Y SIN CACHÉ)
             // =========================================================
-            const mountIframe = (template) => {
+            const mountIframe = (source, isAi) => {
                 if (document.getElementById('wuepy-store-iframe')) return; // Evita inyectar doble
                 
                 const iframe = document.createElement('iframe');
                 iframe.id = 'wuepy-store-iframe';
+                // Dejamos el fondo negro para que cargue con un look elegante
                 iframe.className = "fixed inset-0 w-full h-full border-none z-50 bg-slate-950";
                 
                 iframe.onload = function() {
@@ -463,12 +464,22 @@
                         const iframePath = iframeWindow.location.pathname;
                         const iframeSearch = iframeWindow.location.search;
                         
-                        let cleanPath = iframePath.replace(/\/views\/templates\/[^\/]+/i, '');
+                        let cleanPath = iframePath;
+                        if (isAi) {
+                            // Limpiamos la ruta larga de la IA (ej: /views/templates/ai_stores/ID)
+                            const basePath = source.startsWith('/') ? source : '/' + source;
+                            cleanPath = iframePath.replace(basePath, '');
+                        } else {
+                            // Limpiamos la ruta de templates normales
+                            cleanPath = iframePath.replace(/\/views\/templates\/[^\/]+/i, '');
+                        }
+                        
                         if (cleanPath === '/index.html' || cleanPath === '') cleanPath = '/';
                         
                         let cleanSearchUrl = iframeSearch.replace(/([?&])_t=[^&]+(&|$)/, '$1');
                         if(cleanSearchUrl.endsWith('?') || cleanSearchUrl.endsWith('&')) cleanSearchUrl = cleanSearchUrl.slice(0, -1);
                         
+                        // Esto deja la URL impecable: luisarce.wuepy.com/nosotros.html
                         window.history.replaceState(null, '', cleanPath + cleanSearchUrl);
                         document.title = iframeWindow.document.title || 'Tienda Online';
                     } catch(e) {}
@@ -477,7 +488,17 @@
                 // ROMPE-CACHÉ ABSOLUTO PARA EL IFRAME (_t en vez de nocache)
                 const timestamp = new Date().getTime();
                 const joiner = currentSearch ? '&' : '?';
-                iframe.src = `/views/templates/${template}${currentPath}${currentSearch}${joiner}_t=${timestamp}`;
+                
+                // Construimos la URL fuente dependiendo si es IA o plantilla normal
+                let iframeSrc = '';
+                if (isAi) {
+                    const basePath = source.startsWith('/') ? source : '/' + source;
+                    iframeSrc = `${basePath}${currentPath}${currentSearch}${joiner}_t=${timestamp}`;
+                } else {
+                    iframeSrc = `/views/templates/${source}${currentPath}${currentSearch}${joiner}_t=${timestamp}`;
+                }
+
+                iframe.src = iframeSrc;
                 
                 storeView.innerHTML = '';
                 storeView.appendChild(iframe);
@@ -492,10 +513,10 @@
             if (cachedRoute) {
                 const parsed = JSON.parse(cachedRoute);
                 if (parsed.isAiGenerated && parsed.aiFolder) {
-                    window.location.replace(`/${parsed.aiFolder}/index.html`);
-                    return;
+                    mountIframe(parsed.aiFolder, true);
+                } else {
+                    mountIframe(parsed.template || 'template1', false);
                 }
-                mountIframe(parsed.template || 'template1');
             } else {
                 // Pantalla limpia y silenciosa por si es la primerísima vez que alguien entra
                 storeView.innerHTML = `
@@ -532,14 +553,13 @@
                     template: data.site.template || 'template1'
                 }));
 
-                if (data.isAiGenerated && data.aiFolder) {
-                    if (!cachedRoute) window.location.replace(`/${data.aiFolder}/index.html`);
-                    return;
-                }
-
                 // Si no había caché, montamos el iframe por primera vez
                 if (!cachedRoute) {
-                    mountIframe(data.site.template || 'template1');
+                    if (data.isAiGenerated && data.aiFolder) {
+                        mountIframe(data.aiFolder, true);
+                    } else {
+                        mountIframe(data.site.template || 'template1', false);
+                    }
                 }
 
             } catch (error) {
