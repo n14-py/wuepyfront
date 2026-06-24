@@ -438,6 +438,13 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', async () => {
+        // 🔥 ANTI LOOP INFINITO: Si ya estamos dentro de un iframe, detenemos la ejecución.
+        // Esto evita que si una página no carga, vuelva a meter tu propio sitio web adentro infinitas veces.
+        if (window !== window.top) {
+            console.log("Ejecución de Wuepy detenida por seguridad: Ya estamos en un iframe.");
+            return; 
+        }
+
         if (!_isMainDomain) {
             const subdomain = _hostname.split('.')[0];
             const storeView = document.getElementById('store-view');
@@ -493,7 +500,10 @@
                 let iframeSrc = '';
                 if (isAi) {
                     const basePath = source.startsWith('/') ? source : '/' + source;
-                    iframeSrc = `${basePath}${currentPath}${currentSearch}${joiner}_t=${timestamp}`;
+                    // 🔥 SOLUCIÓN CRÍTICA: Las páginas generadas por IA viven en el Backend (API_URL), NO en el frontend.
+                    // Extremos la base de la URL del Backend (le quitamos el '/api' al final)
+                    const backendHost = window.API_URL ? window.API_URL.replace(/\/api$/, '') : 'https://wuepyback.onrender.com';
+                    iframeSrc = `${backendHost}${basePath}${currentPath}${currentSearch}${joiner}_t=${timestamp}`;
                 } else {
                     iframeSrc = `/views/templates/${source}${currentPath}${currentSearch}${joiner}_t=${timestamp}`;
                 }
