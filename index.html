@@ -12,13 +12,11 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js"></script>
     
     <script src="/js/api.js"></script>
-
     <script>
         const _hostname = window.location.hostname;
         const _mainDomain = 'wuepy.com'; 
         const _isLocal = _hostname === 'localhost' || _hostname === '127.0.0.1';
         const _isMainDomain = _isLocal || _hostname === _mainDomain || _hostname === `www.${_mainDomain}` || _hostname.includes('pages.dev');
-
         if (!_isMainDomain) {
             // Pintamos el fondo oscuro instantáneamente para que no deslumbre
             document.documentElement.style.backgroundColor = '#0f172a';
@@ -26,7 +24,6 @@
             document.write('<style>#landing-view { display: none !important; } body { background-color: #0f172a !important; }</style>');
         }
     </script>
-
     <style>
         body {
             font-family: 'Inter', system-ui, -apple-system, sans-serif;
@@ -177,6 +174,7 @@
                     <p class="text-lg text-slate-500 mb-8 leading-relaxed">
                         Wuepy incluye un <strong>Punto de Venta (POS)</strong> profesional. Tus cajeros pueden cobrar en el local, y si un cliente pide por la web, le asignas el pedido a tu Delivery directamente desde el panel.
                     </p>
+
                     <ul class="space-y-5">
                         <li class="flex items-start gap-4">
                             <div class="w-10 h-10 rounded-full bg-white shadow-sm border border-slate-200 flex items-center justify-center text-indigo-600 shrink-0">
@@ -438,8 +436,7 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', async () => {
-        // 🔥 ANTI LOOP INFINITO: Si ya estamos dentro de un iframe, detenemos la ejecución.
-        // Esto evita que si una página no carga, vuelva a meter tu propio sitio web adentro infinitas veces.
+        // [!] ANTI LOOP INFINITO: Si ya estamos dentro de un iframe, detenemos la ejecución
         if (window !== window.top) {
             console.log("Ejecución de Wuepy detenida por seguridad: Ya estamos en un iframe.");
             return; 
@@ -455,14 +452,13 @@
             const currentSearch = window.location.search;
 
             // =========================================================
-            // FUNCIÓN MAESTRA PARA INYECTAR EL IFRAME (VELOZ Y SIN CACHÉ)
+            // FUNCIÓN MAESTRA (AHORA SOPORTA "ZERO-FILE" HTML DESDE LA DB)
             // =========================================================
-            const mountIframe = (source, isAi) => {
-                if (document.getElementById('wuepy-store-iframe')) return; // Evita inyectar doble
+            const mountIframe = (source, isAi, aiHtmlContent = null) => {
+                if (document.getElementById('wuepy-store-iframe')) return;
                 
                 const iframe = document.createElement('iframe');
                 iframe.id = 'wuepy-store-iframe';
-                // Dejamos el fondo negro para que cargue con un look elegante
                 iframe.className = "fixed inset-0 w-full h-full border-none z-50 bg-slate-950";
                 
                 iframe.onload = function() {
@@ -472,63 +468,68 @@
                         const iframeSearch = iframeWindow.location.search;
                         
                         let cleanPath = iframePath;
-                        if (isAi) {
-                            // Limpiamos la ruta larga de la IA (ej: /views/templates/ai_stores/ID)
-                            const basePath = source.startsWith('/') ? source : '/' + source;
-                            cleanPath = iframePath.replace(basePath, '');
-                        } else {
-                            // Limpiamos la ruta de templates normales
+                        if (isAi && aiHtmlContent) {
+                            // Si es IA, la ruta virtual la manejamos manualmente o la dejamos tal cual
+                            // ya que no hay una carpeta real.
+                        } else if (!isAi) {
                             cleanPath = iframePath.replace(/\/views\/templates\/[^\/]+/i, '');
                         }
                         
-                        if (cleanPath === '/index.html' || cleanPath === '') cleanPath = '/';
+                        if (cleanPath === '/index.html' || cleanPath === 'about:srcdoc' || cleanPath === '') cleanPath = '/';
                         
                         let cleanSearchUrl = iframeSearch.replace(/([?&])_t=[^&]+(&|$)/, '$1');
                         if(cleanSearchUrl.endsWith('?') || cleanSearchUrl.endsWith('&')) cleanSearchUrl = cleanSearchUrl.slice(0, -1);
                         
-                        // Esto deja la URL impecable: luisarce.wuepy.com/nosotros.html
                         window.history.replaceState(null, '', cleanPath + cleanSearchUrl);
                         document.title = iframeWindow.document.title || 'Tienda Online';
                     } catch(e) {}
                 };
 
-                // ROMPE-CACHÉ ABSOLUTO PARA EL IFRAME (_t en vez de nocache)
-                const timestamp = new Date().getTime();
-                const joiner = currentSearch ? '&' : '?';
-                
-                // Construimos la URL fuente dependiendo si es IA o plantilla normal
-                let iframeSrc = '';
-                if (isAi) {
-                    const basePath = source.startsWith('/') ? source : '/' + source;
-                    // 🔥 SOLUCIÓN CRÍTICA: Las páginas generadas por IA viven en el Backend (API_URL), NO en el frontend.
-                    // Extremos la base de la URL del Backend (le quitamos el '/api' al final)
-                    const backendHost = window.API_URL ? window.API_URL.replace(/\/api$/, '') : 'https://wuepyback.onrender.com';
-                    iframeSrc = `${backendHost}${basePath}${currentPath}${currentSearch}${joiner}_t=${timestamp}`;
+                // [!] SI HAY HTML EN LA DB (NUEVO MÉTODO ZERO-FILE), LO INYECTAMOS DIRECTO
+                if (isAi && aiHtmlContent) {
+                    iframe.srcdoc = aiHtmlContent;
                 } else {
-                    iframeSrc = `/views/templates/${source}${currentPath}${currentSearch}${joiner}_t=${timestamp}`;
+                    // MÉTODO CLÁSICO (Plantillas físicas)
+                    const timestamp = new Date().getTime();
+                    const joiner = currentSearch ? '&' : '?';
+                    iframe.src = `/views/templates/${source}${currentPath}${currentSearch}${joiner}_t=${timestamp}`;
                 }
-
-                iframe.src = iframeSrc;
                 
                 storeView.innerHTML = '';
                 storeView.appendChild(iframe);
             };
 
+            // Función auxiliar para buscar el HTML correcto según la ruta en el array aiPages
+            const getHtmlForCurrentPath = (aiPages, path) => {
+                if (!aiPages || !Array.isArray(aiPages)) return null;
+                
+                // Extraer el nombre del archivo (ej. '/nosotros.html' -> 'nosotros.html')
+                let filename = path.replace('/', '');
+                if (!filename) filename = 'index.html';
+                
+                const page = aiPages.find(p => p.filename === filename);
+                if (page) return page.htmlContent;
+                
+                // Fallback al index.html si la página solicitada no existe
+                const indexPage = aiPages.find(p => p.filename === 'index.html');
+                return indexPage ? indexPage.htmlContent : null;
+            };
+
             // =========================================================
-            // 1. CARGA LOCAL (VELOCIDAD DE LA LUZ)
+            // 1. CARGA LOCAL
             // =========================================================
             const cacheKey = `wuepy_router_${subdomain}`;
             const cachedRoute = localStorage.getItem(cacheKey);
             
             if (cachedRoute) {
                 const parsed = JSON.parse(cachedRoute);
-                if (parsed.isAiGenerated && parsed.aiFolder) {
-                    mountIframe(parsed.aiFolder, true);
+                if (parsed.isAiGenerated) {
+                    const htmlToInject = getHtmlForCurrentPath(parsed.aiPages, currentPath);
+                    mountIframe(null, true, htmlToInject);
                 } else {
                     mountIframe(parsed.template || 'template1', false);
                 }
             } else {
-                // Pantalla limpia y silenciosa por si es la primerísima vez que alguien entra
                 storeView.innerHTML = `
                     <div class="h-screen w-full flex items-center justify-center bg-slate-950">
                         <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-slate-700"></div>
@@ -537,12 +538,11 @@
             }
 
             // =========================================================
-            // 2. FETCH SILENCIOSO (ROMPIENDO CACHÉ DE CLOUDFLARE EN LA API)
+            // 2. FETCH AL BACKEND
             // =========================================================
             try {
-                // Aquí el _t=Date.now() obliga a que Cloudflare te dé tu tienda con los productos actualizados
                 const response = await fetch(`${window.API_URL || 'https://wuepyback.onrender.com/api'}/store/public/${subdomain}?_t=${Date.now()}`);
-
+                
                 if (!response.ok) {
                     storeView.innerHTML = `
                         <div class="h-screen flex flex-col items-center justify-center text-center px-4 bg-slate-50">
@@ -553,20 +553,21 @@
                         </div>`;
                     return;
                 }
-
+                
                 const data = await response.json();
                 
-                // Guardamos el template para la próxima visita a la velocidad de la luz
+                // Guardamos en caché local, incluyendo el array aiPages de la DB
                 localStorage.setItem(cacheKey, JSON.stringify({
                     isAiGenerated: data.isAiGenerated,
-                    aiFolder: data.aiFolder,
+                    aiPages: data.aiPages || null,
                     template: data.site.template || 'template1'
                 }));
 
-                // Si no había caché, montamos el iframe por primera vez
+                // Si no había caché, montamos
                 if (!cachedRoute) {
-                    if (data.isAiGenerated && data.aiFolder) {
-                        mountIframe(data.aiFolder, true);
+                    if (data.isAiGenerated) {
+                        const htmlToInject = getHtmlForCurrentPath(data.aiPages, currentPath);
+                        mountIframe(null, true, htmlToInject);
                     } else {
                         mountIframe(data.site.template || 'template1', false);
                     }
