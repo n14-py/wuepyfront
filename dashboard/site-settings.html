@@ -44,7 +44,7 @@
         
         <div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-                <a :href="'/dashboard/site-overview.html?id=' + site?._id" class="inline-flex items-center text-sm font-bold text-slate-400 hover:text-indigo-600 transition mb-2">
+                <a :href="'/dashboard/site-overview.html?id=' + siteId" class="inline-flex items-center text-sm font-bold text-slate-400 hover:text-indigo-600 transition mb-2">
                     <i class="fas fa-arrow-left mr-2"></i> Volver al Panel
                 </a>
                 <h1 class="text-3xl font-black text-slate-900 flex items-center gap-3">
@@ -64,7 +64,7 @@
                         <i class="fas fa-store w-5 text-center" :class="activeTab === 'general' ? 'text-indigo-500' : 'text-slate-400'"></i> General
                     </button>
                     <button @click="activeTab = 'design'" :class="activeTab === 'design' ? 'bg-blue-50 text-blue-700 font-black' : 'text-slate-600 hover:bg-slate-50 font-medium'" class="w-full text-left px-4 py-3 rounded-xl transition flex items-center gap-3 mb-1">
-                        <i class="fas fa-paint-brush w-5 text-center" :class="activeTab === 'design' ? 'text-blue-500' : 'text-slate-400'"></i> Diseño
+                        <i class="fas fa-paint-brush w-5 text-center" :class="activeTab === 'design' ? 'text-blue-500' : 'text-slate-400'"></i> Diseño <template x-if="site?.designMode === 'ai_generated'"><span class="ml-auto w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span></template>
                     </button>
                     <button @click="activeTab = 'team'" :class="activeTab === 'team' ? 'bg-purple-50 text-purple-700 font-black' : 'text-slate-600 hover:bg-slate-50 font-medium'" class="w-full text-left px-4 py-3 rounded-xl transition flex items-center gap-3">
                         <i class="fas fa-users w-5 text-center" :class="activeTab === 'team' ? 'text-purple-500' : 'text-slate-400'"></i> Equipo
@@ -105,7 +105,26 @@
                                     </div>
                                     <div>
                                         <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">WhatsApp de Contacto</label>
-                                        <input type="text" x-model="formData.whatsappNumber" placeholder="Ej: +595981234567" class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl focus:bg-white focus:border-emerald-500 font-bold text-slate-800 transition outline-none">
+                                        <input type="text" x-model="formData.whatsappNumber" placeholder="Ej: 0981234567" class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl focus:bg-white focus:border-emerald-500 font-bold text-slate-800 transition outline-none">
+                                    </div>
+                                </div>
+
+                                <div class="mt-6 pt-6 border-t border-slate-100">
+                                    <div class="flex items-center gap-2 mb-4">
+                                        <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest">Textos y SEO</h3>
+                                        <template x-if="site?.designMode === 'ai_generated'">
+                                            <span class="px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[9px] font-black uppercase rounded-md">Redactado por IA</span>
+                                        </template>
+                                    </div>
+                                    <div class="space-y-5">
+                                        <div>
+                                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Título Principal (Hero)</label>
+                                            <input type="text" x-model="formData.heroTitle" placeholder="Ej: La mejor ropa de Paraguay" class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl focus:bg-white focus:border-indigo-500 font-bold text-slate-800 transition outline-none">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Historia / Quiénes Somos</label>
+                                            <textarea x-model="formData.aboutText" rows="4" placeholder="Escribe la misión o historia de tu empresa..." class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl focus:bg-white focus:border-indigo-500 font-medium text-slate-800 transition outline-none"></textarea>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -119,11 +138,11 @@
                 </div>
 
                 <div x-show="activeTab === 'design'" x-transition.opacity.duration.300ms style="display: none;">
-                    <form @submit.prevent="updateDesignSettings" class="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden setting-section">
+                    <div class="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden setting-section">
                         <div class="p-6 md:p-8 border-b border-slate-100">
                             <h2 class="text-xl font-black text-slate-900 mb-6 flex items-center gap-2"><i class="fas fa-paint-brush text-blue-500"></i> Apariencia Web</h2>
                             
-                            <div class="space-y-8">
+                            <form @submit.prevent="updateDesignSettings" class="space-y-8">
                                 <div>
                                     <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Logo de la Tienda</label>
                                     <div class="flex items-center gap-6">
@@ -149,30 +168,53 @@
                                     </div>
                                 </div>
 
-<div>
-                                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Plantilla Activa</label>
-                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <label class="relative cursor-pointer group">
-                                            <input type="radio" x-model="formData.template" value="template1" class="peer sr-only">
-                                            <div class="border-2 border-slate-200 rounded-xl p-4 bg-white hover:bg-slate-50 transition peer-checked:border-blue-500 peer-checked:bg-blue-50">
-                                                <div class="w-full h-24 bg-slate-200 rounded-lg mb-3 bg-cover bg-center" style="background-image: url('https://placehold.co/400x200?text=E-Commerce+Moderno');"></div>
-                                                <h4 class="font-black text-slate-800 text-sm">Plantilla 1: Moderna</h4>
-                                                <p class="text-[10px] text-slate-500 mt-1">E-Commerce completo, diseño oscuro y minimalista.</p>
-                                            </div>
-                                            <div class="absolute top-3 right-3 w-5 h-5 rounded-full border-2 border-slate-300 peer-checked:border-blue-500 peer-checked:bg-blue-500 flex items-center justify-center transition">
-                                                <i class="fas fa-check text-white text-[10px] opacity-0 peer-checked:opacity-100"></i>
-                                            </div>
-                                        </label>
+                                <template x-if="site?.designMode !== 'ai_generated'">
+                                    <div>
+                                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Plantilla Activa</label>
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <label class="relative cursor-pointer group">
+                                                <input type="radio" x-model="formData.template" value="template1" class="peer sr-only">
+                                                <div class="border-2 border-slate-200 rounded-xl p-4 bg-white hover:bg-slate-50 transition peer-checked:border-blue-500 peer-checked:bg-blue-50">
+                                                    <div class="w-full h-24 bg-slate-200 rounded-lg mb-3 bg-cover bg-center" style="background-image: url('https://placehold.co/400x200?text=E-Commerce+Moderno');"></div>
+                                                    <h4 class="font-black text-slate-800 text-sm">Plantilla 1: Moderna</h4>
+                                                    <p class="text-[10px] text-slate-500 mt-1">E-Commerce completo, diseño oscuro y minimalista.</p>
+                                                </div>
+                                                <div class="absolute top-3 right-3 w-5 h-5 rounded-full border-2 border-slate-300 peer-checked:border-blue-500 peer-checked:bg-blue-500 flex items-center justify-center transition">
+                                                    <i class="fas fa-check text-white text-[10px] opacity-0 peer-checked:opacity-100"></i>
+                                                </div>
+                                            </label>
                                         </div>
+                                    </div>
+                                </template>
+
+                                <template x-if="site?.designMode === 'ai_generated'">
+                                    <div class="mt-8 p-6 md:p-8 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 rounded-2xl border border-indigo-500/30 shadow-2xl relative overflow-hidden">
+                                        <div class="relative z-10">
+                                            <h3 class="text-xl font-black text-white mb-2 flex items-center gap-3">
+                                                <i class="fas fa-magic text-emerald-400 animate-pulse"></i> Orquestador IA (Modo Infinito)
+                                            </h3>
+                                            <p class="text-indigo-200 text-sm font-medium mb-5">¿No te convence el diseño actual? Escribe una nueva idea o presiona el botón para que la IA destruya la arquitectura actual y construya una web radicalmente diferente desde cero.</p>
+                                            
+                                            <textarea x-model="aiPromptInput" rows="2" class="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-indigo-300/50 focus:bg-white/10 focus:border-emerald-400 outline-none mb-5 font-medium text-sm transition" placeholder="Ej: Hazlo más oscuro, tipo cyberpunk, o cambia a un estilo súper minimalista y elegante..."></textarea>
+                                            
+                                            <button type="button" @click="regenerateAi" :disabled="isRegenerating" class="w-full sm:w-auto bg-red-600 hover:bg-red-500 text-white px-6 py-3.5 rounded-xl font-black shadow-[0_0_20px_rgba(220,38,38,0.4)] transition transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 uppercase tracking-widest text-xs">
+                                                <i class="fas" :class="isRegenerating ? 'fa-spinner fa-spin' : 'fa-radiation'"></i> 
+                                                <span x-text="isRegenerating ? 'Construyendo Nueva Web...' : 'Destruir y Regenerar con IA'"></span>
+                                            </button>
+                                            <p class="text-[10px] text-slate-400 mt-4 font-medium"><i class="fas fa-shield-alt text-emerald-500 mr-1"></i> Tus productos, ventas e inventario están protegidos y no se borrarán.</p>
+                                        </div>
+                                        <i class="fas fa-brain absolute -bottom-10 -right-10 text-9xl text-white opacity-5 transform -rotate-12"></i>
+                                    </div>
+                                </template>
+
+                                <div class="flex justify-end pt-4">
+                                    <button type="submit" :disabled="isSaving" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-black shadow-lg shadow-blue-600/30 transition transform active:scale-95 disabled:opacity-70 flex items-center gap-2 uppercase tracking-widest text-sm">
+                                        <i class="fas" :class="isSaving ? 'fa-spinner fa-spin' : 'fa-save'"></i> Guardar Diseño Base
+                                    </button>
                                 </div>
-                            </div>
+                            </form>
                         </div>
-                        <div class="bg-slate-50 p-6 flex justify-end">
-                            <button type="submit" :disabled="isSaving" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-black shadow-lg shadow-blue-600/30 transition transform active:scale-95 disabled:opacity-70 flex items-center gap-2 uppercase tracking-widest text-sm">
-                                <i class="fas" :class="isSaving ? 'fa-spinner fa-spin' : 'fa-save'"></i> Guardar Diseño
-                            </button>
-                        </div>
-                    </form>
+                    </div>
                 </div>
 
                 <div x-show="activeTab === 'team'" x-transition.opacity.duration.300ms style="display: none;">
@@ -257,6 +299,7 @@
                                 <select x-model="newEmployee.role" class="w-full px-4 py-3 border-2 border-slate-100 bg-slate-50 rounded-xl focus:ring-0 focus:bg-white focus:border-purple-500 font-bold text-slate-800 transition outline-none">
                                     <option value="cajero">Cajero (Solo POS)</option>
                                     <option value="admin">Administrador (Catálogo y POS)</option>
+                                    <option value="delivery">Delivery (Repartidor)</option>
                                 </select>
                             </div>
                         </div>
@@ -277,10 +320,11 @@
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('siteSettings', () => ({
-                user: null, siteId: null, site: null, isLoading: true, isSaving: false,
+                user: null, siteId: null, site: null, isLoading: true, isSaving: false, isRegenerating: false,
                 activeTab: 'general',
-                formData: { name: '', subdomain: '', currency: 'PYG', whatsappNumber: '', template: 'template1' },
+                formData: { name: '', subdomain: '', currency: 'PYG', whatsappNumber: '', template: 'template1', heroTitle: '', aboutText: '' },
                 logoFile: null, logoPreview: null,
+                aiPromptInput: '',
                 employees: [],
                 showAddEmployeeModal: false,
                 newEmployee: { name: '', email: '', password: '', role: 'cajero' },
@@ -289,7 +333,6 @@
                     this.user = WuepyAPI.getUser();
                     if(!this.user) { window.location.href = '/auth/login.html'; return; }
                     
-                    // MÉTODO UNIVERSAL
                     const urlParams = new URLSearchParams(window.location.search);
                     let urlSiteId = urlParams.get('id') || urlParams.get('siteId');
 
@@ -321,9 +364,13 @@
                                 name: this.site.name || '',
                                 subdomain: this.site.subdomain || '',
                                 currency: this.site.currency || 'PYG',
-                                whatsappNumber: this.site.whatsappNumber || '',
-                                template: this.site.template || 'template1'
+                                whatsappNumber: this.site.contact?.whatsapp || '',
+                                template: this.site.template || 'template1',
+                                heroTitle: this.site.content?.heroTitle || '',
+                                aboutText: this.site.content?.aboutText || ''
                             };
+
+                            this.aiPromptInput = this.site.aiPrompt || '';
                             
                             if (this.site.logoUrl && !this.site.logoUrl.includes('placehold')) {
                                 this.logoPreview = this.site.logoUrl;
@@ -349,22 +396,25 @@
                     }
                 },
 
+                // CORREGIDO AL ENDPOINT EXACTO: /dashboard/site/:siteId/update-general
                 async updateGeneralSettings() {
                     this.isSaving = true;
                     try {
                         const payload = {
                             name: this.formData.name,
                             currency: this.formData.currency,
-                            whatsappNumber: this.formData.whatsappNumber
+                            whatsapp: this.formData.whatsappNumber,
+                            heroTitle: this.formData.heroTitle,
+                            aboutText: this.formData.aboutText
                         };
                         
-                        const res = await WuepyAPI.fetch(`/dashboard/site/${this.siteId}/settings`, {
+                        const res = await WuepyAPI.fetch(`/dashboard/site/${this.siteId}/update-general`, {
                             method: 'POST', body: JSON.stringify(payload)
                         });
 
                         if(res.status === 200) {
-                            Swal.fire({ icon: 'success', title: '¡Guardado!', text: 'Configuración actualizada.', timer: 2000, showConfirmButton: false });
-                            await this.loadSiteData(); // Recargar
+                            Swal.fire({ icon: 'success', title: '¡Guardado!', text: 'Información general actualizada.', timer: 2000, showConfirmButton: false });
+                            await this.loadSiteData(); 
                         } else {
                             alert(res.data?.message || 'Error al guardar.');
                         }
@@ -379,7 +429,6 @@
                         form.append('template', this.formData.template);
                         if (this.logoFile) form.append('logo', this.logoFile);
 
-                        // CORRECCIÓN: La ruta exacta del backend es /update-design
                         const response = await fetch(`${API_URL}/dashboard/site/${this.siteId}/update-design`, {
                             method: 'POST',
                             headers: { 'Authorization': `Bearer ${this.user.token}` },
@@ -398,11 +447,34 @@
                     this.isSaving = false;
                 },
 
+                // 🔥 LA FUNCIÓN DEL BOTÓN DE DESTRUCCIÓN 🔥
+                async regenerateAi() {
+                    if(!confirm('¡ADVERTENCIA DE DESTRUCCIÓN!\n\nEsto borrará la arquitectura web actual y la IA generará una estructura totalmente nueva basándose en tu texto. \n\n¡Tranquilo! Tus productos y ventas no se verán afectados. ¿Quieres detonar el proceso?')) return;
+                    
+                    this.isRegenerating = true;
+                    try {
+                        const res = await WuepyAPI.fetch(`/dashboard/site/${this.siteId}/regenerate-ai`, {
+                            method: 'POST', body: JSON.stringify({ aiPrompt: this.aiPromptInput })
+                        });
+
+                        if(res.status === 200) {
+                            Swal.fire({ icon: 'success', title: '¡Mutación Completada!', text: 'El Orquestador ha forjado una web completamente nueva. Ve a mirarla.', confirmButtonColor: '#4f46e5' });
+                            await this.loadSiteData();
+                        } else {
+                            Swal.fire({ icon: 'error', title: 'Fallo en la Matriz', text: res.data?.message || 'La IA no pudo regenerar el diseño.' });
+                        }
+                    } catch (error) { 
+                        alert('Error de conexión con el Orquestador.'); 
+                    }
+                    this.isRegenerating = false;
+                },
+
+                // CORREGIDO AL ENDPOINT EXACTO: /dashboard/site/:siteId/employees/add
                 async addEmployee() {
                     this.isSaving = true;
                     try {
-                        const payload = { ...this.newEmployee, siteId: this.siteId };
-                        const res = await WuepyAPI.fetch('/dashboard/employees/add', {
+                        const payload = { ...this.newEmployee };
+                        const res = await WuepyAPI.fetch(`/dashboard/site/${this.siteId}/employees/add`, {
                             method: 'POST', body: JSON.stringify(payload)
                         });
 
@@ -418,15 +490,16 @@
                     this.isSaving = false;
                 },
 
+                // CORREGIDO AL ENDPOINT EXACTO: /dashboard/site/:siteId/employees/delete/:empId
                 async removeEmployee(employeeId) {
-                    if(confirm('¿Estás seguro de eliminar a este empleado? Perderá acceso inmediatamente.')) {
+                    if(confirm('¿Estás seguro de eliminar a este empleado? Perderá acceso a la caja y al inventario inmediatamente.')) {
                         try {
-                            const res = await WuepyAPI.fetch(`/dashboard/employees/remove/${employeeId}`, {
-                                method: 'POST', body: JSON.stringify({ siteId: this.siteId })
+                            const res = await WuepyAPI.fetch(`/dashboard/site/${this.siteId}/employees/delete/${employeeId}`, {
+                                method: 'POST'
                             });
 
                             if(res.status === 200) {
-                                Swal.fire({ icon: 'success', title: 'Eliminado', text: 'Empleado retirado con éxito.', timer: 1500, showConfirmButton: false });
+                                Swal.fire({ icon: 'success', title: 'Eliminado', text: 'Acceso revocado con éxito.', timer: 1500, showConfirmButton: false });
                                 await this.loadSiteData();
                             } else {
                                 alert(res.data?.message || 'Error al eliminar.');

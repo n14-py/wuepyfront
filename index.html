@@ -452,9 +452,9 @@
             const currentSearch = window.location.search;
 
             // =========================================================
-            // FUNCIÓN MAESTRA (SOPORTA "ZERO-FILE" HTML + ENRUTAMIENTO IA)
+            // FUNCIÓN MAESTRA (SOPORTA INYECCIÓN DE PRODUCTOS EN DIV IA)
             // =========================================================
-            const mountIframe = (source, isAi, aiHtmlContent = null) => {
+            const mountIframe = (source, isAi, aiHtmlContent = null, productsData = []) => {
                 if (document.getElementById('wuepy-store-iframe')) return;
                 
                 const iframe = document.createElement('iframe');
@@ -463,8 +463,8 @@
                 
                 iframe.onload = function() {
                     try {
-                        // Limpieza cosmética de la URL para ocultar que es un iframe físico (si no es IA)
                         const iframeWindow = iframe.contentWindow;
+                        const iframeDoc = iframeWindow.document;
                         const iframePath = iframeWindow.location.pathname;
                         const iframeSearch = iframeWindow.location.search;
                         
@@ -480,23 +480,57 @@
                         
                         window.history.replaceState(null, '', cleanPath + cleanSearchUrl);
                         document.title = iframeWindow.document.title || 'Tienda Online';
+
+                        // =================================================================
+                        // 🔥 INYECTOR DINÁMICO DE PRODUCTOS (SOLO PARA MODO IA INFINITO) 🔥
+                        // =================================================================
+                        if (isAi) {
+                            const productContainer = iframeDoc.getElementById('wuepy-dynamic-products');
+                            if (productContainer) {
+                                if (productsData && productsData.length > 0) {
+                                    // Construimos un Grid de Tailwind ultra moderno universal
+                                    let gridHtml = '<div class="w-full max-w-7xl mx-auto px-4 py-16"><div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">';
+                                    
+                                    productsData.forEach(p => {
+                                        gridHtml += `
+                                            <a href="/p/${p._id}" class="group bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 flex flex-col relative z-50">
+                                                <div class="aspect-square relative bg-slate-100 overflow-hidden">
+                                                    <img src="${p.imageUrl || 'https://via.placeholder.com/400'}" alt="${p.name}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-700 ease-in-out">
+                                                    ${p.stock <= 0 ? '<div class="absolute top-4 right-4 bg-red-600 text-white text-xs font-black px-4 py-1.5 rounded-full shadow-lg">AGOTADO</div>' : ''}
+                                                </div>
+                                                <div class="p-6 flex flex-col flex-grow">
+                                                    <h3 class="text-xl font-bold text-slate-800 mb-2 truncate group-hover:text-indigo-600 transition">${p.name}</h3>
+                                                    <p class="text-sm text-slate-500 mb-4 line-clamp-2 flex-grow">${p.description || ''}</p>
+                                                    <div class="flex items-center justify-between mt-auto">
+                                                        <span class="text-2xl font-black text-slate-900">Gs. ${p.price.toLocaleString('es-PY')}</span>
+                                                        <div class="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-all shadow-sm">
+                                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        `;
+                                    });
+                                    gridHtml += '</div></div>';
+                                    productContainer.innerHTML = gridHtml;
+                                } else {
+                                    productContainer.innerHTML = '<div class="w-full text-center py-20"><p class="text-slate-400 font-bold text-lg">Aún no hay productos en el catálogo de esta tienda.</p></div>';
+                                }
+                            }
+                        }
+
                     } catch(e) {}
                 };
 
-                // [!] SI HAY HTML EN LA DB, LO INYECTAMOS DIRECTO CON EL SCRIPT MUTANTE DE NAVEGACIÓN
                 if (isAi && aiHtmlContent) {
-                    // Este script es la magia: obliga a los clics a abrirse en la ventana principal,
-                    // evitando el efecto "Inception" (cargar Wuepy dentro de Wuepy).
                     const interceptScript = `
                         <script>
                             document.addEventListener('DOMContentLoaded', () => {
                                 document.querySelectorAll('a').forEach(link => {
                                     const href = link.getAttribute('href');
-                                    // Interceptamos solo enlaces internos (sin http, sin #, sin mailto/tel)
                                     if (href && !href.startsWith('http') && !href.startsWith('#') && !href.startsWith('mailto:') && !href.startsWith('tel:')) {
                                         link.addEventListener('click', (e) => {
                                             e.preventDefault();
-                                            // Mandamos la orden al padre para que cambie su URL (Ej: a /nosotros.html)
                                             let cleanHref = href.startsWith('/') ? href : '/' + href;
                                             window.parent.location.href = cleanHref;
                                         });
@@ -506,17 +540,14 @@
                         <\/script>
                     `;
                     
-                    // Inyectamos el script justo antes del cierre del body
                     let finalHtml = aiHtmlContent;
                     if (finalHtml.includes('</body>')) {
                         finalHtml = finalHtml.replace('</body>', interceptScript + '</body>');
                     } else {
                         finalHtml += interceptScript;
                     }
-                    
                     iframe.srcdoc = finalHtml;
                 } else {
-                    // MÉTODO CLÁSICO (Plantillas físicas)
                     const timestamp = new Date().getTime();
                     const joiner = currentSearch ? '&' : '?';
                     iframe.src = `/views/templates/${source}${currentPath}${currentSearch}${joiner}_t=${timestamp}`;
@@ -526,11 +557,9 @@
                 storeView.appendChild(iframe);
             };
 
-            // Extraemos la página exacta que busca el usuario (ej: nosotros.html)
             let filename = currentPath.replace('/', '');
             if (!filename) filename = 'index.html';
 
-            // Función auxiliar para buscar el HTML correcto según la ruta en el array aiPages (para caché local)
             const getHtmlForCurrentPath = (aiPages, targetFilename) => {
                 if (!aiPages || !Array.isArray(aiPages)) return null;
                 const page = aiPages.find(p => p.filename === targetFilename);
@@ -540,7 +569,7 @@
             };
 
             // =========================================================
-            // 1. CARGA LOCAL (CACHÉ)
+            // LÓGICA DE CARGA Y FETCH AL BACKEND
             // =========================================================
             const cacheKey = `wuepy_router_${subdomain}`;
             const cachedRoute = localStorage.getItem(cacheKey);
@@ -549,9 +578,9 @@
                 const parsed = JSON.parse(cachedRoute);
                 if (parsed.isAiGenerated) {
                     const htmlToInject = getHtmlForCurrentPath(parsed.aiPages, filename);
-                    mountIframe(null, true, htmlToInject);
+                    mountIframe(null, true, htmlToInject, parsed.products);
                 } else {
-                    mountIframe(parsed.template || 'template1', false);
+                    mountIframe(parsed.template || 'template1', false, null, parsed.products);
                 }
             } else {
                 storeView.innerHTML = `
@@ -561,11 +590,7 @@
                 `;
             }
 
-            // =========================================================
-            // 2. FETCH AL BACKEND (Pidiendo la página exacta mediante ?page=)
-            // =========================================================
             try {
-                // Pasamos el parámetro `page` para que nuestro Controlador Maestro devuelva la correcta
                 const fetchUrl = `${window.API_URL || 'https://wuepyback.onrender.com/api'}/store/public/${subdomain}?page=${filename}&_t=${Date.now()}`;
                 const response = await fetch(fetchUrl);
                 
@@ -582,21 +607,19 @@
                 
                 const data = await response.json();
                 
-                // Actualizamos el caché maestro
                 localStorage.setItem(cacheKey, JSON.stringify({
                     isAiGenerated: data.isAiGenerated,
                     aiPages: data.aiPages || null,
-                    template: data.site.template || 'template1'
+                    template: data.site.template || 'template1',
+                    products: data.products || [] // Guardamos los productos en caché para inyectarlos
                 }));
 
-                // Si no había caché, montamos desde el servidor
                 if (!cachedRoute) {
                     if (data.isAiGenerated) {
-                        // Ya no necesitamos buscar en el array, el backend nos manda el HTML exacto en data.htmlContent
                         const htmlToInject = data.htmlContent || getHtmlForCurrentPath(data.aiPages, filename);
-                        mountIframe(null, true, htmlToInject);
+                        mountIframe(null, true, htmlToInject, data.products);
                     } else {
-                        mountIframe(data.site.template || 'template1', false);
+                        mountIframe(data.site.template || 'template1', false, null, data.products);
                     }
                 }
 
@@ -614,11 +637,7 @@
 
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 <script>
-    AOS.init({
-        duration: 800,
-        once: true,
-        offset: 50
-    });
+    AOS.init({ duration: 800, once: true, offset: 50 });
 </script>
 </body>
 </html>
