@@ -325,21 +325,20 @@
                             </div>
 
                             <div x-show="formData.designMode === 'ai_generated'" x-collapse>
-                                <div class="p-1 rounded-2xl bg-gradient-to-r from-violet-500 via-fuchsia-500 to-violet-500 shadow-lg">
-                                    <div class="bg-white p-6 md:p-8 rounded-[1.4rem]">
-                                        <label class="flex items-center gap-2 text-sm font-black text-violet-600 uppercase tracking-widest mb-4">
-                                            <i class="fas fa-terminal"></i> Terminal del Arquitecto IA
-                                        </label>
-                                        
-                                        <textarea name="aiPrompt" x-model="formData.aiPrompt" rows="5" 
-                                            placeholder="Ej: Quiero una tienda para vender repuestos de motos. Diseño agresivo, oscuro con toques verdes. Agrega una sección Sobre Nosotros contando que somos apasionados por las motos desde 1990..." 
-                                            class="w-full px-5 py-4 bg-slate-900 text-slate-100 border border-slate-700 rounded-xl focus:ring-2 focus:ring-violet-500 font-medium transition outline-none resize-none placeholder-slate-500 leading-relaxed"></textarea>
-                                        
-                                        <div class="mt-4 flex flex-wrap gap-2">
-                                            <span class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mr-2 flex items-center">Tips:</span>
-                                            <button type="button" @click="appendPrompt('diseño minimalista en tonos pastel')" class="text-xs bg-slate-100 hover:bg-violet-100 hover:text-violet-700 text-slate-600 px-3 py-1.5 rounded-full font-bold transition">Minimalista/Pastel</button>
-                                            <button type="button" @click="appendPrompt('crear página de historia sobre nosotros')" class="text-xs bg-slate-100 hover:bg-violet-100 hover:text-violet-700 text-slate-600 px-3 py-1.5 rounded-full font-bold transition">Incluir Historia</button>
-                                            <button type="button" @click="appendPrompt('incluir sección de preguntas frecuentes')" class="text-xs bg-slate-100 hover:bg-violet-100 hover:text-violet-700 text-slate-600 px-3 py-1.5 rounded-full font-bold transition">Agregar FAQ</button>
+                                <div class="bg-gradient-to-br from-indigo-50 to-blue-50 p-6 sm:p-8 rounded-3xl border border-indigo-100 shadow-sm">
+                                    <label class="block text-sm font-black text-indigo-900 uppercase tracking-widest mb-3">Idea central para la Inteligencia Artificial</label>
+                                    <p class="text-xs text-indigo-700/80 mb-4 font-medium">Describe cómo te imaginas tu página web. Nosotros nos encargamos de la programación.</p>
+                                    
+                                    <textarea name="aiPrompt" x-model="formData.aiPrompt" rows="5" 
+                                        placeholder="Ej: Somos una tienda de repuestos de motos. Quiero un diseño agresivo, oscuro con toques verde neón. Agrega una sección contando que somos apasionados por la velocidad..." 
+                                        class="w-full px-5 py-4 bg-white text-slate-800 border-2 border-indigo-200 rounded-2xl focus:ring-0 focus:border-indigo-500 font-medium transition outline-none resize-y shadow-inner"></textarea>
+                                    
+                                    <div class="mt-5">
+                                        <p class="text-[10px] font-black uppercase tracking-widest text-indigo-400 mb-3">Sugerencias Rápidas (Haz clic para agregar):</p>
+                                        <div class="flex flex-wrap gap-2">
+                                            <button type="button" @click="formData.aiPrompt = 'Tienda minimalista de cuidado de la piel. Colores pastel, tonos arena y verde menta. Diseño limpio y relajante, con tipografía elegante.'" class="text-xs bg-white border border-indigo-100 hover:bg-indigo-500 hover:text-white hover:border-indigo-500 text-indigo-600 px-4 py-2 rounded-full font-bold transition shadow-sm">🌿 Skincare Minimalista</button>
+                                            <button type="button" @click="formData.aiPrompt = 'Tienda de tecnología gamer. Fondo completamente negro, detalles en verde neón, tipografía monospace y estilo cyberpunk.'" class="text-xs bg-white border border-indigo-100 hover:bg-indigo-500 hover:text-white hover:border-indigo-500 text-indigo-600 px-4 py-2 rounded-full font-bold transition shadow-sm">🎮 Cyberpunk Gamer</button>
+                                            <button type="button" @click="formData.aiPrompt = 'Boutique de ropa elegante. Fondo blanco perla, textos en gris oscuro, botones dorados y tipografía serif clásica.'" class="text-xs bg-white border border-indigo-100 hover:bg-indigo-500 hover:text-white hover:border-indigo-500 text-indigo-600 px-4 py-2 rounded-full font-bold transition shadow-sm">✨ Boutique Elegante</button>
                                         </div>
                                     </div>
                                 </div>
@@ -468,14 +467,6 @@
                     if (file) this.imagePreview = URL.createObjectURL(file);
                 },
 
-                appendPrompt(text) {
-                    if (this.formData.aiPrompt.length > 0) {
-                        this.formData.aiPrompt += ', ' + text;
-                    } else {
-                        this.formData.aiPrompt = text;
-                    }
-                },
-
                 startLoadingAnimation() {
                     this.isGenerating = true;
                     this.currentPhase = 0;
@@ -530,12 +521,11 @@
                         const formElement = document.getElementById('createSiteForm');
                         const formDataPayload = new FormData(formElement);
                         
-                        // Enviamos usando fetch nativo apuntando a tu backend API
                         const response = await fetch(`${API_URL}/dashboard/site/create`, {
                             method: 'POST',
                             body: formDataPayload,
                             headers: { 'Authorization': `Bearer ${this.user?.token || ''}` },
-                            credentials: 'include' // LÍNEA CRÍTICA: Permite que la cookie de sesión viaje de Cloudflare a Render
+                            credentials: 'include'
                         });
                         
                         const data = await response.json();
@@ -554,7 +544,7 @@
                                 }).then(() => {
                                     window.location.href = `/dashboard/site-overview.html?id=${data.siteId}`;
                                 });
-                            }, 500); // Pequeña pausa para que se vea la última animación
+                            }, 500);
                         } else {
                             this.isGenerating = false;
                             this.isLoading = false;
