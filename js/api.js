@@ -194,6 +194,58 @@ const WuepyStoreEngine = {
         console.log(`[Wuepy Inyector] 📦 Vista de Super-Producto inyectada.`);
     },
 
+    // Inyector del Muro de Pago
+    injectPaymentWall(paymentAlias) {
+        console.log("[Wuepy Engine] Bloqueo por falta de pago activado.");
+        
+        const wall = document.createElement('div');
+        wall.className = "fixed inset-0 z-[99999] bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto";
+        wall.innerHTML = `
+            <div class="bg-white rounded-[2rem] p-8 max-w-md w-full shadow-2xl border border-slate-200 text-center transform transition-all relative">
+                <div class="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-white shadow-lg absolute -top-10 left-1/2 -translate-x-1/2">
+                    <i class="fas fa-lock text-3xl text-red-500"></i>
+                </div>
+                
+                <div class="pt-10">
+                    <h2 class="text-3xl font-black text-slate-900 mb-3">Sitio Suspendido</h2>
+                    <p class="text-slate-500 mb-8 font-medium leading-relaxed">Esta tienda se encuentra temporalmente inactiva por falta de pago o vencimiento de la prueba gratuita.</p>
+                    
+                    <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200 mb-8 relative overflow-hidden shadow-inner">
+                        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-red-600"></div>
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Para reactivar, transfiere al Alias:</p>
+                        <p class="text-2xl font-black text-slate-800 tracking-wider bg-white py-2 px-4 rounded-xl border border-slate-200 inline-block">${paymentAlias || 'WUEPY.PAGOS'}</p>
+                    </div>
+                    
+                    <div class="text-sm text-slate-500 mb-8 p-4 bg-blue-50 text-blue-800 rounded-xl border border-blue-100">
+                        <i class="fas fa-info-circle mr-1"></i> Si eres el dueño, ingresa a tu <strong>Panel de Control</strong> en Wuepy para subir tu comprobante de pago.
+                    </div>
+                    
+                    <div class="flex flex-col gap-3">
+                        <a href="https://wuepy.com/auth/login.html" class="inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 px-6 rounded-xl transition-colors w-full shadow-lg shadow-indigo-600/30">
+                            Ir al Panel de Control
+                        </a>
+                        <a href="https://wuepy.com" class="inline-block text-slate-500 font-bold py-3 px-6 rounded-xl transition-colors w-full hover:bg-slate-50">
+                            Conocer más sobre Wuepy
+                        </a>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(wall);
+        document.body.style.overflow = 'hidden';
+        
+        // Desenfoque extremo de todos los elementos hermanos
+        const children = document.body.children;
+        for (let i = 0; i < children.length; i++) {
+            if (children[i] !== wall && children[i].tagName !== 'SCRIPT' && children[i].tagName !== 'STYLE' && children[i].tagName !== 'LINK') {
+                children[i].style.filter = 'blur(12px) grayscale(50%)';
+                children[i].style.pointerEvents = 'none';
+                children[i].style.userSelect = 'none';
+            }
+        }
+    },
+
     // Orquestador Principal (Llamado desde index.html de los subdominios)
     processAiResponse(data) {
         if (!data.success || !data.isAiGenerated || !data.htmlContent) return false;
@@ -212,7 +264,7 @@ const WuepyStoreEngine = {
             document.body.innerHTML = data.htmlContent; 
         }
 
-        // 3. Extraer y aplicar las clases maestras que la IA le puso al <body> (Para el color de fondo y textos)
+        // 3. Extraer y aplicar las clases maestras que la IA le puso al <body>
         const bodyTagMatch = data.htmlContent.match(/<body([^>]*)>/i);
         if (bodyTagMatch && bodyTagMatch[1]) {
             const classMatch = bodyTagMatch[1].match(/class=["']([^"']+)["']/i);
@@ -224,19 +276,22 @@ const WuepyStoreEngine = {
         // 4. Inyectar Productos
         const primaryColor = data.site?.primaryColor || 'blue-600';
         
-        // Si hay array de productos (Catálogo/Index)
         if (data.products && data.products.length > 0) {
             this.injectDynamicProducts(data.products, primaryColor);
         }
 
-        // Si hay un solo producto (Vista product.html)
         if (data.product) {
             this.injectProductDetail(data.product, data.site);
         }
 
-        // 5. Reiniciar AlpineJS para que los menús hamburguesa y variables funcionen después de inyectar el HTML
+        // 5. Reiniciar AlpineJS
         if (window.Alpine) {
             window.Alpine.initTree(document.body);
+        }
+
+        // 6. 🔥 EVALUACIÓN DE ESTADO FINANCIERO (MURO DE PAGO) 🔥
+        if (data.needsPayment) {
+            this.injectPaymentWall(data.paymentAlias);
         }
 
         return true;

@@ -73,6 +73,25 @@
                 </div>
             </div>
 
+            <div class="bg-blue-600 rounded-3xl p-6 md:p-8 text-white shadow-lg mb-10 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
+                <div class="absolute inset-0 opacity-20 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC41KSIvPjwvc3ZnPg==')]"></div>
+                <div class="relative z-10 flex items-center gap-4 w-full md:w-auto">
+                    <div class="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center text-2xl backdrop-blur-sm border border-white/30 shrink-0">
+                        <i class="fas fa-gift text-white"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-black mb-1">Invita y Gana Días Gratis</h3>
+                        <p class="text-blue-100 text-sm font-medium">Comparte este link. Por cada amigo que cree su tienda, te regalamos 3 días.</p>
+                    </div>
+                </div>
+                <div class="relative z-10 w-full md:w-auto flex flex-col sm:flex-row gap-3 items-center">
+                    <div class="bg-white/10 border border-white/20 rounded-xl px-4 py-3 flex items-center gap-3 w-full">
+                        <input type="text" readonly :value="'https://wuepy.com/auth/register.html?ref=' + (user?._id || '')" class="bg-transparent text-white font-bold text-sm w-full outline-none" id="referralLink">
+                        <button @click="copyReferral" class="text-blue-200 hover:text-white transition" title="Copiar Link"><i class="fas fa-copy"></i></button>
+                    </div>
+                </div>
+            </div>
+
             <div class="flex items-center gap-3 mb-6">
                 <i class="fas fa-store text-blue-500 text-xl"></i>
                 <h2 class="text-2xl font-black text-slate-900">Mis Tiendas Activas</h2>
@@ -112,6 +131,11 @@
                                 <template x-if="site.subscriptionStatus === 'trial' || !site.subscriptionStatus">
                                     <div class="bg-blue-100 text-blue-700 text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-wider flex items-center gap-1.5 shadow-sm border border-blue-200">
                                         <i class="fas fa-gift"></i> Prueba Gratis
+                                    </div>
+                                </template>
+                                <template x-if="['pending_payment', 'expired', 'suspended'].includes(site.subscriptionStatus)">
+                                    <div class="bg-red-100 text-red-700 text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-wider flex items-center gap-1.5 shadow-sm border border-red-200">
+                                        <i class="fas fa-lock"></i> Pago Pendiente
                                     </div>
                                 </template>
                             </div>
@@ -179,8 +203,7 @@
                 
                 <div class="bg-gradient-to-br from-indigo-900 to-slate-900 rounded-[2rem] p-8 md:p-12 text-white shadow-2xl relative overflow-hidden border border-indigo-500/30 flex flex-col md:flex-row items-center justify-between gap-10 hover-card">
                     <i class="fas fa-flag absolute -left-10 -top-10 text-[180px] text-white/5 rotate-12 pointer-events-none"></i>
-                    <i class="fab fa-tiktok absolute right-20 -bottom-10 text-[150px] text-white/5 -rotate-12 pointer-events-none"></i>
-
+                    
                     <div class="flex-1 relative z-10 w-full">
                         <div class="flex items-center gap-2 mb-6">
                             <div class="bg-pink-500 text-white px-3 py-1.5 rounded-lg font-black tracking-widest text-[10px] uppercase shadow-sm">
@@ -191,36 +214,21 @@
                             </div>
                         </div>
                         
-                        <h3 class="text-3xl md:text-4xl font-black mb-4 text-white leading-tight">Sabemos lo difícil que es emprender. ¡Te ayudamos!</h3>
-                        <p class="text-indigo-100 font-medium leading-relaxed mb-6 text-base max-w-2xl">
-                            Wuepy es una plataforma creada por y para paraguayos. Como creemos en lo nuestro, queremos regalarte <strong>6 meses de suscripción gratis</strong>. No necesitas hacer un comercial aburrido: solo muéstranos tu negocio en TikTok, Reels o YouTube y menciónanos. ¡Así de fácil!
+                        <h3 class="text-3xl md:text-4xl font-black mb-4 text-white leading-tight">Queremos que despegues.</h3>
+                        <p class="text-indigo-100 font-medium leading-relaxed mb-8 text-base max-w-2xl">
+                            Si estás arrancando, graba un video corto y amistoso en TikTok, Insta o Facebook contando cómo usas Wuepy para vender o gestionar tu dinero. ¡Súbelo, envíanos el link aquí y te regalamos medio año de la plataforma!
                         </p>
-                        
-                        <div class="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/10 mb-8 max-w-2xl">
-                            <h4 class="text-yellow-400 font-black text-sm uppercase tracking-widest mb-3"><i class="fas fa-lightbulb mr-1"></i> No te compliques, hazlo a tu estilo:</h4>
-                            <ul class="text-indigo-50 text-sm space-y-2 font-medium">
-                                <li><i class="fas fa-check-circle text-emerald-400 mr-2"></i> Solo <strong>3 segunditos</strong> bastan. Pega una captura de tu web o de tus ventas.</li>
-                                <li><i class="fas fa-check-circle text-emerald-400 mr-2"></i> Menciónanos orgánicamente ("Miren lo que logré vender con Wuepy").</li>
-                                <li><i class="fas fa-check-circle text-emerald-400 mr-2"></i> Un video de tu día a día mostrando cómo preparas tus pedidos.</li>
-                            </ul>
-                        </div>
 
                         <template x-if="sites.length > 0">
                             <button @click="showApoyaModal = true" class="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-black py-4 px-10 rounded-xl transition transform active:scale-95 flex items-center justify-center gap-3 text-lg shadow-xl shadow-yellow-400/20 w-full sm:w-auto">
-                                Ya subí mi video <i class="fas fa-paper-plane"></i>
+                                Ya tengo mi video, enviar link <i class="fas fa-paper-plane"></i>
                             </button>
                         </template>
                         <template x-if="sites.length === 0">
                             <button disabled class="bg-slate-800 text-slate-400 font-bold py-4 px-10 rounded-xl cursor-not-allowed text-sm uppercase tracking-widest w-full sm:w-auto">
-                                Crea una tienda primero para participar
+                                Crea tu tienda primero
                             </button>
                         </template>
-                    </div>
-                    
-                    <div class="hidden lg:flex flex-col items-center justify-center flex-shrink-0 relative z-10 w-64 h-64 bg-indigo-800/50 rounded-full border-[8px] border-indigo-500/20 shadow-inner">
-                        <i class="fas fa-store text-6xl text-white mb-2"></i>
-                        <i class="fas fa-star text-3xl text-yellow-400 absolute top-12 right-12 animate-pulse"></i>
-                        <i class="fas fa-heart text-3xl text-pink-500 absolute bottom-16 left-12 animate-bounce"></i>
                     </div>
                 </div>
             </div>
@@ -233,7 +241,7 @@
             <div x-show="showApoyaModal" class="fixed inset-0 bg-slate-900/75 backdrop-blur-sm transition-opacity" @click="showApoyaModal = false"></div>
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
             <div x-show="showApoyaModal" class="inline-block align-bottom bg-white rounded-[2rem] text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl w-full border border-slate-200">
-                <form @submit.prevent="submitApoya" class="p-8">
+                <form @submit.prevent="submitApoya" id="apoyaForm" class="p-8">
                     <div class="flex justify-between items-center mb-6">
                         <h3 class="text-2xl font-black text-indigo-900 flex items-center gap-2"><i class="fas fa-gift text-pink-500"></i> Reclama tu regalo</h3>
                         <button type="button" @click="showApoyaModal = false" class="text-slate-400 hover:text-slate-600 transition text-xl"><i class="fas fa-times"></i></button>
@@ -286,9 +294,32 @@
                     this.isLoading = false;
                 },
                 logout() { WuepyAPI.logoutLocal(); },
-                submitApoya() {
-                    alert('Solicitud enviada (Conectar a endpoint API próximamente)');
-                    this.showApoyaModal = false;
+                copyReferral() {
+                    const link = document.getElementById('referralLink').value;
+                    navigator.clipboard.writeText(link);
+                    alert("¡Enlace copiado! Envíalo a tus amigos para ganar días gratis.");
+                },
+                async submitApoya(e) {
+                    const form = e.target;
+                    const formData = new FormData(form);
+                    const payload = Object.fromEntries(formData);
+                    
+                    try {
+                        const res = await WuepyAPI.fetch('/dashboard/apoya', {
+                            method: 'POST',
+                            body: JSON.stringify(payload)
+                        });
+                        
+                        if (res.ok) {
+                            alert('¡Postulación enviada con éxito! Revisaremos tu mención.');
+                            this.showApoyaModal = false;
+                            form.reset();
+                        } else {
+                            alert(res.data?.message || 'Hubo un error al enviar tu postulación. Intenta de nuevo.');
+                        }
+                    } catch (err) {
+                        alert('Error de conexión con el servidor.');
+                    }
                 }
             }));
         });

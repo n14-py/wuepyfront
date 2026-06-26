@@ -82,6 +82,18 @@
                     <p class="text-slate-500 font-medium">El primer mes del plan básico va por nuestra cuenta.</p>
                 </div>
 
+                <template x-if="referralCode">
+                    <div class="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-4 rounded-2xl mb-6 shadow-sm flex items-center gap-3 animate-pulse">
+                        <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shrink-0 shadow-sm">
+                            <i class="fas fa-gift text-blue-500 text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="font-black text-sm uppercase tracking-widest mb-0.5">¡Has sido invitado!</p>
+                            <p class="text-xs font-medium">Ambos recibirán beneficios extra al activar la tienda.</p>
+                        </div>
+                    </div>
+                </template>
+
                 <template x-if="errors.length > 0">
                     <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-6 shadow-sm">
                         <div class="flex items-center gap-2 mb-2">
@@ -177,8 +189,14 @@
         document.addEventListener('alpine:init', () => {
             Alpine.data('registerForm', () => ({
                 name: '', email: '', password: '', confirmPassword: '',
+                referralCode: '',
                 errors: [], isLoading: false,
                 
+                init() {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    this.referralCode = urlParams.get('ref') || '';
+                },
+
                 async submitRegister() {
                     this.errors = [];
                     // Validación en el Frontend
@@ -190,16 +208,15 @@
                     try {
                         const res = await WuepyAPI.fetch('/auth/register', {
                             method: 'POST',
-                            // CORRECCIÓN 1: Enviar confirmPassword al backend también
                             body: JSON.stringify({ 
                                 name: this.name, 
                                 email: this.email, 
                                 password: this.password,
-                                confirmPassword: this.confirmPassword
+                                confirmPassword: this.confirmPassword,
+                                referredBy: this.referralCode
                             })
                         });
                         
-                        // CORRECCIÓN 2: El backend devuelve 201 al crear, no 200. Y redirigimos al Login.
                         if ((res.status === 200 || res.status === 201) && res.data.success) {
                             alert("¡Cuenta creada con éxito! Por favor, inicia sesión para entrar a tu panel.");
                             window.location.href = '/auth/login.html';

@@ -92,7 +92,14 @@
                     </div>
                     
                     <div class="flex-1 text-center md:text-left">
-                        <div class="inline-block px-3 py-1 bg-slate-100 text-slate-600 border border-slate-200 text-[10px] font-black uppercase tracking-widest rounded-full mb-3" x-text="'Plan ' + site?.plan"></div>
+                        <div class="flex items-center justify-center md:justify-start gap-2 mb-3">
+                            <div class="inline-block px-3 py-1 bg-slate-100 text-slate-600 border border-slate-200 text-[10px] font-black uppercase tracking-widest rounded-full" x-text="'Plan ' + site?.plan"></div>
+                            <template x-if="site?.bonusDays && site?.bonusDays > 0">
+                                <div class="inline-block px-3 py-1 bg-blue-100 text-blue-600 border border-blue-200 text-[10px] font-black uppercase tracking-widest rounded-full shadow-sm">
+                                    <i class="fas fa-star"></i> +<span x-text="site.bonusDays"></span> Días (Referidos)
+                                </div>
+                            </template>
+                        </div>
                         
                         <template x-if="site?.subscriptionStatus === 'trial'">
                             <div>
@@ -132,8 +139,8 @@
                     <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Costo de tu Plan</p>
                     <h3 class="text-4xl font-black text-white mb-1">
                         <template x-if="site?.plan === 'basico'"><span>30.000 <span class="text-lg text-slate-400">Gs</span></span></template>
-                        <template x-if="site?.plan === 'medio'"><span>100.000 <span class="text-lg text-slate-400">Gs</span></span></template>
-                        <template x-if="site?.plan === 'profesional'"><span>200.000 <span class="text-lg text-slate-400">Gs</span></span></template>
+                        <template x-if="site?.plan === 'medio'"><span>60.000 <span class="text-lg text-slate-400">Gs</span></span></template>
+                        <template x-if="site?.plan === 'profesional'"><span>150.000 <span class="text-lg text-slate-400">Gs</span></span></template>
                     </h3>
                     <p class="text-sm text-slate-400 font-medium mb-6">Monto a abonar por mes.</p>
                     
@@ -351,7 +358,7 @@
                 successMsg: '', errorMsg: '',
                 receiptData: { amount: '', monthsPaid: '1', aliasOrBankUsed: '' },
 
-async init() {
+                async init() {
                     this.user = WuepyAPI.getUser();
                     if(!this.user) { window.location.href = '/auth/login.html'; return; }
                     
@@ -368,7 +375,6 @@ async init() {
 
                     this.siteId = urlSiteId;
 
-                    // Si definitivamente no hay ID, te devuelve al panel
                     if(!this.siteId) { 
                         console.error("Error: No se encontró el ID de la tienda en la URL.");
                         window.location.href = '/dashboard/index.html'; 
@@ -391,7 +397,22 @@ async init() {
                     this.isLoading = false;
                 },
 
-                openModal() { this.isModalOpen = true; this.fileName = ''; this.receiptData = { amount: '', monthsPaid: '1', aliasOrBankUsed: '' }; },
+                openModal() { 
+                    this.isModalOpen = true; 
+                    this.fileName = ''; 
+                    
+                    // Autocompletar el monto base según el plan para evitar errores de tipeo
+                    let baseAmount = 30000;
+                    if (this.site?.plan === 'medio') baseAmount = 60000;
+                    if (this.site?.plan === 'profesional') baseAmount = 150000;
+
+                    this.receiptData = { 
+                        amount: baseAmount, 
+                        monthsPaid: '1', 
+                        aliasOrBankUsed: '' 
+                    }; 
+                },
+                
                 closeModal() { this.isModalOpen = false; const f = document.getElementById('receiptImage'); if(f) f.value = ''; },
 
                 handleFileUpload(e) {
