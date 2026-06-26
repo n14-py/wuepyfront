@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nosotros | La Revolución del E-commerce Global desde Paraguay</title>
+    <meta name="description" content="Conoce la historia de Wuepy, nuestro fundador Luis Fernando Arce Fretes, y el plan maestro para crear el Amazon de Paraguay.">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js"></script>
+    
+    <style>
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background-color: #f8fafc; overflow-x: hidden; }
+        .glass-nav { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+        .bg-grid-pattern { background-size: 40px 40px; background-image: linear-gradient(to right, rgba(0, 0, 0, 0.03) 1px, transparent 1px), linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px); }
+        .timeline-line::before { content: ''; position: absolute; left: 50%; transform: translateX(-50%); width: 2px; height: 100%; background: #e2e8f0; z-index: 0; }
+        @media (max-width: 768px) { .timeline-line::before { left: 24px; } }
+        .text-glow { text-shadow: 0 0 30px rgba(99, 102, 241, 0.5); }
+    </style>
+</head>
+<body x-data="{ mobileMenuOpen: false }">
+
+    <!-- Navbar -->
+    <nav class="fixed w-full glass-nav z-50 border-b border-slate-200/50 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <a href="/" class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-indigo-600/30">W</div>
+                    <span class="text-2xl font-black text-slate-900 tracking-tight">Wuepy</span>
+                </a>
+                
+                <div class="hidden md:flex items-center gap-8 bg-white/50 px-6 py-2.5 rounded-full border border-slate-200 shadow-sm">
+                    <a href="/" class="text-sm font-bold text-slate-600 hover:text-indigo-600 transition">Inicio</a>
+                    <a href="/#planes" class="text-sm font-bold text-slate-600 hover:text-indigo-600 transition">Planes</a>
+                    <a href="#historia" class="text-sm font-bold text-slate-600 hover:text-indigo-600 transition">El Fundador</a>
+                    <a href="#fases" class="text-sm font-bold text-indigo-600 hover:text-indigo-700 transition">El Plan Maestro</a>
+                </div>
+
+                <div class="hidden md:flex items-center gap-4">
+                    <a href="/auth/login.html" class="text-sm font-bold text-slate-600 hover:text-indigo-600 transition">Ingresar</a>
+                    <a href="/auth/register.html" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-indigo-600/20 transition transform hover:-translate-y-0.5">
+                        Crear Tienda
+                    </a>
+                </div>
+
+                <button @click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden text-slate-600 text-2xl p-2">
+                    <i class="fas" :class="mobileMenuOpen ? 'fa-times' : 'fa-bars'"></i>
+                </button>
+            </div>
+        </div>
+
+        <div x-show="mobileMenuOpen" x-collapse class="md:hidden bg-white border-b border-slate-200 shadow-xl absolute w-full">
+            <div class="px-4 pt-2 pb-6 space-y-2 flex flex-col">
+                <a href="/" class="block px-3 py-3 rounded-md text-base font-bold text-slate-700 hover:bg-slate-50">Inicio</a>
+                <a href="#historia" @click="mobileMenuOpen = false" class="block px-3 py-3 rounded-md text-base font-bold text-slate-700 hover:bg-slate-50">Nuestra Historia</a>
+                <a href="#fases" @click="mobileMenuOpen = false" class="block px-3 py-3 rounded-md text-base font-bold text-slate-700 hover:bg-slate-50">El Plan Maestro</a>
+                <a href="/auth/login.html" class="block px-3 py-3 rounded-md text-base font-bold text-slate-700 hover:bg-slate-50">Iniciar Sesión</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="relative pt-32 pb-20 lg:pt-48 lg:pb-32 bg-slate-900 overflow-hidden">
+        <div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 32px 32px;"></div>
+        <div class="absolute -top-40 -right-40 w-96 h-96 bg-indigo-600 rounded-full mix-blend-screen filter blur-[100px] opacity-40"></div>
+        <div class="absolute -bottom-40 -left-40 w-[600px] h-[600px] bg-blue-500 rounded-full mix-blend-screen filter blur-[120px] opacity-30"></div>
+        
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+            <div class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/10 border border-white/20 text-indigo-300 text-xs font-black uppercase tracking-widest mb-8 backdrop-blur-sm" data-aos="fade-down">
+                <i class="fas fa-globe-americas"></i> El Gigante Tecnológico de Paraguay
+            </div>
+            
+            <h1 class="text-4xl md:text-6xl lg:text-7xl font-black text-white tracking-tight mb-8 max-w-5xl mx-auto leading-tight text-glow" data-aos="fade-up" data-aos-delay="100">
+                Llevando el talento paraguayo <br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-blue-400 to-emerald-400">a los ojos de todo el mundo.</span>
+            </h1>
+            
+            <p class="text-lg md:text-2xl text-slate-300 mb-10 max-w-4xl mx-auto font-medium leading-relaxed" data-aos="fade-up" data-aos-delay="200">
+                En Estados Unidos piden pasta dental por Amazon y llega en horas. En Wuepy, construiremos una infraestructura logística y tecnológica sin precedentes para que Paraguay no solo compre con total seguridad, sino que exporte sus productos al mercado global.
+            </p>
+        </div>
+    </header>
+
+    <!-- El Fundador -->
+    <section id="historia" class="py-24 bg-white relative overflow-hidden">
+        <div class="absolute inset-0 bg-grid-pattern z-0 pointer-events-none opacity-40"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
+                
+                <div class="lg:col-span-7" data-aos="fade-right">
+                    <div class="inline-block bg-indigo-50 text-indigo-600 px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-widest mb-6 border border-indigo-100">
+                        El Cerebro Detrás del Código
+                    </div>
+                    <h2 class="text-3xl md:text-5xl font-black text-slate-900 mb-8 leading-tight">Desarrollando el futuro desde los 14 años.</h2>
+                    
+                    <div class="space-y-6 text-slate-600 text-lg font-medium leading-relaxed">
+                        <p>
+                            Hola, soy <strong>Luis Fernando Arce Fretes</strong>. Ingresé al mundo de la tecnología y la programación a los 14 años. Hoy, con 21 años y cursando mi tercer año de Ingeniería en Informática y Sistemas, dedico mis días (y mis madrugadas) a construir soluciones reales.
+                        </p>
+                        <p>
+                            A mis 16 años fundé <strong>y2k.py</strong> (una marca de ropa muy querida por los jóvenes, que pronto renacerá a gran escala como <em>"LyRA"</em>). En ese entonces me conocían como <em>"htt_nando"</em>. Fue mi primer gran emprendimiento; yo mismo desarrollé el sistema, diseñé el sitio web y creé las promociones. Entendí de primera mano lo difícil que era para un emprendedor paraguayo tener tecnología de calidad sin gastar una fortuna.
+                        </p>
+                        <p>
+                            Siempre me ha apasionado la creación. He desarrollado ecosistemas completos: radios globales, transmisiones en vivo, automatizaciones e inteligencia artificial. En 2024, fui galardonado con un trofeo en un hackathon nacional por mi proyecto <strong>VeteriSoftware</strong>. Hoy en día, aplico toda esa tecnología en mi propia tienda de cosmética y belleza, y he decidido que es el momento de compartir este poder con todos los emprendedores del país.
+                        </p>
+                        
+                        <div class="bg-slate-900 text-white p-8 md:p-10 rounded-3xl mt-10 shadow-2xl border border-slate-800 relative transform transition hover:-translate-y-1">
+                            <i class="fas fa-quote-left absolute top-6 left-6 text-4xl text-slate-700 opacity-50"></i>
+                            <p class="relative z-10 text-xl font-bold italic leading-relaxed text-center px-4">
+                                "El proyecto al que más fe le tengo es Wuepy. Sería un honor enorme para mí decir que, trabajando entre cuatro paredes y encerrado 24/7, logré cambiar para siempre la industria paraguaya. Acompáñennos en esta aventura."
+                            </p>
+                            <div class="text-center mt-8">
+                                <p class="text-indigo-400 font-black uppercase tracking-widest text-sm">— Luis Fernando Arce F.</p>
+                                <p class="text-slate-400 text-xs font-bold mt-1">Fundador & Desarrollador Principal</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="lg:col-span-5 relative" data-aos="fade-left">
+                    <div class="bg-gradient-to-br from-indigo-50 to-slate-100 rounded-[3rem] overflow-hidden shadow-2xl border-4 border-white relative group h-[700px] flex items-center justify-center">
+                        <div class="absolute inset-0 bg-blue-600/5 group-hover:bg-blue-600/0 transition duration-500"></div>
+                        <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(#4f46e5 1px, transparent 1px); background-size: 20px 20px;"></div>
+                        <div class="text-center p-8 relative z-10">
+                            <i class="fas fa-server text-9xl text-indigo-200 mb-8 transform -rotate-6 group-hover:rotate-0 transition duration-500"></i>
+                            <h3 class="text-3xl font-black text-slate-800 mb-4">Código 100% Nativo.</h3>
+                            <p class="text-slate-500 font-medium text-lg leading-relaxed">Cada línea de Wuepy ha sido forjada a mano para garantizar velocidad, seguridad y una escalabilidad sin límites.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="absolute -bottom-10 -left-10 bg-white p-6 rounded-[2rem] shadow-2xl border border-slate-100 flex items-center gap-5 animate-bounce" style="animation-duration: 5s;">
+                        <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center text-3xl shadow-sm">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Galardonado en</p>
+                            <p class="font-black text-slate-900 text-lg">Hackathon 2024</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- El Plan Maestro (Las 3 Fases) -->
+    <section id="fases" class="py-24 bg-slate-900 text-white relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-full h-full bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNSkiLz48L3N2Zz4=')]"></div>
+        <div class="absolute top-1/4 left-0 w-full h-px bg-gradient-to-r from-transparent via-indigo-500/20 to-transparent"></div>
+        <div class="absolute top-2/4 left-0 w-full h-px bg-gradient-to-r from-transparent via-indigo-500/20 to-transparent"></div>
+        <div class="absolute top-3/4 left-0 w-full h-px bg-gradient-to-r from-transparent via-indigo-500/20 to-transparent"></div>
+        
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="text-center max-w-4xl mx-auto mb-24" data-aos="fade-up">
+                <span class="text-indigo-400 font-black uppercase tracking-widest text-sm mb-4 block">Nuestra Hoja de Ruta</span>
+                <h2 class="text-4xl md:text-6xl font-black text-white mb-8 leading-tight">El Plan Maestro de Wuepy</h2>
+                <p class="text-xl text-slate-400 font-medium leading-relaxed">
+                    En Paraguay, el mercado en línea (Marketplace) está plagado de estafadores. La gente compra con miedo y los vendedores honestos sufren para destacar. Wuepy no es solo un creador de tiendas; es la cura definitiva a este problema.
+                </p>
+            </div>
+
+            <div class="relative timeline-line">
+                <!-- Fase 1 -->
+                <div class="flex flex-col md:flex-row items-center w-full mb-24 relative z-10" data-aos="fade-up">
+                    <div class="md:w-1/2 w-full md:pr-20 md:text-right pl-16 md:pl-0 mb-8 md:mb-0">
+                        <div class="inline-block px-4 py-1.5 bg-blue-500/20 text-blue-300 border border-blue-500/30 text-xs font-black uppercase tracking-widest rounded-full mb-5 shadow-sm">
+                            <i class="fas fa-play-circle mr-1"></i> El Presente (Fase 1)
+                        </div>
+                        <h3 class="text-3xl font-black text-white mb-4">Digitalización Accesible</h3>
+                        <p class="text-slate-400 text-lg font-medium leading-relaxed">
+                            Actualmente, nos encontramos dotando de infraestructura a los comercios. Le damos a cualquier emprendedor la posibilidad de tener un sitio web profesional, un catálogo y un sistema de ventas completo en cuestión de minutos, con los costos más bajos del mercado.<br><br>
+                            El dinero generado por estas suscripciones se destina íntegramente a mantener nuestros servidores encendidos y a financiar el desarrollo de la revolución tecnológica que se avecina. <strong>Al adquirir tu tienda hoy, estás invirtiendo en la industria paraguaya.</strong>
+                        </p>
+                    </div>
+                    <div class="absolute left-[24px] md:left-1/2 transform -translate-x-1/2 w-16 h-16 rounded-full bg-blue-600 border-4 border-slate-900 flex items-center justify-center shadow-[0_0_30px_rgba(37,99,235,0.5)] z-20">
+                        <span class="text-white font-black text-xl">1</span>
+                    </div>
+                    <div class="md:w-1/2 w-full md:pl-20 pl-16 md:hidden lg:block"></div>
+                </div>
+
+                <!-- Fase 2 -->
+                <div class="flex flex-col md:flex-row items-center w-full mb-24 relative z-10" data-aos="fade-up">
+                    <div class="md:w-1/2 w-full md:pr-20 md:text-right pl-16 md:pl-0 md:hidden lg:block hidden"></div>
+                    <div class="absolute left-[24px] md:left-1/2 transform -translate-x-1/2 w-16 h-16 rounded-full bg-amber-500 border-4 border-slate-900 flex items-center justify-center shadow-[0_0_30px_rgba(245,158,11,0.5)] z-20">
+                        <span class="text-white font-black text-xl">2</span>
+                    </div>
+                    <div class="md:w-1/2 w-full md:pl-20 pl-16">
+                        <div class="inline-block px-4 py-1.5 bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-black uppercase tracking-widest rounded-full mb-5 shadow-sm">
+                            <i class="fas fa-bullseye mr-1"></i> A partir de 1,000 Suscripciones
+                        </div>
+                        <h3 class="text-3xl font-black text-white mb-4">La Tienda Global y Logística Propia</h3>
+                        <p class="text-slate-400 text-lg font-medium leading-relaxed">
+                            Aquí ocurre la magia. Abriremos <strong>La Gran Tienda Wuepy</strong>. Seguirás teniendo tu sitio web independiente, pero además, tus productos se mostrarán en nuestro Marketplace gigante.<br><br>
+                            Nos convertiremos en el intermediario perfecto, operando como un <em>AliExpress o Shein</em>. El cliente compra en Wuepy; nosotros contratamos a nuestros propios deliverys, pasamos a buscar tu producto, lo verificamos en nuestro centro logístico para asegurar su calidad, lo empaquetamos y lo enviamos al cliente final.<br><br>
+                            <strong>Cero Estafas:</strong> El dinero se libera al vendedor solo cuando el paquete es entregado y validado. Además, esto abre las puertas al mundo: si un cliente en el extranjero quiere 100 termos forrados (guampas), Wuepy se encarga de todo el proceso de exportación y envío internacional.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Fase 3 -->
+                <div class="flex flex-col md:flex-row items-center w-full relative z-10" data-aos="fade-up">
+                    <div class="md:w-1/2 w-full md:pr-20 md:text-right pl-16 md:pl-0 mb-8 md:mb-0">
+                        <div class="inline-block px-4 py-1.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-black uppercase tracking-widest rounded-full mb-5 shadow-sm">
+                            <i class="fas fa-flag-checkered mr-1"></i> A partir de 10,000 Suscripciones
+                        </div>
+                        <h3 class="text-3xl font-black text-white mb-4">El Imperio Físico: Mini Tiendas Wuepy</h3>
+                        <p class="text-slate-400 text-lg font-medium leading-relaxed">
+                            El comercio digital necesita presencia física. Wuepy abrirá <strong>locales físicos estratégicos</strong> a lo largo del país.<br><br>
+                            Como emprendedor suscrito a la plataforma, podrás enviar tu stock a nuestras instalaciones y nosotros lo exhibiremos en nuestras vitrinas. Prácticamente te daremos <strong>un segundo local comercial físico sin que pagues alquiler, agua, luz ni empleados</strong>.<br><br>
+                            Toda la gestión estará respaldada por nuestra App en iOS y Android, permitiendo a los clientes registrar la foto de su casa para envíos precisos, e incluso la creación de casilleros de entrega segura en los barrios. Este es el verdadero futuro de Paraguay.
+                        </p>
+                    </div>
+                    <div class="absolute left-[24px] md:left-1/2 transform -translate-x-1/2 w-16 h-16 rounded-full bg-emerald-500 border-4 border-slate-900 flex items-center justify-center shadow-[0_0_30px_rgba(16,185,129,0.5)] z-20">
+                        <span class="text-white font-black text-xl">3</span>
+                    </div>
+                    <div class="md:w-1/2 w-full md:pl-20 pl-16 md:hidden lg:block"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Inversores -->
+    <section class="py-32 bg-indigo-600 text-white relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMSkiLz48L3N2Zz4=')]"></div>
+        <div class="absolute -top-40 -right-40 w-[600px] h-[600px] bg-white rounded-full mix-blend-overlay filter blur-[100px] opacity-20"></div>
+
+        <div class="max-w-5xl mx-auto px-4 text-center relative z-10" data-aos="zoom-in">
+            <div class="w-24 h-24 bg-white/10 text-white rounded-full flex items-center justify-center text-4xl mx-auto mb-8 shadow-inner border border-white/20 backdrop-blur-md">
+                <i class="fas fa-handshake"></i>
+            </div>
+            <h2 class="text-4xl md:text-6xl font-black mb-8 leading-tight">Llamado a Inversores y Visionarios</h2>
+            <p class="text-xl text-indigo-100 mb-12 leading-relaxed font-medium max-w-4xl mx-auto">
+                Soy el único fundador y desarrollador del proyecto. Actualmente financio y construyo toda esta infraestructura de forma independiente. Sé que con el respaldo de inversores audaces, podemos alcanzar las Fases 2 y 3 en tiempo récord. <strong>Si compartes la visión de transformar y liderar el mercado latinoamericano, me encantaría conversar contigo.</strong>
+            </p>
+            <a href="mailto:luisfretes805@gmail.com" class="inline-flex items-center gap-3 bg-white text-indigo-900 px-10 py-5 rounded-2xl font-black text-xl shadow-2xl hover:scale-105 transition-transform transform hover:-translate-y-2">
+                <i class="fas fa-envelope"></i> Contactar al CEO (luisfretes805@gmail.com)
+            </a>
+            <div class="mt-12 pt-12 border-t border-indigo-500/50">
+                <p class="text-sm text-indigo-200 font-bold uppercase tracking-widest">
+                    "La mejor forma de predecir el futuro es creándolo."
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer Clásico de Wuepy -->
+    <footer class="bg-white border-t border-slate-200 py-16 relative z-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+                <div class="md:col-span-2">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-black text-sm shadow-md">W</div>
+                        <span class="text-2xl font-black text-slate-900 tracking-tight">Wuepy</span>
+                    </div>
+                    <p class="text-slate-500 font-medium leading-relaxed max-w-sm mb-6">
+                        El SaaS de e-commerce diseñado para potenciar a los emprendedores y construir la red comercial más grande de la región.
+                    </p>
+                </div>
+                
+                <div>
+                    <h4 class="font-bold text-slate-900 uppercase tracking-widest text-xs mb-6">Plataforma</h4>
+                    <ul class="space-y-4">
+                        <li><a href="/#como-funciona" class="text-sm font-medium text-slate-500 hover:text-indigo-600 transition">¿Cómo funciona?</a></li>
+                        <li><a href="/#planes" class="text-sm font-medium text-slate-500 hover:text-indigo-600 transition">Precios</a></li>
+                        <li><a href="/auth/register.html" class="text-sm font-medium text-slate-500 hover:text-indigo-600 transition">Crear Tienda</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-bold text-slate-900 uppercase tracking-widest text-xs mb-6">Nosotros</h4>
+                    <ul class="space-y-4">
+                        <li><a href="/nosotros.html" class="text-sm font-medium text-indigo-600 hover:text-indigo-800 transition">Misión y Visión</a></li>
+                        <li><a href="/terminos.html" class="text-sm font-medium text-slate-500 hover:text-indigo-600 transition">Términos y Condiciones</a></li>
+                        <li><a href="/wuepy-apoya.html" class="text-sm font-medium text-slate-500 hover:text-indigo-600 transition">Wuepy Apoya</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-slate-100 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                <p class="text-sm text-slate-400 font-medium">
+                    &copy; 2026 Wuepy by LFAFTECH. Todos los derechos reservados.
+                </p>
+                <div class="flex items-center gap-4 text-sm text-slate-400 font-medium">
+                    <span>Hecho con <i class="fas fa-heart text-red-400 mx-1"></i> en Paraguay</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({ duration: 800, once: true, offset: 50 });
+    </script>
+</body>
+</html>

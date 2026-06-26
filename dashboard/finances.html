@@ -6,22 +6,22 @@
     <title>Finanzas y Reportes - Wuepy</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="/js/api.js"></script>
-    
+
     <style>
-        [x-cloak] { display: none !important; }
         body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background-color: #f1f5f9; }
-        .custom-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
+        [x-cloak] { display: none !important; }
+        .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        .table-row-hover { transition: all 0.2s ease; }
-        .table-row-hover:hover { background-color: #f8fafc; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
-<body class="text-slate-800 flex flex-col min-h-screen" x-data="financeManager()">
+<body class="text-slate-800 flex flex-col min-h-screen" x-data="financesApp()">
 
     <nav class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm" x-show="user" x-cloak>
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -31,7 +31,7 @@
                     <span class="text-xl font-extrabold text-slate-900 tracking-tight">Wuepy</span>
                 </a>
                 <div class="flex items-center gap-4">
-                    <div class="hidden sm:block text-sm text-slate-500 font-medium">Hola, <span class="font-bold text-slate-900" x-text="user?.name"></span></div>
+                    <div class="hidden sm:block text-sm text-slate-500 text-right font-medium">Hola, <span class="font-bold text-slate-900" x-text="user?.name"></span></div>
                     <div class="h-8 w-px bg-slate-200 mx-2 hidden sm:block"></div>
                     <a href="#" @click.prevent="WuepyAPI.logoutLocal()" class="text-slate-400 hover:text-red-500 p-2 transition flex items-center gap-2"><i class="fas fa-sign-out-alt text-lg"></i></a>
                 </div>
@@ -41,261 +41,212 @@
 
     <template x-if="isLoading">
         <div class="flex flex-col items-center justify-center py-32 flex-grow">
-            <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-purple-600 mb-4"></div>
-            <p class="text-slate-500 font-bold animate-pulse">Cargando reporte financiero...</p>
+            <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-indigo-600 mb-4"></div>
+            <p class="text-slate-500 font-bold animate-pulse">Cargando reportes financieros...</p>
         </div>
     </template>
 
-    <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow" x-show="!isLoading" x-cloak>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-grow" x-show="!isLoading" x-cloak>
         
-        <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+        <div class="mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
-                <div class="flex items-center gap-2 text-sm font-bold text-slate-400 mb-3">
-                    <a href="/dashboard/index.html" class="hover:text-purple-600 transition"><i class="fas fa-home"></i> Panel</a>
-                    <i class="fas fa-chevron-right text-[10px]"></i>
-                    <a :href="'/dashboard/site-overview.html?id=' + site?._id" class="hover:text-purple-600 transition" x-text="site?.name"></a>
-                    <i class="fas fa-chevron-right text-[10px]"></i>
-                    <span class="text-purple-600 bg-purple-50 px-2 py-0.5 rounded-md">Finanzas</span>
-                </div>
-                <h1 class="text-3xl md:text-4xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-                    <i class="fas fa-chart-line text-purple-500"></i> Control Financiero
+                <a :href="'/dashboard/site-overview.html?id=' + siteId" class="inline-flex items-center text-sm font-bold text-slate-400 hover:text-indigo-600 transition mb-2">
+                    <i class="fas fa-arrow-left mr-2"></i> Volver al Panel
+                </a>
+                <h1 class="text-3xl font-black text-slate-900 flex items-center gap-3">
+                    <i class="fas fa-chart-line text-indigo-500"></i> Finanzas
                 </h1>
-                <p class="text-slate-500 mt-2 text-lg">Monitorea tus ingresos, asienta tus gastos y exporta tus reportes mensuales.</p>
+                <p class="text-sm text-slate-500 font-medium mt-1">Control de ingresos, egresos y rentabilidad de tu negocio.</p>
             </div>
             
-            <div class="flex flex-wrap gap-3">
-                <button @click="openExpenseModal()" class="bg-white border-2 border-slate-200 hover:border-slate-300 text-slate-700 px-5 py-3 rounded-xl font-bold shadow-sm transition flex items-center gap-2">
-                    <i class="fas fa-minus-circle text-red-500"></i> Registrar Egreso
-                </button>
-                <a :href="`${API_URL}/dashboard/site/${site?._id}/finances/export?token=${user?.token}`" target="_blank" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl font-black shadow-lg shadow-purple-600/30 transition transform hover:-translate-y-0.5 flex items-center gap-2">
-                    <i class="fas fa-file-pdf text-lg"></i> Exportar Mes a PDF
+            <button @click="showExpenseModal = true" class="bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-xl text-sm font-black shadow-lg shadow-slate-900/20 transition transform active:scale-95 flex items-center gap-2 shrink-0">
+                <i class="fas fa-minus-circle text-red-400"></i> Registrar Egreso
+            </button>
+        </div>
+
+        <!-- ALERTA DE SUSCRIPCIÓN -->
+        <template x-if="site && ['pending_payment', 'expired', 'suspended'].includes(site.subscriptionStatus)">
+            <div class="bg-red-50 border border-red-200 rounded-2xl p-5 mb-8 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm relative overflow-hidden">
+                <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9InJnYmEoMjM5LDY4LDY4LDAuMSkiLz48L3N2Zz4=')] opacity-50"></div>
+                <div class="flex items-center gap-4 text-red-700 relative z-10">
+                    <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm shrink-0">
+                        <i class="fas fa-lock text-2xl text-red-500"></i>
+                    </div>
+                    <div>
+                        <p class="font-black text-sm uppercase tracking-widest">Tienda Suspendida / Pago Pendiente</p>
+                        <p class="text-sm font-medium mt-0.5">Tus clientes están viendo la pantalla de bloqueo. Paga tu suscripción para reactivarla.</p>
+                    </div>
+                </div>
+                <a :href="'/dashboard/billing.html?id=' + siteId" class="shrink-0 relative z-10 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl text-sm font-black uppercase tracking-widest shadow-lg shadow-red-600/30 transition transform hover:-translate-y-0.5">
+                    Pagar Ahora
                 </a>
             </div>
-        </div>
-
-        <template x-if="successMsg">
-            <div class="bg-emerald-50 border border-emerald-200 text-emerald-700 p-4 rounded-xl mb-8 shadow-sm flex items-center gap-3">
-                <i class="fas fa-check-circle text-2xl text-emerald-500"></i>
-                <p class="font-bold text-sm" x-text="successMsg"></p>
-            </div>
-        </template>
-        <template x-if="errorMsg">
-            <div class="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl mb-8 shadow-sm flex items-center gap-3">
-                <i class="fas fa-exclamation-circle text-2xl text-red-500"></i>
-                <p class="font-bold text-sm" x-text="errorMsg"></p>
-            </div>
         </template>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            
-            <div class="bg-white rounded-[2rem] p-6 border border-slate-200 shadow-sm relative overflow-hidden">
-                <div class="absolute top-0 right-0 p-6 opacity-10"><i class="fas fa-calendar-day text-6xl text-blue-600"></i></div>
-                <p class="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 relative z-10">Ingresos de Hoy</p>
-                <h3 class="text-3xl font-black text-slate-900 relative z-10 mb-1" x-text="formatMoney(stats.dailyTotal)"></h3>
-                <p class="text-sm font-bold text-blue-600 relative z-10" x-text="stats.dailyCount + ' tickets cerrados'"></p>
-            </div>
-            
-            <div class="bg-white rounded-[2rem] p-6 border border-slate-200 shadow-sm relative overflow-hidden">
-                <div class="absolute top-0 right-0 p-6 opacity-10"><i class="fas fa-calendar-alt text-6xl text-emerald-600"></i></div>
-                <p class="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 relative z-10">Ingresos del Mes</p>
-                <h3 class="text-3xl font-black text-slate-900 relative z-10 mb-1" x-text="formatMoney(stats.monthlyTotal)"></h3>
-                <p class="text-sm font-bold text-emerald-600 relative z-10" x-text="stats.monthlyCount + ' operaciones exitosas'"></p>
-            </div>
-
-            <div class="bg-white rounded-[2rem] p-6 border border-slate-200 shadow-sm relative overflow-hidden">
-                <div class="absolute top-0 right-0 p-6 opacity-10"><i class="fas fa-receipt text-6xl text-red-600"></i></div>
-                <p class="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 relative z-10">Egresos / Gastos (Mes)</p>
-                <h3 class="text-3xl font-black text-slate-900 relative z-10 mb-1" x-text="formatMoney(stats.monthlyExpenses)"></h3>
-                <p class="text-sm font-bold text-red-500 relative z-10">Dinero saliente</p>
-            </div>
-
-            <div class="rounded-[2rem] p-6 shadow-lg relative overflow-hidden text-white"
-                 :class="netProfit >= 0 ? 'bg-gradient-to-br from-slate-800 to-slate-900' : 'bg-gradient-to-br from-red-800 to-red-900'"
-                 :style="netProfit >= 0 ? 'background: linear-gradient(135deg, #1e293b, #0f172a);' : 'background: linear-gradient(135deg, #991b1b, #7f1d1d);'">
-                <div class="absolute top-0 right-0 p-6 opacity-20"><i class="fas fa-piggy-bank text-6xl"></i></div>
-                <p class="text-xs font-black text-slate-300 uppercase tracking-widest mb-2 relative z-10">Ganancia Neta (Mes)</p>
-                <h3 class="text-3xl font-black relative z-10 mb-1" x-text="formatMoney(netProfit)"></h3>
-                <p class="text-sm font-bold relative z-10" :class="netProfit >= 0 ? 'text-emerald-400' : 'text-red-300'" x-text="netProfit >= 0 ? '¡Buen trabajo! Estás en verde.' : 'Atención: Egresos superan ingresos.'"></p>
-            </div>
+        <!-- Filtros de Fecha -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 mb-8 shadow-sm flex flex-wrap items-center gap-4">
+            <span class="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><i class="fas fa-filter"></i> Periodo:</span>
+            <button @click="setFilter('today')" :class="period === 'today' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'" class="px-4 py-2 text-sm font-bold rounded-lg border transition">Hoy</button>
+            <button @click="setFilter('week')" :class="period === 'week' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'" class="px-4 py-2 text-sm font-bold rounded-lg border transition">Esta Semana</button>
+            <button @click="setFilter('month')" :class="period === 'month' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'" class="px-4 py-2 text-sm font-bold rounded-lg border transition">Este Mes</button>
+            <button @click="setFilter('all')" :class="period === 'all' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'" class="px-4 py-2 text-sm font-bold rounded-lg border transition">Histórico Total</button>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <!-- Tarjetas de Resumen -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             
-            <div class="lg:col-span-2 bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm">
-                <div class="flex justify-between items-center mb-6 border-b border-slate-100 pb-4">
-                    <h3 class="text-lg font-black text-slate-900 uppercase tracking-tight flex items-center gap-2">
-                        <i class="fas fa-chart-bar text-purple-500"></i> Resumen de Flujo
-                    </h3>
-                </div>
-                <div class="h-64 w-full relative">
-                    <canvas id="financeChart"></canvas>
-                </div>
-            </div>
-
-            <div class="bg-indigo-600 p-8 rounded-[2rem] shadow-xl text-white relative overflow-hidden flex flex-col justify-center">
-                <div class="absolute -right-10 -bottom-10 opacity-10">
-                    <i class="fas fa-cubes text-9xl"></i>
+            <div class="bg-white rounded-[2rem] p-6 border border-slate-200 shadow-sm relative overflow-hidden group">
+                <div class="absolute top-0 right-0 p-6 opacity-5 transform group-hover:scale-110 transition duration-500">
+                    <i class="fas fa-arrow-trend-up text-8xl text-emerald-500"></i>
                 </div>
                 <div class="relative z-10">
-                    <span class="inline-block px-3 py-1 bg-indigo-500/50 border border-indigo-400 rounded-full text-[10px] font-black uppercase tracking-widest mb-6 shadow-sm">Activos Fijos</span>
-                    <h3 class="text-sm font-bold text-indigo-200 uppercase tracking-wider mb-2">Capital en Mercadería</h3>
-                    <p class="text-4xl md:text-5xl font-black tracking-tight mb-4">
-                        <span class="text-xl text-indigo-300" x-text="site?.currency === 'PYG' ? 'Gs.' : '$'"></span><br>
-                        <span x-text="(stats.stockValue || 0).toLocaleString('es-PY')"></span>
-                    </p>
-                    <p class="text-sm text-indigo-100 font-medium">Este es el valor total proyectado si vendes todo el stock que tienes actualmente en Wuepy.</p>
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-500 border border-emerald-100"><i class="fas fa-plus"></i></div>
+                        <h3 class="text-xs font-black text-slate-500 uppercase tracking-widest">Total Ingresos</h3>
+                    </div>
+                    <p class="text-3xl font-black text-slate-900" x-text="formatMoney(summary.income)"></p>
+                    <p class="text-xs font-bold text-emerald-500 mt-2">Ventas concretadas</p>
                 </div>
             </div>
+
+            <div class="bg-white rounded-[2rem] p-6 border border-slate-200 shadow-sm relative overflow-hidden group">
+                <div class="absolute top-0 right-0 p-6 opacity-5 transform group-hover:scale-110 transition duration-500">
+                    <i class="fas fa-arrow-trend-down text-8xl text-red-500"></i>
+                </div>
+                <div class="relative z-10">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 bg-red-50 rounded-full flex items-center justify-center text-red-500 border border-red-100"><i class="fas fa-minus"></i></div>
+                        <h3 class="text-xs font-black text-slate-500 uppercase tracking-widest">Total Egresos</h3>
+                    </div>
+                    <p class="text-3xl font-black text-slate-900" x-text="formatMoney(summary.expense)"></p>
+                    <p class="text-xs font-bold text-red-500 mt-2">Gastos operativos y compras</p>
+                </div>
+            </div>
+
+            <div class="bg-slate-900 rounded-[2rem] p-6 border border-slate-800 shadow-xl relative overflow-hidden group text-white">
+                <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/20 to-transparent opacity-50"></div>
+                <div class="absolute top-0 right-0 p-6 opacity-10 transform group-hover:scale-110 transition duration-500">
+                    <i class="fas fa-wallet text-8xl text-indigo-300"></i>
+                </div>
+                <div class="relative z-10">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center text-indigo-300 border border-white/20"><i class="fas fa-equals"></i></div>
+                        <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest">Balance Neto (Ganancia)</h3>
+                    </div>
+                    <p class="text-4xl font-black tracking-tight" :class="summary.net >= 0 ? 'text-emerald-400' : 'text-red-400'" x-text="formatMoney(summary.net)"></p>
+                    <p class="text-xs font-bold text-slate-400 mt-2">Rentabilidad del periodo</p>
+                </div>
+            </div>
+
         </div>
 
-        <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+        <!-- Tabla de Movimientos -->
+        <div class="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden flex flex-col mb-8">
+            <div class="p-6 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                <h3 class="text-lg font-black text-slate-900 flex items-center gap-2"><i class="fas fa-list-ul text-slate-400"></i> Registro de Movimientos</h3>
+                <span class="text-xs font-bold text-slate-500 bg-slate-200 px-3 py-1 rounded-full"><span x-text="transactions.length"></span> registros</span>
+            </div>
             
-            <div class="bg-white border border-slate-200 rounded-[2rem] shadow-sm overflow-hidden flex flex-col">
-                <div class="p-6 border-b border-slate-100 bg-slate-50 flex justify-between items-center shrink-0">
-                    <h3 class="text-lg font-black text-slate-900 uppercase tracking-tight flex items-center gap-2">
-                        <i class="fas fa-arrow-down text-emerald-500"></i> Últimos Ingresos
-                    </h3>
-                    <span class="text-xs font-bold text-slate-400 uppercase">Top 10</span>
-                </div>
-                <div class="overflow-x-auto custom-scrollbar flex-1">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-white border-b border-slate-100 text-slate-400 text-[10px] uppercase tracking-widest font-black">
-                                <th class="px-6 py-4">Fecha</th>
-                                <th class="px-6 py-4">Cliente / Tipo</th>
-                                <th class="px-6 py-4 text-center">Método</th>
-                                <th class="px-6 py-4 text-right">Monto</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-50">
-                            <template x-for="sale in recentSales" :key="sale._id">
-                                <tr class="table-row-hover">
-                                    <td class="px-6 py-4 whitespace-nowrap text-xs font-bold text-slate-500" x-text="new Date(sale.createdAt).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', hour: '2-digit', minute:'2-digit' })"></td>
+            <div class="overflow-x-auto custom-scrollbar">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-white border-b border-slate-100 text-slate-400 text-[10px] uppercase tracking-widest font-black">
+                            <th class="px-6 py-4">Fecha y Hora</th>
+                            <th class="px-6 py-4">Descripción / Origen</th>
+                            <th class="px-6 py-4">Categoría</th>
+                            <th class="px-6 py-4 text-right">Monto</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-50">
+                        <template x-if="transactions.length > 0">
+                            <template x-for="txn in transactions" :key="txn.id">
+                                <tr class="hover:bg-slate-50 transition">
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <p class="text-sm font-black text-slate-800" x-text="sale.customer?.name || 'Ocasional'"></p>
-                                        <p class="text-[10px] font-bold text-slate-400 uppercase" x-text="sale.saleChannel === 'whatsapp' ? 'Delivery / Web' : 'POS Mostrador'"></p>
+                                        <p class="text-sm font-bold text-slate-700" x-text="formatDate(txn.date)"></p>
+                                        <p class="text-[10px] text-slate-400 font-bold" x-text="formatTime(txn.date)"></p>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-center">
-                                        <template x-if="sale.paymentMethod === 'efectivo'"><span class="bg-emerald-50 text-emerald-600 px-2 py-1 rounded text-[10px] font-black uppercase tracking-widest"><i class="fas fa-money-bill-wave mr-1"></i> Efectivo</span></template>
-                                        <template x-if="sale.paymentMethod === 'transferencia'"><span class="bg-purple-50 text-purple-600 px-2 py-1 rounded text-[10px] font-black uppercase tracking-widest"><i class="fas fa-mobile-alt mr-1"></i> Transfer</span></template>
-                                        <template x-if="sale.paymentMethod !== 'efectivo' && sale.paymentMethod !== 'transferencia'"><span class="bg-blue-50 text-blue-600 px-2 py-1 rounded text-[10px] font-black uppercase tracking-widest"><i class="fas fa-credit-card mr-1"></i> Tarjeta</span></template>
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+                                                 :class="txn.type === 'income' ? 'bg-emerald-50 text-emerald-500' : 'bg-red-50 text-red-500'">
+                                                <i class="fas" :class="txn.type === 'income' ? 'fa-arrow-down' : 'fa-arrow-up'"></i>
+                                            </div>
+                                            <div>
+                                                <p class="text-sm font-black text-slate-900" x-text="txn.description"></p>
+                                                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider" x-text="'Ref: ' + (txn.reference || 'Manual')"></p>
+                                            </div>
+                                        </div>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-right font-black text-emerald-600" x-text="'+ ' + formatMoney(sale.totalAmount)"></td>
-                                </tr>
-                            </template>
-                            <template x-if="recentSales.length === 0">
-                                <tr>
-                                    <td colspan="4" class="px-6 py-12 text-center text-slate-400">
-                                        <i class="fas fa-receipt text-4xl mb-3 opacity-50"></i>
-                                        <p class="font-bold text-sm">No hay ventas registradas aún.</p>
-                                    </td>
-                                </tr>
-                            </template>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="bg-white border border-slate-200 rounded-[2rem] shadow-sm overflow-hidden flex flex-col">
-                <div class="p-6 border-b border-slate-100 bg-slate-50 flex justify-between items-center shrink-0">
-                    <h3 class="text-lg font-black text-slate-900 uppercase tracking-tight flex items-center gap-2">
-                        <i class="fas fa-arrow-up text-red-500"></i> Últimos Egresos
-                    </h3>
-                    <button @click="openExpenseModal()" class="text-xs font-bold text-red-600 bg-red-100 hover:bg-red-200 px-3 py-1.5 rounded-lg transition uppercase tracking-widest">
-                        Añadir Gasto
-                    </button>
-                </div>
-                <div class="overflow-x-auto custom-scrollbar flex-1">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-white border-b border-slate-100 text-slate-400 text-[10px] uppercase tracking-widest font-black">
-                                <th class="px-6 py-4">Fecha</th>
-                                <th class="px-6 py-4">Concepto / Categoría</th>
-                                <th class="px-6 py-4 text-right">Monto</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-50">
-                            <template x-for="exp in recentExpenses" :key="exp._id">
-                                <tr class="table-row-hover">
-                                    <td class="px-6 py-4 whitespace-nowrap text-xs font-bold text-slate-500" x-text="new Date(exp.date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })"></td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <p class="text-sm font-black text-slate-800" x-text="exp.description"></p>
-                                        <span class="inline-block mt-1 bg-slate-100 text-slate-500 px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest" x-text="exp.category"></span>
+                                        <span class="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-md text-[10px] font-black uppercase tracking-widest" x-text="txn.category || 'General'"></span>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-right font-black text-red-500" x-text="'- ' + formatMoney(exp.amount)"></td>
-                                </tr>
-                            </template>
-                            <template x-if="recentExpenses.length === 0">
-                                <tr>
-                                    <td colspan="3" class="px-6 py-12 text-center text-slate-400">
-                                        <i class="fas fa-file-invoice-dollar text-4xl mb-3 opacity-50"></i>
-                                        <p class="font-bold text-sm">No has registrado ningún gasto.</p>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right">
+                                        <span class="text-base font-black" :class="txn.type === 'income' ? 'text-emerald-600' : 'text-red-600'" x-text="(txn.type === 'income' ? '+ ' : '- ') + formatMoney(txn.amount)"></span>
                                     </td>
                                 </tr>
                             </template>
-                        </tbody>
-                    </table>
-                </div>
+                        </template>
+                        <template x-if="transactions.length === 0">
+                            <tr>
+                                <td colspan="4" class="px-6 py-20 text-center text-slate-400">
+                                    <i class="fas fa-file-invoice-dollar text-5xl mb-4 opacity-30"></i>
+                                    <p class="font-bold text-lg text-slate-600">No hay movimientos en este periodo</p>
+                                    <p class="text-sm font-medium mt-1">Registra tus ventas o egresos para ver las estadísticas aquí.</p>
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
             </div>
-
         </div>
+
     </div>
 
-    <div x-show="isExpenseModalOpen" x-cloak class="fixed z-50 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div x-show="isExpenseModalOpen" x-transition.opacity class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm transition-opacity" @click="closeExpenseModal()"></div>
-            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+    <!-- MODAL REGISTRAR EGRESO -->
+    <div x-show="showExpenseModal" x-cloak class="fixed z-[100] inset-0 overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:p-0">
+            <div x-show="showExpenseModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm transition-opacity" @click="showExpenseModal = false"></div>
             
-            <div x-show="isExpenseModalOpen" 
+            <div x-show="showExpenseModal" 
                  x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" 
-                 class="inline-block align-bottom bg-white rounded-[2rem] text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle max-w-lg w-full border border-slate-200">
+                 class="inline-block bg-white rounded-[2rem] text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md w-full border border-slate-200 relative z-[101]">
                 
                 <form @submit.prevent="submitExpense">
-                    <div class="bg-slate-900 px-6 sm:px-8 py-6 flex justify-between items-center border-b border-slate-800">
-                        <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center text-red-400">
-                                <i class="fas fa-minus-circle"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-xl font-black text-white">Registrar Gasto</h3>
-                                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-0.5">Asienta facturas o pagos</p>
-                            </div>
+                    <div class="bg-red-50 px-6 pt-8 pb-6 border-b border-red-100">
+                        <div class="flex items-center justify-center h-16 w-16 rounded-full bg-white border border-red-200 shadow-sm mx-auto mb-4">
+                            <i class="fas fa-minus-circle text-3xl text-red-500"></i>
                         </div>
-                        <button type="button" @click="closeExpenseModal()" class="text-slate-400 hover:text-white bg-slate-800 rounded-full w-8 h-8 flex items-center justify-center transition">
-                            <i class="fas fa-times"></i>
-                        </button>
+                        <h3 class="text-2xl font-black text-slate-900 text-center tracking-tight mb-1">Registrar Egreso</h3>
+                        <p class="text-xs font-bold text-red-600 uppercase tracking-widest text-center">Gasto u Operación</p>
                     </div>
 
-                    <div class="px-6 sm:px-8 py-8 bg-slate-50 space-y-5">
+                    <div class="p-6 sm:p-8 space-y-5 bg-white">
                         <div>
-                            <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Concepto / Descripción <span class="text-red-500">*</span></label>
-                            <input type="text" x-model="expenseForm.description" required placeholder="Ej: Pago de Luz ANDE, Salario Repartidor..." class="w-full px-4 py-3 bg-white border-2 border-slate-200 rounded-xl focus:border-red-500 outline-none font-bold text-slate-800 transition">
+                            <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Monto (Gs) <span class="text-red-500">*</span></label>
+                            <input type="number" x-model="expenseData.amount" required min="1" placeholder="Ej: 50000" class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl focus:bg-white focus:border-red-500 font-black text-slate-900 text-lg transition outline-none">
                         </div>
-                        
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Monto (<span x-text="site?.currency"></span>) <span class="text-red-500">*</span></label>
-                                <input type="number" x-model.number="expenseForm.amount" required min="1" placeholder="0" class="w-full px-4 py-3 bg-white border-2 border-slate-200 rounded-xl focus:border-red-500 outline-none font-black text-slate-900 text-lg transition">
-                            </div>
-                            <div>
-                                <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Categoría</label>
-                                <select x-model="expenseForm.category" class="w-full px-4 py-3 bg-white border-2 border-slate-200 rounded-xl focus:border-red-500 outline-none font-bold text-slate-700 transition appearance-none cursor-pointer">
-                                    <option value="Operativo">Gasto Operativo</option>
-                                    <option value="Logística">Logística / Envíos</option>
-                                    <option value="Marketing">Marketing / Publicidad</option>
-                                    <option value="Insumos">Compra de Insumos</option>
-                                    <option value="Servicios">Servicios (Luz, Agua, Internet)</option>
-                                    <option value="Otros">Otros</option>
-                                </select>
-                            </div>
+                        <div>
+                            <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Descripción <span class="text-red-500">*</span></label>
+                            <input type="text" x-model="expenseData.description" required placeholder="Ej: Pago de delivery, Compra insumos..." class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl focus:bg-white focus:border-red-500 font-bold text-slate-700 transition outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Categoría</label>
+                            <select x-model="expenseData.category" class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl focus:bg-white focus:border-red-500 font-bold text-slate-700 transition outline-none cursor-pointer">
+                                <option value="Logística">Logística / Envíos</option>
+                                <option value="Insumos">Compra de Insumos</option>
+                                <option value="Servicios">Pago de Servicios</option>
+                                <option value="Sueldos">Salarios</option>
+                                <option value="Marketing">Publicidad / Marketing</option>
+                                <option value="Otro">Otro Gasto</option>
+                            </select>
                         </div>
                     </div>
 
-                    <div class="bg-white px-6 sm:px-8 py-5 flex flex-col sm:flex-row-reverse gap-3 border-t border-slate-200">
-                        <button type="submit" :disabled="isSaving" class="w-full sm:w-auto inline-flex justify-center items-center gap-2 rounded-xl shadow-lg shadow-red-500/30 px-6 py-3 bg-red-500 text-sm font-black text-white hover:bg-red-600 transition uppercase tracking-widest disabled:opacity-70">
-                            <i class="fas" :class="isSaving ? 'fa-spinner fa-spin' : 'fa-save'"></i> Guardar Egreso
+                    <div class="bg-slate-50 px-6 py-5 flex flex-col sm:flex-row-reverse gap-3 border-t border-slate-100">
+                        <button type="submit" :disabled="isSaving" class="w-full sm:w-auto inline-flex justify-center items-center gap-2 rounded-xl shadow-lg shadow-red-500/30 px-8 py-3.5 bg-red-600 text-sm font-black text-white hover:bg-red-700 transition uppercase tracking-widest disabled:opacity-70">
+                            <i class="fas" :class="isSaving ? 'fa-spinner fa-spin' : 'fa-check'"></i> Guardar
                         </button>
-                        <button type="button" @click="closeExpenseModal()" class="w-full sm:w-auto inline-flex justify-center items-center rounded-xl border border-slate-300 px-6 py-3 bg-white text-sm font-bold text-slate-600 hover:bg-slate-50 transition uppercase tracking-widest">
+                        <button type="button" @click="showExpenseModal = false" class="w-full sm:w-auto inline-flex justify-center items-center rounded-xl border-2 border-slate-200 px-8 py-3.5 bg-white text-sm font-bold text-slate-600 hover:bg-slate-50 transition uppercase tracking-widest">
                             Cancelar
                         </button>
                     </div>
@@ -304,7 +255,7 @@
         </div>
     </div>
 
-    <footer class="bg-white border-t border-slate-200 py-8 mt-auto">
+    <footer class="bg-white border-t border-slate-200 py-8 mt-auto z-10 relative">
         <div class="max-w-7xl mx-auto px-4 text-center">
             <p class="text-sm text-slate-400 font-medium">&copy; 2026 Wuepy by LFAFTECH. Todos los derechos reservados.</p>
         </div>
@@ -312,33 +263,22 @@
 
     <script>
         document.addEventListener('alpine:init', () => {
-            Alpine.data('financeManager', () => ({
-                user: null, site: null, 
-                stats: { dailyTotal: 0, dailyCount: 0, monthlyTotal: 0, monthlyCount: 0, monthlyExpenses: 0, stockValue: 0 },
-                recentSales: [], recentExpenses: [],
+            Alpine.data('financesApp', () => ({
+                user: null, siteId: null, site: null,
                 isLoading: true, isSaving: false,
-                isExpenseModalOpen: false,
-                successMsg: '', errorMsg: '',
-                expenseForm: { description: '', amount: '', category: 'Operativo' },
-                chartInstance: null,
-                API_URL: window.API_URL || 'http://localhost:3000/api',
-
-                get netProfit() { return this.stats.monthlyTotal - this.stats.monthlyExpenses; },
-
-                formatMoney(amount) {
-                    const num = parseInt(amount) || 0;
-                    return (this.site?.currency === 'PYG' ? 'Gs. ' : '$ ') + num.toLocaleString('es-PY');
-                },
+                transactions: [], 
+                summary: { income: 0, expense: 0, net: 0 },
+                period: 'month',
+                showExpenseModal: false,
+                expenseData: { amount: '', description: '', category: 'Logística' },
 
                 async init() {
                     this.user = WuepyAPI.getUser();
                     if(!this.user) { window.location.href = '/auth/login.html'; return; }
                     
-                    // MÉTODO UNIVERSAL: Busca el ID tanto en rutas limpias como en parámetros antiguos
                     const urlParams = new URLSearchParams(window.location.search);
                     let urlSiteId = urlParams.get('id') || urlParams.get('siteId');
 
-                    // Fallback a ruta limpia por si se llama desde el backend
                     if (!urlSiteId) {
                         const pathSegments = window.location.pathname.split('/');
                         const siteIdx = pathSegments.indexOf('site');
@@ -347,90 +287,90 @@
 
                     this.siteId = urlSiteId;
 
-                    // Si definitivamente no hay ID, te devuelve al panel
                     if(!this.siteId) { 
                         console.error("Error: No se encontró el ID de la tienda en la URL.");
                         window.location.href = '/dashboard/index.html'; 
                         return; 
                     }
 
-                    await this.loadFinances(this.siteId);
+                    await this.loadData();
                 },
 
-                async loadFinances(siteId) {
+                async loadData() {
                     this.isLoading = true;
                     try {
-                        const res = await WuepyAPI.fetch(`/dashboard/finances/${siteId}`);
-                        if(res.status === 200) {
+                        const res = await WuepyAPI.fetch(`/dashboard/site/${this.siteId}/finances?period=${this.period}`);
+                        if (res.status === 200 || res.status === 201) {
                             this.site = res.data.site;
-                            this.stats = res.data.stats || this.stats;
-                            this.recentSales = res.data.recentSales || [];
-                            this.recentExpenses = res.data.recentExpenses || [];
-                            
-                            // Render Chart after alpine updates DOM
-                            setTimeout(() => this.renderChart(), 100);
+                            this.transactions = res.data.transactions || [];
+                            this.calculateSummary();
                         } else {
-                            this.errorMsg = 'Error al cargar finanzas.';
+                            console.warn("Respuesta no exitosa al cargar finanzas:", res.data);
+                            this.transactions = [];
+                            this.calculateSummary();
                         }
-                    } catch(e) { this.errorMsg = 'Error de conexión.'; }
-                    this.isLoading = false;
+                    } catch (e) { 
+                        console.error("Error al cargar finanzas:", e);
+                        // Fallback seguro
+                        this.transactions = [];
+                        this.calculateSummary();
+                    } finally {
+                        this.isLoading = false;
+                    }
                 },
 
-                renderChart() {
-                    const canvas = document.getElementById('financeChart');
-                    if(!canvas) return;
-                    if(this.chartInstance) this.chartInstance.destroy();
+                setFilter(newPeriod) {
+                    this.period = newPeriod;
+                    this.loadData();
+                },
 
-                    const ctx = canvas.getContext('2d');
-                    this.chartInstance = new Chart(ctx, {
-                        type: 'bar',
-                        data: {
-                            labels: ['Resumen del Mes Actual'],
-                            datasets: [
-                                { label: 'Ingresos Brutos', data: [this.stats.monthlyTotal], backgroundColor: 'rgba(16, 185, 129, 0.8)', borderRadius: 8, barPercentage: 0.5, categoryPercentage: 0.4 },
-                                { label: 'Gastos / Egresos', data: [this.stats.monthlyExpenses], backgroundColor: 'rgba(239, 68, 68, 0.8)', borderRadius: 8, barPercentage: 0.5, categoryPercentage: 0.4 },
-                                { label: 'Ganancia Neta', data: [this.netProfit], backgroundColor: this.netProfit >= 0 ? 'rgba(59, 130, 246, 0.8)' : 'rgba(245, 158, 11, 0.8)', borderRadius: 8, barPercentage: 0.5, categoryPercentage: 0.4 }
-                            ]
-                        },
-                        options: {
-                            responsive: true, maintainAspectRatio: false,
-                            plugins: {
-                                legend: { position: 'bottom', labels: { font: { family: "'Inter', sans-serif", weight: 'bold', size: 12 }, color: '#64748b', usePointStyle: true, padding: 20 } },
-                                tooltip: {
-                                    backgroundColor: '#1e293b', titleFont: { family: "'Inter', sans-serif", size: 13 }, bodyFont: { family: "'Inter', sans-serif", size: 14, weight: 'bold' }, padding: 12, cornerRadius: 8,
-                                    callbacks: {
-                                        label: (context) => {
-                                            let label = context.dataset.label || '';
-                                            if (label) label += ': ';
-                                            if (context.parsed.y !== null) label += (this.site?.currency === "PYG" ? "Gs. " : "$ ") + context.parsed.y.toLocaleString('es-PY');
-                                            return label;
-                                        }
-                                    }
-                                }
-                            },
-                            scales: {
-                                y: { beginAtZero: true, grid: { color: '#f1f5f9', drawBorder: false }, ticks: { font: { family: "'Inter', sans-serif", size: 11, weight: 'bold' }, color: '#94a3b8', callback: (val) => val >= 1000 ? (val/1000) + 'k' : val } },
-                                x: { grid: { display: false, drawBorder: false }, ticks: { font: { family: "'Inter', sans-serif", size: 12, weight: 'bold' }, color: '#64748b' } }
-                            }
-                        }
+                calculateSummary() {
+                    let inc = 0; let exp = 0;
+                    this.transactions.forEach(t => {
+                        if(t.type === 'income') inc += t.amount;
+                        else exp += t.amount;
                     });
+                    this.summary = { income: inc, expense: exp, net: inc - exp };
                 },
 
-                openExpenseModal() { this.expenseForm = { description: '', amount: '', category: 'Operativo' }; this.isExpenseModalOpen = true; },
-                closeExpenseModal() { this.isExpenseModalOpen = false; },
+                formatMoney(amount) {
+                    if (amount === null || amount === undefined) return '0 Gs';
+                    return amount.toLocaleString('es-PY') + ' Gs';
+                },
+                formatDate(dateStr) {
+                    if (!dateStr) return '';
+                    return new Date(dateStr).toLocaleDateString('es-PY', { year: 'numeric', month: 'short', day: 'numeric' });
+                },
+                formatTime(dateStr) {
+                    if (!dateStr) return '';
+                    return new Date(dateStr).toLocaleTimeString('es-PY', { hour: '2-digit', minute: '2-digit' });
+                },
 
                 async submitExpense() {
-                    this.isSaving = true; this.errorMsg = ''; this.successMsg = '';
+                    this.isSaving = true;
                     try {
-                        const res = await WuepyAPI.fetch(`/dashboard/finances/${this.site._id}/expenses`, {
-                            method: 'POST', body: JSON.stringify(this.expenseForm)
+                        const payload = {
+                            type: 'expense',
+                            amount: Number(this.expenseData.amount),
+                            description: this.expenseData.description,
+                            category: this.expenseData.category,
+                            reference: 'Manual'
+                        };
+                        const res = await WuepyAPI.fetch(`/dashboard/site/${this.siteId}/finances/transaction`, {
+                            method: 'POST', body: JSON.stringify(payload)
                         });
-                        if(res.status === 200) {
-                            this.successMsg = 'Egreso registrado correctamente.';
-                            this.closeExpenseModal();
-                            await this.loadFinances(this.site._id);
-                        } else { alert(res.data.message || 'Error al guardar.'); }
-                    } catch(e) { alert('Error de conexión.'); }
+
+                        if (res.status === 200 || res.status === 201) {
+                            Swal.fire({ icon: 'success', title: 'Guardado', text: 'Egreso registrado.', timer: 1500, showConfirmButton: false });
+                            this.showExpenseModal = false;
+                            this.expenseData = { amount: '', description: '', category: 'Logística' };
+                            await this.loadData();
+                        } else {
+                            Swal.fire({ icon: 'error', title: 'Error', text: res.data?.message || 'Error al guardar.' });
+                        }
+                    } catch (e) {
+                        Swal.fire({ icon: 'error', title: 'Fallo de Red', text: 'No se pudo contactar al servidor.' });
+                    }
                     this.isSaving = false;
                 }
             }));

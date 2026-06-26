@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Términos y Condiciones | Wuepy</title>
+    <meta name="description" content="Términos de servicio, condiciones de uso y políticas de privacidad de la plataforma Wuepy en Paraguay.">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js"></script>
+    
+    <style>
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background-color: #f8fafc; }
+        .glass-nav { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+        .prose h2 { color: #0f172a; font-weight: 900; font-size: 1.5rem; margin-top: 2rem; margin-bottom: 1rem; }
+        .prose h3 { color: #1e293b; font-weight: 700; font-size: 1.25rem; margin-top: 1.5rem; margin-bottom: 0.75rem; }
+        .prose p { color: #475569; line-height: 1.75; margin-bottom: 1.25rem; font-weight: 500; }
+        .prose ul { list-style-type: disc; padding-left: 1.5rem; color: #475569; margin-bottom: 1.25rem; font-weight: 500; }
+        .prose li { margin-bottom: 0.5rem; }
+    </style>
+</head>
+<body x-data="{ mobileMenuOpen: false }">
+
+    <!-- Navbar -->
+    <nav class="fixed w-full glass-nav z-50 border-b border-slate-200/50 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <a href="/" class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-indigo-600/30">W</div>
+                    <span class="text-2xl font-black text-slate-900 tracking-tight">Wuepy</span>
+                </a>
+                
+                <div class="hidden md:flex items-center gap-8 bg-white/50 px-6 py-2.5 rounded-full border border-slate-200 shadow-sm">
+                    <a href="/" class="text-sm font-bold text-slate-600 hover:text-indigo-600 transition">Inicio</a>
+                    <a href="/nosotros.html" class="text-sm font-bold text-slate-600 hover:text-indigo-600 transition">Nuestra Historia</a>
+                    <a href="/wuepy-apoya.html" class="text-sm font-bold text-emerald-600 hover:text-emerald-700 transition">Wuepy Apoya</a>
+                </div>
+
+                <div class="hidden md:flex items-center gap-4">
+                    <a href="/auth/login.html" class="text-sm font-bold text-slate-600 hover:text-indigo-600 transition">Ingresar</a>
+                    <a href="/auth/register.html" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-indigo-600/20 transition transform hover:-translate-y-0.5">
+                        Crear Tienda
+                    </a>
+                </div>
+
+                <button @click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden text-slate-600 text-2xl p-2">
+                    <i class="fas" :class="mobileMenuOpen ? 'fa-times' : 'fa-bars'"></i>
+                </button>
+            </div>
+        </div>
+
+        <div x-show="mobileMenuOpen" x-collapse class="md:hidden bg-white border-b border-slate-200 shadow-xl absolute w-full">
+            <div class="px-4 pt-2 pb-6 space-y-2 flex flex-col">
+                <a href="/" class="block px-3 py-3 rounded-md text-base font-bold text-slate-700 hover:bg-slate-50">Inicio</a>
+                <a href="/nosotros.html" class="block px-3 py-3 rounded-md text-base font-bold text-slate-700 hover:bg-slate-50">Nosotros</a>
+                <a href="/auth/login.html" class="block px-3 py-3 rounded-md text-base font-bold text-slate-700 hover:bg-slate-50">Iniciar Sesión</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header -->
+    <header class="pt-32 pb-16 bg-slate-900 border-b border-slate-800 relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMSkiLz48L3N2Zz4=')]"></div>
+        <div class="max-w-4xl mx-auto px-4 relative z-10 text-center">
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 text-indigo-300 text-xs font-black uppercase tracking-widest mb-6 backdrop-blur-sm">
+                <i class="fas fa-file-contract"></i> Legal
+            </div>
+            <h1 class="text-4xl md:text-5xl font-black text-white tracking-tight mb-4">Términos y Condiciones</h1>
+            <p class="text-slate-400 font-medium text-lg">Última actualización: Junio de 2026</p>
+        </div>
+    </header>
+
+    <!-- Contenido Legal -->
+    <main class="py-16 bg-white">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="prose max-w-none">
+                <p>
+                    Bienvenido a Wuepy, una plataforma tecnológica desarrollada y operada por <strong>LFAFTECH S.A.</strong> (en adelante, "Wuepy", "nosotros" o "la Plataforma"). Al acceder, registrarte o utilizar nuestros servicios para crear tu tienda en línea, aceptas quedar vinculado legalmente por estos Términos y Condiciones. Te recomendamos leerlos detenidamente.
+                </p>
+
+                <h2>1. Naturaleza del Servicio</h2>
+                <p>
+                    Wuepy es un Software as a Service (SaaS) que provee a emprendedores y empresas herramientas para la creación de tiendas online, catálogos digitales, gestión de inventario y terminales de punto de venta (POS). En esta fase inicial, <strong>Wuepy no interviene en las transacciones financieras directas entre el vendedor y su cliente final</strong>, funcionando como un facilitador tecnológico.
+                </p>
+
+                <h2>2. Registro y Cuentas de Usuario</h2>
+                <ul>
+                    <li>Para utilizar Wuepy, debes crear una cuenta proporcionando información precisa, actual y completa.</li>
+                    <li>Eres responsable de mantener la confidencialidad de tu contraseña y de todas las actividades que ocurran bajo tu cuenta.</li>
+                    <li>Wuepy se reserva el derecho de suspender o cancelar cuentas que proporcionen información falsa o que violen estos términos.</li>
+                </ul>
+
+                <h2>3. Planes y Facturación</h2>
+                <p>
+                    Wuepy ofrece sus servicios mediante un modelo de suscripción prepaga en Guaraníes (PYG).
+                </p>
+                <ul>
+                    <li><strong>Plan Básico (30.000 Gs/mes):</strong> Incluye 1 tienda web y funciones esenciales de catálogo.</li>
+                    <li><strong>Plan Inteligente (60.000 Gs/mes):</strong> Incluye hasta 3 tiendas, diseño generado por IA y terminal POS.</li>
+                    <li><strong>Plan Pro (150.000 Gs/mes):</strong> Incluye hasta 10 tiendas, productos ilimitados y gestión de múltiples cajeros.</li>
+                </ul>
+                <p>
+                    <strong>Pagos y Reactivación:</strong> El primer mes es gratuito para la primera tienda de los nuevos usuarios. Una vez finalizado el período de prueba, o al crear tiendas adicionales, la cuenta entrará en estado de <em>Pago Pendiente</em> o <em>Suspendida</em>, aplicando un muro de bloqueo a las visitas públicas hasta que se registre el pago mediante el panel de control.
+                </p>
+
+                <h2>4. Programas Especiales</h2>
+                <h3>4.1. Invita y Gana</h3>
+                <p>
+                    Los usuarios pueden invitar a terceros mediante su enlace de referido. Por cada nueva tienda activa creada bajo su enlace, el usuario referente recibirá <strong>3 días gratuitos</strong> de suscripción, con un límite máximo acumulable de 30 días (10 referidos).
+                </p>
+                <h3>4.2. Wuepy Apoya</h3>
+                <p>
+                    Los usuarios pueden postularse enviando el enlace de un video público en redes sociales (TikTok, Instagram, Facebook) donde cuenten su experiencia con Wuepy. Al ser aprobado por nuestro equipo de administración, la cuenta del usuario recibirá una bonificación de <strong>6 meses gratuitos</strong> en su plan actual. Wuepy se reserva el derecho de rechazar videos que no cumplan con estándares básicos de respeto o autenticidad.
+                </p>
+
+                <h2>5. Uso Aceptable y Restricciones</h2>
+                <p>Al utilizar Wuepy, te comprometes a no utilizar la plataforma para:</p>
+                <ul>
+                    <li>Vender productos o servicios ilegales según las leyes de la República del Paraguay (drogas no reguladas, armas, piratería, etc.).</li>
+                    <li>Cometer fraudes, engaños o recolectar datos de terceros de manera ilícita (Phishing).</li>
+                    <li>Subir contenido que infrinja derechos de autor, marcas registradas o que sea considerado ofensivo o discriminatorio.</li>
+                </ul>
+                <p>
+                    Wuepy tiene una política de <strong>tolerancia cero frente a estafas</strong>. Si recibimos reportes verificados de fraude por parte de una tienda alojada en nuestra plataforma, la misma será eliminada permanentemente y los datos podrán ser entregados a las autoridades competentes.
+                </p>
+
+                <h2>6. El Futuro de Wuepy (Logística y Retención de Pagos)</h2>
+                <p>
+                    Al aceptar estos términos, reconoces y aceptas la visión a futuro de Wuepy. En fases posteriores, Wuepy implementará un <strong>Marketplace Global</strong> y un sistema de logística propio. En dicho ecosistema, Wuepy podrá actuar como intermediario financiero (reteniendo el pago del comprador hasta la entrega exitosa del producto) y como operador logístico, bajo términos y comisiones que serán debidamente actualizados y notificados.
+                </p>
+
+                <h2>7. Limitación de Responsabilidad</h2>
+                <p>
+                    La plataforma se proporciona "tal cual" y "según disponibilidad". LFAFTECH S.A. no garantiza que el servicio será ininterrumpido o libre de errores en todo momento. En ningún caso Wuepy será responsable por la pérdida de beneficios, datos o daños indirectos derivados del uso o la incapacidad de usar la plataforma.
+                </p>
+
+                <h2>8. Jurisdicción y Ley Aplicable</h2>
+                <p>
+                    Estos Términos y Condiciones se regirán e interpretarán de acuerdo con las leyes de la República del Paraguay. Cualquier disputa que surja en relación con estos términos será sometida a la jurisdicción de los tribunales de la ciudad de Asunción o del Departamento Central.
+                </p>
+
+                <div class="mt-12 p-6 bg-indigo-50 rounded-2xl border border-indigo-100 text-center">
+                    <h3 class="text-xl font-black text-indigo-900 mb-2 mt-0">¿Tienes dudas legales?</h3>
+                    <p class="text-indigo-700 font-medium mb-4">Estamos aquí para ayudarte a operar tu negocio con total tranquilidad.</p>
+                    <a href="mailto:luisfretes805@gmail.com" class="inline-flex items-center gap-2 bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold shadow-md hover:bg-indigo-700 transition">
+                        <i class="fas fa-envelope"></i> Contactar Soporte
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-16 relative z-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+                <div class="md:col-span-2">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-black text-sm shadow-md">W</div>
+                        <span class="text-2xl font-black text-slate-900 tracking-tight">Wuepy</span>
+                    </div>
+                    <p class="text-slate-500 font-medium leading-relaxed max-w-sm mb-6">
+                        El SaaS de e-commerce diseñado para potenciar a los emprendedores y construir la red comercial más grande de la región.
+                    </p>
+                </div>
+                
+                <div>
+                    <h4 class="font-bold text-slate-900 uppercase tracking-widest text-xs mb-6">Plataforma</h4>
+                    <ul class="space-y-4">
+                        <li><a href="/#como-funciona" class="text-sm font-medium text-slate-500 hover:text-indigo-600 transition">¿Cómo funciona?</a></li>
+                        <li><a href="/#planes" class="text-sm font-medium text-slate-500 hover:text-indigo-600 transition">Precios</a></li>
+                        <li><a href="/auth/register.html" class="text-sm font-medium text-slate-500 hover:text-indigo-600 transition">Crear Tienda</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-bold text-slate-900 uppercase tracking-widest text-xs mb-6">Nosotros</h4>
+                    <ul class="space-y-4">
+                        <li><a href="/nosotros.html" class="text-sm font-medium text-slate-500 hover:text-indigo-600 transition">Misión y Visión</a></li>
+                        <li><a href="/terminos.html" class="text-sm font-medium text-indigo-600 hover:text-indigo-800 transition">Términos y Condiciones</a></li>
+                        <li><a href="/wuepy-apoya.html" class="text-sm font-medium text-slate-500 hover:text-indigo-600 transition">Wuepy Apoya</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-slate-100 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                <p class="text-sm text-slate-400 font-medium">
+                    &copy; 2026 Wuepy by LFAFTECH. Todos los derechos reservados.
+                </p>
+                <div class="flex items-center gap-4 text-sm text-slate-400 font-medium">
+                    <span>Hecho con <i class="fas fa-heart text-red-400 mx-1"></i> en Paraguay</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
