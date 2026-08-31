@@ -228,11 +228,10 @@
                             this.site = res.data.site;
                             this.stats = res.data.stats || {};
                         } else {
-                            window.location.href = '/dashboard/index.html';
+                            console.warn("No se pudo cargar el resumen correctamente:", res.data);
                         }
                     } catch (e) { 
-                        console.error("Error al cargar resumen:", e);
-                        window.location.href = '/dashboard/index.html';
+                        console.error("Error de red o de servidor al cargar resumen:", e);
                     } finally {
                         this.isLoading = false;
                     }
