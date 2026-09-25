@@ -62,6 +62,19 @@
         ['template10', 'Marea', 'Fondo celeste, letra ancha y botones amplios.', '#0369a1', '#0c4a6e']
     ];
 
+    const LOOKS = {
+        template1: { page: '#0f172a', ink: '#e2e8f0', nav: 'rgba(15,23,42,.9)', btn: '999px', font: 'Space Grotesk, sans-serif' },
+        template2: { page: '#ffffff', ink: '#0f172a', nav: '#ffffff', btn: '999px', font: 'Inter, sans-serif' },
+        template3: { page: '#f6f1e8', ink: '#1c1917', nav: '#f6f1e8', btn: '0px', font: 'Fraunces, Georgia, serif' },
+        template4: { page: '#030712', ink: '#e5e7eb', nav: '#030712', btn: '12px', font: 'Syne, sans-serif' },
+        template5: { page: '#faf6f1', ink: '#44403c', nav: '#faf6f1', btn: '8px', font: 'Literata, Georgia, serif' },
+        template6: { page: '#052e16', ink: '#ecfdf5', nav: '#052e16', btn: '18px', font: 'Outfit, sans-serif' },
+        template7: { page: '#ffffff', ink: '#111827', nav: '#ffffff', btn: '0px', font: 'Newsreader, Georgia, serif' },
+        template8: { page: '#09090b', ink: '#f4f4f5', nav: '#09090b', btn: '0px', font: 'IBM Plex Mono, monospace' },
+        template9: { page: '#fff1f2', ink: '#4c0519', nav: '#fff1f2', btn: '999px', font: 'Nunito, sans-serif' },
+        template10: { page: '#f0f9ff', ink: '#0c4a6e', nav: '#f0f9ff', btn: '20px', font: 'Manrope, sans-serif' }
+    };
+
     function buildTemplates() {
         const list = BASES.map((b, i) => ({
             id: b[0],
@@ -70,7 +83,13 @@
             primary: b[3],
             secondary: b[4],
             tone: b[1],
-            base: b[0]
+            base: b[0],
+            page: LOOKS[b[0]].page,
+            ink: LOOKS[b[0]].ink,
+            nav: LOOKS[b[0]].nav,
+            btn: LOOKS[b[0]].btn,
+            font: LOOKS[b[0]].font,
+            tile: (LOOKS[b[0]].ink.charAt(1) === 'e' || LOOKS[b[0]].ink.charAt(1) === 'f') ? 'rgba(255,255,255,.08)' : '#ffffff'
         }));
         return list;
     }
