@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crear Nueva Tienda | Wuepy SaaS</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700&family=IBM+Plex+Mono:wght@500&family=Inter:wght@600;700&family=Literata:opsz,wght@7..72,700&family=Manrope:wght@700&family=Newsreader:opsz,wght@6..72,700&family=Nunito:wght@700&family=Outfit:wght@600&family=Space+Grotesk:wght@600;700&family=Syne:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;900&family=Fraunces:opsz,wght@9..144,700&family=Great+Vibes&family=Lora:ital,wght@1,600;1,700&family=Oswald:wght@600&family=Outfit:wght@500&family=Playfair+Display:ital,wght@1,700&family=Plus+Jakarta+Sans:wght@700&family=Quicksand:wght@600&family=Space+Grotesk:wght@600&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -295,29 +295,7 @@
                                                     <label class="block cursor-pointer">
                                                         <input type="radio" name="templatePick" class="sr-only" :value="tpl.id" x-model="formData.template" @change="pickTemplate(tpl)">
                                                         <div class="rounded-2xl border-2 p-3 bg-white transition" :class="formData.template === tpl.id ? 'border-indigo-600 ring-2 ring-indigo-200 shadow-md' : 'border-slate-200 hover:border-slate-300'">
-                                                            <div class="h-[172px] rounded-xl overflow-hidden border border-black/10 flex flex-col" :style="'background:' + tpl.page + ';color:' + tpl.ink + ';font-family:' + tpl.font">
-                                                                <div class="h-7 px-2 flex items-center gap-1.5 border-b border-black/10 shrink-0" :style="'background:' + tpl.nav">
-                                                                    <span class="w-3.5 h-3.5 shrink-0" :style="'background:' + swatch(tpl, 'primary') + ';border-radius:' + tpl.btn"></span>
-                                                                    <span class="text-[9px] font-black truncate" x-text="tpl.name"></span>
-                                                                    <span class="ml-auto px-1.5 py-0.5 text-[7px] font-black text-white leading-none" :style="'background:' + swatch(tpl, 'primary') + ';border-radius:' + tpl.btn">WhatsApp</span>
-                                                                </div>
-                                                                <div class="px-2.5 pt-2 text-center shrink-0">
-                                                                    <div class="text-[13px] font-black leading-none tracking-tight">Tu tienda</div>
-                                                                    <div class="text-[7px] mt-1 opacity-70">Catálogo, búsqueda y ficha</div>
-                                                                    <span class="inline-block mt-1.5 px-2 py-0.5 text-[7px] font-black text-white" :style="'background:' + swatch(tpl, 'primary') + ';border-radius:' + tpl.btn">Ver catálogo</span>
-                                                                </div>
-                                                                <div class="grid grid-cols-3 gap-1.5 px-2 mt-auto pb-2">
-                                                                    <template x-for="n in 3" :key="tpl.id + '-p' + n">
-                                                                        <div class="rounded overflow-hidden border border-black/10" :style="'background:' + tpl.tile">
-                                                                            <div class="h-6" :style="'background:' + (n === 2 ? swatch(tpl, 'secondary') : swatch(tpl, 'primary'))"></div>
-                                                                            <div class="px-1 py-1">
-                                                                                <div class="h-[3px] rounded-full mb-1" :style="'background:' + tpl.ink + ';opacity:.4'"></div>
-                                                                                <div class="text-center text-[6px] font-black text-white leading-3" :style="'background:' + swatch(tpl, 'primary') + ';border-radius:' + tpl.btn">Comprar</div>
-                                                                            </div>
-                                                                        </div>
-                                                                    </template>
-                                                                </div>
-                                                            </div>
+                                                            <div class="h-[188px] rounded-xl overflow-hidden border border-black/10" x-html="previewOf(tpl)"></div>
                                                             <div class="flex items-start justify-between gap-2 mt-3">
                                                                 <div class="min-w-0">
                                                                     <h4 class="font-black text-slate-800 text-sm" x-text="tpl.name"></h4>
@@ -520,6 +498,9 @@
                         return which === 'secondary' ? this.formData.secondaryColor : this.formData.primaryColor;
                     }
                     return which === 'secondary' ? tpl.secondary : tpl.primary;
+                },
+                previewOf(tpl) {
+                    return window.WuepyPlatform.templatePreview(tpl.layout, this.swatch(tpl, 'primary'), this.swatch(tpl, 'secondary'));
                 },
                 applyTemplateColors(tpl) {
                     this.pickTemplate(tpl);

@@ -3,370 +3,184 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title x-text="site ? 'Catálogo | ' + site.name : 'Cargando Catálogo...'"></title>
+    <title>Tienda</title>
     
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,700&display=swap" rel="stylesheet">
-    <script src="/js/api.js"></script>
-
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['"Space Grotesk"', 'sans-serif'] }
-                }
-            }
-        }
-    </script>
+    
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;600;700&display=swap');
         :root {
-            --brand-color: #4f46e5; 
-            --dark-color: #1f2937;
+            --primary: #ea580c; 
+            --secondary: #292524;
         }
-        
-        .text-brand { color: var(--brand-color); }
-        .bg-brand { background-color: var(--brand-color); }
-        .border-brand { border-color: var(--brand-color); }
-        .hover-bg-brand:hover { background-color: var(--brand-color); filter: brightness(1.1); }
-        .ring-brand:focus { --tw-ring-color: var(--brand-color); }
-        
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #0f172a; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--brand-color); }
-        
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        
-        body { background: #ffffff !important; color: #111827 !important; }
-        nav.fixed { background: rgba(255,255,255,.94) !important; }
-        a.bg-brand, button.bg-brand { border-radius: 0px !important; }
-        input, .rounded-full { border-radius: 0px; }
-  
-        [x-cloak] { display: none !important; }
+        body { font-family: 'Inter', sans-serif; color: var(--secondary); background-color: #fafaf9; }
+        .font-lora { font-family: 'Lora', serif; }
     </style>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/storefront-pages.js"></script>
+    <style>[x-cloak]{display:none !important}</style>
 </head>
-<body class="bg-white text-slate-800 min-h-screen flex flex-col" x-data="searchPage()" x-cloak>
-
-    <nav class="fixed w-full z-50 top-0 start-0 bg-white/90 backdrop-blur-md border-b border-slate-200" x-data="{ mobileMenuOpen: false, searchOpen: false }">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex flex-wrap items-center justify-between h-20">
-                
-                <a href="index.html" class="flex items-center gap-3 group">
-                    <template x-if="site?.logoUrl && !site.logoUrl.includes('placehold')">
-                        <img :src="site.logoUrl" class="h-10 w-auto rounded-lg object-contain group-hover:scale-105 transition">
-                    </template>
-                    <template x-if="!site?.logoUrl || site.logoUrl.includes('placehold')">
-                        <div class="h-10 w-10 bg-brand rounded-lg flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-brand/20" x-text="site?.name ? site.name.charAt(0).toUpperCase() : 'W'">
-                        </div>
-                    </template>
-                    <span class="text-xl font-bold text-slate-900 tracking-tight group-hover:text-brand transition" x-text="site?.name || 'Cargando...'"></span>
+<body class="flex flex-col min-h-screen" x-data="searchPage()" x-cloak>
+    
+<header class="bg-white shadow-sm sticky top-0 z-50 border-b-4" style="border-color: var(--primary);">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-20">
+            <div class="flex-shrink-0 flex items-center">
+                <a href="index.html" class="font-lora text-2xl font-bold tracking-tight text-gray-900 flex items-center gap-2">
+                    <template x-if="site?.logoUrl"><div class="contents">
+                        <img class="h-12 w-auto rounded" :src="site?.logoUrl" :alt="site?.name">
+                    </div></template>
+                    <span><span x-text="site?.name"></span></span>
                 </a>
-
-                <div class="hidden md:flex flex-1 max-w-lg mx-8">
-                    <form action="search.html" method="GET" class="w-full relative group">
-                        <input type="text" name="q" :value="searchQuery" placeholder="Buscar productos..." class="w-full bg-slate-50 text-slate-900 border border-slate-200 rounded-full py-2.5 pl-5 pr-12 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all placeholder-slate-400 group-hover:bg-slate-100">
-                        <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-slate-700 rounded-full text-slate-600 flex items-center justify-center hover:bg-brand hover:text-white transition">
-                            <i class="fas fa-search text-xs"></i>
-                        </button>
-                    </form>
-                </div>
-
-                <div class="flex items-center gap-4">
-                    <button @click="searchOpen = !searchOpen" class="md:hidden text-slate-600 hover:text-slate-900 p-2">
-                        <i class="fas fa-search text-lg"></i>
-                    </button>
-
-                    <div class="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600">
-                        <a href="index.html" class="hover:text-slate-900 transition">Inicio</a>
-                        <a href="search.html" class="hover:text-slate-900 transition">Catálogo</a>
-                    </div>
-
-                    <template x-if="site?.whatsappNumber || site?.contact?.whatsapp">
-                        <a :href="'https://wa.me/' + (site.whatsappNumber || site.contact.whatsapp).replace(/[^0-9]/g, '')" target="_blank" class="hidden sm:flex bg-brand text-white px-5 py-2.5 rounded-full font-bold shadow-lg shadow-brand/20 items-center gap-2 text-sm hover:brightness-110 transition transform hover:-translate-y-1">
-                            <i class="fab fa-whatsapp text-lg"></i> <span class="hidden lg:inline">Contacto</span>
-                        </a>
-                    </template>
-
-                    <button @click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden text-slate-600 hover:text-slate-900 p-2 focus:outline-none">
-                        <i class="fas" :class="mobileMenuOpen ? 'fa-times' : 'fa-bars'"></i>
-                    </button>
-                </div>
             </div>
-
-            <div x-show="searchOpen" x-transition class="md:hidden py-4 border-t border-slate-200">
-                <form action="search.html" method="GET" class="relative">
-                    <input type="text" name="q" :value="searchQuery" placeholder="¿Qué buscas hoy?" class="w-full bg-slate-50 text-slate-900 border border-slate-200 rounded-lg py-3 pl-4 pr-12 focus:outline-none focus:ring-2 focus:ring-brand">
-                    <button type="submit" class="absolute right-3 top-1/2 -translate-y-1/2 text-brand font-bold">IR</button>
-                </form>
+            <nav class="hidden md:flex space-x-8">
+                <a href="index.html" class="text-gray-600 hover:text-[var(--primary)] px-3 py-2 font-medium transition-colors">Inicio</a>
+                <a href="search.html" class="text-gray-600 hover:text-[var(--primary)] px-3 py-2 font-medium transition-colors">Ver Menú</a>
+            </nav>
+            <div class="flex items-center">
+                <a href="search.html" class="p-2 text-gray-400 hover:text-[var(--primary)] transition-colors">
+                    <i class="fas fa-search text-xl"></i>
+                </a>
+                <template x-if="site?.contact && site?.contact?.whatsapp"><div class="contents">
+                <a :href="waLink()" target="_blank" class="ml-4 bg-[var(--primary)] text-white px-5 py-2.5 rounded-full font-bold shadow hover:shadow-lg hover:opacity-90 transition-all transform hover:-translate-y-0.5 flex items-center gap-2">
+                    <i class="fab fa-whatsapp text-lg"></i> Pedir
+                </a>
+                </div></template>
             </div>
         </div>
+    </div>
+</header>
 
-        <div x-show="mobileMenuOpen" x-transition.origin.top class="md:hidden bg-slate-50 border-b border-slate-200 absolute w-full left-0 shadow-2xl">
-            <div class="px-4 pt-4 pb-6 space-y-2">
-                <a href="index.html" class="block px-4 py-3 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition">Inicio</a>
-                <a href="search.html" class="block px-4 py-3 rounded-lg bg-slate-100 text-slate-900 font-medium border-l-4 border-brand">Ver Catálogo Completo</a>
-                
-                <template x-if="site?.social?.instagram">
-                    <a :href="site.social.instagram" target="_blank" class="block px-4 py-3 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition"><i class="fab fa-instagram mr-2"></i> Instagram</a>
-                </template>
-                
-                <template x-if="site?.whatsappNumber || site?.contact?.whatsapp">
-                    <div class="pt-4 mt-4 border-t border-slate-200">
-                        <a :href="'https://wa.me/' + (site.whatsappNumber || site.contact.whatsapp).replace(/[^0-9]/g, '')" class="flex w-full items-center justify-center gap-2 bg-green-600 text-white py-3 rounded-lg font-bold">
-                            <i class="fab fa-whatsapp text-lg"></i> Hablar por WhatsApp
-                        </a>
-                    </div>
-                </template>
-            </div>
+
+    <div class="bg-[var(--secondary)] text-white py-20 text-center relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/food.png')]"></div>
+        <div class="relative z-10">
+            <h1 class="font-lora text-5xl md:text-6xl font-bold mb-4 drop-shadow-md">Nuestro Menú</h1>
+            <p class="text-gray-300 max-w-2xl mx-auto font-light text-lg">Descubre la variedad de sabores que tenemos preparados para ti.</p>
         </div>
-    </nav>
-    <div class="h-20"></div>
+    </div>
 
-    <template x-if="isLoading">
-        <div class="flex-grow flex flex-col items-center justify-center py-32">
-            <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-white mb-4" :style="'border-color: var(--brand-color)'"></div>
-            <p class="text-slate-400 font-bold">Cargando catálogo...</p>
-        </div>
-    </template>
-
-    <div class="flex-grow max-w-7xl mx-auto px-4 py-8 w-full flex flex-col lg:flex-row gap-8" x-show="!isLoading" x-transition.opacity>
+    <main class="flex-grow max-w-7xl mx-auto px-4 py-12 w-full flex flex-col lg:flex-row gap-10">
         
-        <aside class="w-full lg:w-64 flex-shrink-0">
-            <div class="lg:sticky lg:top-24">
-                <h3 class="font-bold text-slate-900 mb-4 uppercase text-xs tracking-wider border-b border-slate-200 pb-2">Categorías</h3>
-                
-                <div class="flex lg:flex-col gap-2 overflow-x-auto pb-4 lg:pb-0 scrollbar-hide">
-                    <a href="search.html" class="whitespace-nowrap px-4 py-3 rounded-lg text-sm font-medium transition"
-                       :class="!currentCategory ? 'bg-brand text-white' : 'bg-slate-50 text-slate-400 hover:text-white hover:bg-slate-100'">
-                        Ver Todo
-                    </a>
-                    
-                    <template x-for="cat in categories" :key="cat">
-                        <a :href="'search.html?category=' + encodeURIComponent(cat)" class="whitespace-nowrap px-4 py-3 rounded-lg text-sm font-medium transition"
-                           :class="currentCategory === cat ? 'bg-brand text-white' : 'bg-slate-50 text-slate-400 hover:text-white hover:bg-slate-100'"
-                           x-text="cat">
+        <aside class="w-full lg:w-1/4">
+            <div class="bg-white p-8 rounded-[2rem] shadow-sm sticky top-28 border border-gray-100">
+                <form action="search.html" method="GET" class="mb-8">
+                    <div class="relative">
+                        <input type="text" name="q" :value="searchQuery || ''" placeholder="Buscar sabor..." class="w-full pl-12 pr-4 py-3.5 rounded-full border border-gray-200 focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent outline-none bg-gray-50 text-sm font-medium">
+                        <i class="fas fa-search absolute left-5 top-4 text-gray-400"></i>
+                    </div>
+                    <template x-if="currentCategory"><div class="contents"><input type="hidden" name="category" :value="currentCategory"></div></template>
+                </form>
+
+                <h3 class="font-lora text-2xl font-bold mb-6 text-gray-900">Categorías</h3>
+                <ul class="space-y-2">
+                    <li>
+                        <a :href="'search.html' + (searchQuery ? '?q=' + searchQuery : '').replace('&q=', '?q=')" class="block py-3 px-5 rounded-xl transition-colors" :class="!currentCategory ? 'bg-[var(--primary)] text-white font-bold shadow-md' : 'text-gray-600 hover:bg-orange-50 hover:text-[var(--primary)]'">
+                            Todo el menú
                         </a>
-                    </template>
-                </div>
+                    </li>
+                    <template x-for="cat in categories" :key="cat"><div class="contents">
+                        <li>
+                            <a :href="'search.html?category=' + encodeURIComponent(cat) + (searchQuery ? '&q=' + encodeURIComponent(searchQuery) : '')" 
+                               class="block py-3 px-5 rounded-xl transition-colors" :class="currentCategory === cat ? 'bg-[var(--primary)] text-white font-bold shadow-md' : 'text-gray-600 hover:bg-orange-50 hover:text-[var(--primary)]'">
+                                <span x-text="cat"></span>
+                            </a>
+                        </li>
+                    </div></template>
+                </ul>
             </div>
         </aside>
 
-        <main class="flex-1">
-            <header class="mb-8 flex justify-between items-center">
-                <h1 class="text-2xl font-bold text-slate-900">
-                    <template x-if="searchQuery">
-                        <span>Resultados para "<span x-text="searchQuery"></span>"</span>
-                    </template>
-                    <template x-if="!searchQuery && currentCategory">
-                        <span x-text="currentCategory"></span>
-                    </template>
-                    <template x-if="!searchQuery && !currentCategory">
-                        <span>Catálogo Completo</span>
-                    </template>
-                </h1>
-                <span class="text-sm text-slate-500 bg-slate-50 px-3 py-1 rounded-full border border-slate-200"><span x-text="filteredProducts.length"></span> productos</span>
-            </header>
-
-            <template x-if="filteredProducts.length === 0">
-                <div class="bg-slate-50 rounded-3xl border border-slate-200 border-dashed p-16 text-center">
-                    <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 text-slate-600 text-3xl">
-                        <i class="fas fa-search"></i>
-                    </div>
-                    <h3 class="text-xl font-bold text-slate-900 mb-2">Sin resultados</h3>
-                    <p class="text-slate-400 mb-6">No encontramos lo que buscas. Intenta con otra categoría o término de búsqueda.</p>
-                    <a href="search.html" class="text-brand font-bold hover:underline">Limpiar filtros</a>
+        <div class="w-full lg:w-3/4">
+            <template x-if="filteredProducts.length === 0"><div class="contents">
+                <div class="bg-white rounded-[2rem] p-16 text-center shadow-sm border border-gray-100">
+                    <i class="fas fa-search text-6xl text-gray-200 mb-6 block"></i>
+                    <h2 class="font-lora text-3xl font-bold text-gray-900 mb-3">No hay resultados</h2>
+                    <p class="text-gray-500 mb-8 text-lg">No encontramos platillos con esa búsqueda.</p>
+                    <a href="search.html" class="inline-block px-8 py-3 border-2 border-[var(--primary)] text-[var(--primary)] rounded-full font-bold hover:bg-[var(--primary)] hover:text-white transition-colors">Ver todo el menú</a>
                 </div>
-            </template>
-
-            <template x-if="filteredProducts.length > 0">
-                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-                    <template x-for="product in filteredProducts" :key="product._id">
-                        <a :href="'product.html?id=' + product._id" class="group bg-slate-50 border border-slate-200 rounded-2xl overflow-hidden transition block hover:shadow-2xl" style="transition: border-color 0.3s; cursor: pointer;" onmouseover="this.style.borderColor='var(--brand-color)'" onmouseout="this.style.borderColor='inherit'">
-                            <div class="aspect-square bg-slate-100 relative overflow-hidden">
-                                <template x-if="product.imageUrl && !product.imageUrl.includes('placehold')">
-                                    <img :src="product.imageUrl" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-700">
-                                </template>
-                                <template x-if="!product.imageUrl || product.imageUrl.includes('placehold')">
-                                    <div class="w-full h-full flex items-center justify-center text-slate-600">
-                                        <i class="fas fa-image text-4xl"></i>
-                                    </div>
-                                </template>
-                                
-                                <template x-if="product.stock <= 0">
-                                    <div class="absolute top-2 right-2 bg-red-600 text-slate-900 text-[10px] font-bold px-2 py-1 rounded">AGOTADO</div>
-                                </template>
-                            </div>
-                            <div class="p-5">
-                                <p class="text-xs font-bold text-slate-500 uppercase mb-1" x-text="product.category || 'General'"></p>
-                                <h4 class="text-slate-900 font-bold truncate text-lg transition mb-4" onmouseover="this.style.color='var(--brand-color)'" onmouseout="this.style.color='inherit'" x-text="product.name"></h4>
-                                <div class="flex justify-between items-center border-t border-slate-200 pt-4">
-                                    <span class="text-xl font-bold text-slate-900" x-text="formatMoney(product.price)"></span>
-                                    <span class="text-sm text-brand font-medium">Ver detalles</span>
+            </div></template><template x-if="!(filteredProducts.length === 0)"><div class="contents">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <template x-for="product in filteredProducts" :key="product?._id"><div class="contents">
+                        <div class="bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-shadow flex flex-col border border-gray-100 group">
+                            <a :href="'product.html?id=' + product?._id" class="h-56 bg-gray-100 relative block overflow-hidden">
+                                <template x-if="product?.imageUrl"><div class="contents">
+                                    <img :src="product?.imageUrl" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" :alt="product?.name">
+                                </div></template><template x-if="!(product?.imageUrl)"><div class="contents">
+                                    <div class="w-full h-full flex items-center justify-center text-gray-300"><i class="fas fa-utensils text-4xl"></i></div>
+                                </div></template>
+                                <template x-if="product?.stock <= 0"><div class="contents">
+                                    <span class="absolute top-3 right-3 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase">Agotado</span>
+                                </div></template>
+                            </a>
+                            <div class="p-6 flex flex-col flex-grow">
+                                <h3 class="font-lora font-bold text-xl mb-2 text-gray-900 line-clamp-1 group-hover:text-[var(--primary)] transition-colors"><span x-text="product?.name"></span></h3>
+                                <p class="text-gray-500 text-sm line-clamp-2 mb-6 flex-grow"><span x-text="product?.description || 'Descripción del platillo no disponible...'"></span></p>
+                                <div class="flex items-center justify-between mt-auto">
+                                    <span class="font-black text-2xl text-[var(--primary)]">
+                                        <span x-text="formatMoney(product?.price)"></span>
+                                    </span>
+                                    <a :href="'product.html?id=' + product?._id" class="w-12 h-12 rounded-full border-2 border-[var(--primary)] flex items-center justify-center text-[var(--primary)] hover:bg-[var(--primary)] hover:text-white transition-colors">
+                                        <i class="fas fa-plus"></i>
+                                    </a>
                                 </div>
                             </div>
-                        </a>
-                    </template>
+                        </div>
+                    </div></template>
                 </div>
-            </template>
-        </main>
-    </div>
+            </div></template>
+        </div>
+    </main>
 
-    <footer class="bg-white border-t border-slate-200 pt-16 pb-8 text-slate-400 text-sm relative mt-auto">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            
-            <div class="mb-16 p-8 rounded-2xl bg-slate-50 border border-slate-200 relative overflow-hidden text-center md:text-left md:flex md:items-center md:justify-between gap-6 group">
-                <div class="absolute top-0 right-0 w-64 h-64 bg-brand opacity-5 rounded-full blur-3xl -mr-16 -mt-16 transition group-hover:opacity-10"></div>
-                
-                <div class="relative z-10">
-                    <h3 class="text-xl font-bold text-slate-900 mb-1">¿Te gusta esta tienda?</h3>
-                    <p class="text-slate-400">Crea tu propio sitio web profesional como este en minutos.</p>
-                </div>
-                
-                <a href="http://lfaftech.com" class="relative z-10 inline-flex items-center gap-2 bg-white text-slate-950 px-6 py-3 rounded-xl font-bold hover-bg-brand hover:text-white transition shadow-lg transform hover:-translate-y-1">
-                    <i class="fas fa-magic"></i> Crear mi tienda ahora
-                </a>
+    
+<footer class="bg-gray-900 text-white pt-16 pb-8 border-t-[8px]" style="border-color: var(--primary);">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-12 text-center md:text-left">
+            <div>
+                <h3 class="font-lora text-3xl font-bold mb-4" style="color: var(--primary);"><span x-text="site?.name"></span></h3>
+                <p class="text-gray-400 font-light max-w-sm mx-auto md:mx-0 leading-relaxed">
+                    <span x-text="site?.content?.aboutText || 'Ingredientes frescos, sabor auténtico y la mejor calidad directa a tu mesa. Cocinamos con pasión.'"></span>
+                </p>
             </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
-                
-                <div class="space-y-4">
-                    <h3 class="text-2xl font-bold text-slate-900" x-text="site?.name"></h3>
-                    <p class="leading-relaxed" x-text="site?.content?.aboutText || 'Bienvenido a nuestra tienda oficial.'"></p>
-                    <div class="flex gap-4 pt-2">
-                        <template x-if="site?.social?.facebook"> <a :href="site.social.facebook" target="_blank" class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center hover-bg-brand hover:text-white transition"><i class="fab fa-facebook-f"></i></a> </template>
-                        <template x-if="site?.social?.instagram"> <a :href="site.social.instagram" target="_blank" class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center hover-bg-brand hover:text-white transition"><i class="fab fa-instagram"></i></a> </template>
-                        <template x-if="site?.social?.tiktok"> <a :href="site.social.tiktok" target="_blank" class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center hover-bg-brand hover:text-white transition"><i class="fab fa-tiktok"></i></a> </template>
-                    </div>
-                </div>
-
-                <div>
-                    <h4 class="text-slate-900 font-bold mb-6 text-lg">Tienda</h4>
-                    <ul class="space-y-3">
-                        <li><a href="index.html" class="hover:text-slate-900 transition flex items-center gap-2" onmouseover="this.style.color='var(--brand-color)'" onmouseout="this.style.color='inherit'"><i class="fas fa-chevron-right text-xs"></i> Inicio</a></li>
-                        <li><a href="search.html" class="hover:text-slate-900 transition flex items-center gap-2" onmouseover="this.style.color='var(--brand-color)'" onmouseout="this.style.color='inherit'"><i class="fas fa-chevron-right text-xs"></i> Catálogo</a></li>
-                    </ul>
-                </div>
-
-                <div>
-                    <h4 class="text-slate-900 font-bold mb-6 text-lg">Contáctanos</h4>
-                    <ul class="space-y-4">
-                        <template x-if="site?.contact?.address">
-                            <li class="flex items-start gap-3">
-                                <i class="fas fa-map-marker-alt mt-1 text-brand"></i>
-                                <span x-text="site.contact.address"></span>
-                            </li>
-                        </template>
-                        <template x-if="site?.whatsappNumber || site?.contact?.whatsapp || site?.contact?.phone">
-                            <li class="flex items-start gap-3">
-                                <i class="fab fa-whatsapp mt-1 text-brand"></i>
-                                <span x-text="site.whatsappNumber || site.contact?.whatsapp || site.contact?.phone"></span>
-                            </li>
-                        </template>
-                        <template x-if="site?.contact?.email">
-                            <li class="flex items-start gap-3">
-                                <i class="far fa-envelope mt-1 text-brand"></i>
-                                <span x-text="site.contact.email"></span>
-                            </li>
-                        </template>
-                    </ul>
-                </div>
-                
-                <div>
-                    <h4 class="text-slate-900 font-bold mb-6 text-lg">Novedades</h4>
-                    <p class="mb-4 text-xs">Suscríbete para recibir ofertas.</p>
-                    <form onsubmit="event.preventDefault(); alert('Gracias por suscribirte!');" class="space-y-2">
-                        <input type="email" placeholder="Tu correo" required class="w-full bg-slate-50 border border-slate-200 rounded px-4 py-2 focus:ring-1 focus:ring-brand focus:border-transparent outline-none text-slate-900">
-                        <button class="w-full bg-slate-100 hover-bg-brand hover:text-white text-slate-600 py-2 rounded font-bold transition">Suscribirse</button>
-                    </form>
-                </div>
+            <div>
+                <h4 class="font-lora text-xl font-bold mb-6 text-white">Horarios y Ubicación</h4>
+                <p class="text-gray-400 mb-3 flex items-center justify-center md:justify-start gap-3">
+                    <i class="fas fa-map-marker-alt text-[var(--primary)] text-lg"></i> 
+                    <span x-text="site?.contact?.address || 'Local Principal, Ciudad'"></span>
+                </p>
+                <p class="text-gray-400 flex items-center justify-center md:justify-start gap-3">
+                    <i class="fas fa-clock text-[var(--primary)] text-lg"></i> 
+                    <span x-text="site?.contact?.schedule || 'Abierto de Lunes a Domingo'"></span>
+                </p>
             </div>
-
-            <div class="border-t border-slate-200 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs">
-                <p>&copy; <span x-text="new Date().getFullYear()"></span> <span x-text="site?.name"></span>. Todos los derechos reservados.</p>
-                <p>Tecnología por <a href="http://lfaftech.com" class="text-slate-500 hover:text-slate-900 font-bold">LFAFTECH</a></p>
+            <div>
+                <h4 class="font-lora text-xl font-bold mb-6 text-white">Síguenos</h4>
+                <div class="flex justify-center md:justify-start space-x-4">
+                    <template x-if="site?.social && site?.social?.instagram"><div class="contents"><a :href="site?.social?.instagram" target="_blank" class="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center text-xl hover:bg-[var(--primary)] hover:text-white transition-all"><i class="fab fa-instagram"></i></a></div></template>
+                    <template x-if="site?.social && site?.social?.facebook"><div class="contents"><a :href="site?.social?.facebook" target="_blank" class="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center text-xl hover:bg-[var(--primary)] hover:text-white transition-all"><i class="fab fa-facebook-f"></i></a></div></template>
+                    <template x-if="site?.social && site?.social?.tiktok"><div class="contents"><a :href="site?.social?.tiktok" target="_blank" class="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center text-xl hover:bg-[var(--primary)] hover:text-white transition-all"><i class="fab fa-tiktok"></i></a></div></template>
+                </div>
             </div>
         </div>
-    </footer>
+        <div class="border-t border-gray-800 mt-12 pt-8 text-center text-gray-500 text-sm font-light">
+            <p>&copy; <span x-text="new Date().getFullYear()"></span> <span x-text="site?.name"></span>. Todos los derechos reservados.</p>
+        </div>
+    </div>
+</footer>
 
-    <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('searchPage', () => ({
-                site: null,
-                allProducts: [],
-                filteredProducts: [],
-                categories: [],
-                isLoading: true,
-                searchQuery: '',
-                currentCategory: '',
 
-                async init() {
-                    try {
-                        const urlParams = new URLSearchParams(window.location.search);
-                        this.searchQuery = urlParams.get('q') || '';
-                        this.currentCategory = urlParams.get('category') || '';
-
-                        const hostname = window.location.hostname;
-                        const qStore = new URLSearchParams(window.location.search).get('store');
-                        let subdomain = qStore || hostname.split('.')[0];
-                        
-                        if (!qStore && (hostname === 'localhost' || hostname === '127.0.0.1' || subdomain === 'undefined' || subdomain === 'wuepy')) {
-                            subdomain = 'demo';
-                        }
-
-                        const res = await fetch(`${window.API_URL || 'https://wuepyback.onrender.com/api'}/store/public/${subdomain}`);
-                        const data = await res.json();
-                        
-                        if (data.success) {
-                            this.site = data.site;
-                            this.allProducts = data.products || [];
-                            
-                            // Extraer categorías únicas
-                            const cats = new Set(this.allProducts.map(p => p.category).filter(Boolean));
-                            this.categories = Array.from(cats).sort();
-
-                            // Filtrar productos
-                            this.filterProducts();
-                            
-                            // Colores dinámicos
-                            if(this.site.primaryColor) document.documentElement.style.setProperty('--brand-color', this.site.primaryColor);
-                            if(this.site.secondaryColor) document.documentElement.style.setProperty('--dark-color', this.site.secondaryColor);
-                        } else {
-                            console.error("Tienda no encontrada");
-                        }
-                    } catch (error) {
-                        console.error('Error al cargar la tienda:', error);
-                    }
-                    this.isLoading = false;
-                },
-
-                filterProducts() {
-                    let result = this.allProducts;
-                    
-                    if (this.currentCategory) {
-                        result = result.filter(p => p.category === this.currentCategory);
-                    }
-                    
-                    if (this.searchQuery.trim() !== '') {
-                        const q = this.searchQuery.toLowerCase();
-                        result = result.filter(p => 
-                            p.name.toLowerCase().includes(q) || 
-                            (p.description && p.description.toLowerCase().includes(q))
-                        );
-                    }
-                    
-                    this.filteredProducts = result;
-                },
-
-                formatMoney(amount) {
-                    if(!amount) return '0';
-                    return (this.site?.currency === 'PYG' ? 'Gs. ' : '$ ') + parseInt(amount).toLocaleString('es-PY');
-                }
-            }));
-        });
-    </script>
+    <section class="px-4 py-8">
+        <div class="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-5" style="border:2px solid var(--wuepy-primary)">
+            <div>
+                <p class="font-black text-lg">¿Te gusta esta tienda?</p>
+                <p class="text-sm opacity-70">Crea la tuya con catálogo, búsqueda y WhatsApp.</p>
+            </div>
+            <a href="http://lfaftech.com" class="px-5 py-3 font-black text-white" style="background:var(--wuepy-primary)">Crear mi tienda ahora</a>
+        </div>
+    </section>
 </body>
 </html>

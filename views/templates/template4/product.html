@@ -1,390 +1,321 @@
 <!DOCTYPE html>
-<html lang="es" class="scroll-smooth">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title x-text="(product ? product.name : 'Cargando...') + ' | ' + (site ? site.name : '')"></title>
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700;800&display=swap" rel="stylesheet">
-    <script src="/js/api.js"></script>
+    <title>Tienda</title>
 
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['"Space Grotesk"', 'sans-serif'] }
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/storefront-pages.js"></script>
+    <style>[x-cloak]{display:none !important}</style>
+</head>
+<body class="font-sans" x-data="productPage()" x-cloak>
+
+    
+
+
+
+
+
+<script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                fontFamily: { 
+                    sans: ['Lato', 'sans-serif'],
+                    serif: ['"Playfair Display"', 'serif']
+                },
+                colors: { 
+                    brand: 'var(--wuepy-primary)', 
+                    accent: 'var(--wuepy-secondary)',
+                    soft: '#f9f7f2', // Fondo crema suave
+                    paper: '#ffffff'
+                },
+                borderRadius: {
+                    '4xl': '2.5rem'
+                },
+                boxShadow: {
+                    'soft': '0 10px 40px -10px rgba(0,0,0,0.05)'
                 }
             }
         }
-    </script>
-    <style>
-        :root {
-            --brand-color: #4f46e5; 
-            --dark-color: #022c22;
-        }
-        
-        .text-brand { color: var(--brand-color); }
-        .bg-brand { background-color: var(--brand-color); }
-        .border-brand { border-color: var(--brand-color); }
-        .hover-bg-brand:hover { background-color: var(--brand-color); filter: brightness(1.1); }
-        .ring-brand:focus { --tw-ring-color: var(--brand-color); }
-        
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #0f172a; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--brand-color); }
-        
-        
-        body { background: #030712 !important; color: #e5e7eb !important; }
-        nav.fixed { background: rgba(3,7,18,.88) !important; }
-        a.bg-brand, button.bg-brand { border-radius: 12px !important; }
-        input, .rounded-full { border-radius: 12px; }
-  
-        [x-cloak] { display: none !important; }
-    </style>
-</head>
-<body class="bg-black text-slate-200" x-data="productPage()" x-cloak>
+    }
+</script>
+<style>
+    body { background-color: #f9f7f2; color: #4a4a4a; }
+    .text-brand { color: var(--wuepy-primary); }
+    .bg-brand { background-color: var(--wuepy-primary); }
+    .border-brand { border-color: var(--wuepy-primary); }
+    
+    /* Botón Suave Personalizado */
+    .btn-soft {
+        background-color: var(--wuepy-primary);
+        color: white;
+        border-radius: 9999px;
+        padding: 0.75rem 2rem;
+        font-family: 'Lato', sans-serif;
+        font-weight: bold;
+        letter-spacing: 0.05em;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px color-mix(in srgb, var(--wuepy-primary) 25%, transparent);
+    }
+    .btn-soft:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px color-mix(in srgb, var(--wuepy-primary) 38%, transparent);
+    }
+</style>
 
-    <nav class="fixed w-full z-50 top-0 start-0 bg-black/80 backdrop-blur-md border-b border-zinc-800" x-data="{ mobileMenuOpen: false, searchOpen: false }">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex flex-wrap items-center justify-between h-20">
-                
-                <a href="index.html" class="flex items-center gap-3 group">
-                    <template x-if="site?.logoUrl && !site.logoUrl.includes('placehold')">
-                        <img :src="site.logoUrl" class="h-10 w-auto rounded-lg object-contain group-hover:scale-105 transition">
-                    </template>
-                    <template x-if="!site?.logoUrl || site.logoUrl.includes('placehold')">
-                        <div class="h-10 w-10 bg-brand rounded-lg flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-brand/20" x-text="site?.name ? site.name.charAt(0).toUpperCase() : 'W'">
-                        </div>
-                    </template>
-                    <span class="text-xl font-bold text-white tracking-tight group-hover:text-brand transition" x-text="site?.name || 'Cargando...'"></span>
-                </a>
-
-                <div class="hidden md:flex flex-1 max-w-lg mx-8">
-                    <form action="search.html" method="GET" class="w-full relative group">
-                        <input type="text" name="q" placeholder="Buscar productos..." class="w-full bg-zinc-900 text-white border border-zinc-700 rounded-full py-2.5 pl-5 pr-12 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all placeholder-slate-500 group-hover:bg-zinc-800">
-                        <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-slate-700 rounded-full text-slate-300 flex items-center justify-center hover:bg-brand hover:text-white transition">
-                            <i class="fas fa-search text-xs"></i>
-                        </button>
-                    </form>
-                </div>
-
-                <div class="flex items-center gap-4">
-                    <button @click="searchOpen = !searchOpen" class="md:hidden text-slate-300 hover:text-white p-2">
-                        <i class="fas fa-search text-lg"></i>
-                    </button>
-
-                    <div class="hidden md:flex items-center gap-6 text-sm font-medium text-slate-300">
-                        <a href="index.html" class="hover:text-white transition">Inicio</a>
-                        <a href="search.html" class="hover:text-white transition">Catálogo</a>
-                    </div>
-
-                    <template x-if="site?.whatsappNumber || site?.contact?.whatsapp">
-                        <a :href="'https://wa.me/' + (site.whatsappNumber || site.contact.whatsapp).replace(/[^0-9]/g, '')" target="_blank" class="hidden sm:flex bg-brand text-white px-5 py-2.5 rounded-full font-bold shadow-lg shadow-brand/20 items-center gap-2 text-sm hover:brightness-110 transition transform hover:-translate-y-1">
-                            <i class="fab fa-whatsapp text-lg"></i> <span class="hidden lg:inline">Contacto</span>
-                        </a>
-                    </template>
-
-                    <button @click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden text-slate-300 hover:text-white p-2 focus:outline-none">
-                        <i class="fas" :class="mobileMenuOpen ? 'fa-times' : 'fa-bars'"></i>
-                    </button>
-                </div>
-            </div>
-
-            <div x-show="searchOpen" x-transition class="md:hidden py-4 border-t border-zinc-800">
-                <form action="search.html" method="GET" class="relative">
-                    <input type="text" name="q" placeholder="¿Qué buscas hoy?" class="w-full bg-zinc-900 text-white border border-zinc-700 rounded-lg py-3 pl-4 pr-12 focus:outline-none focus:ring-2 focus:ring-brand">
-                    <button type="submit" class="absolute right-3 top-1/2 -translate-y-1/2 text-brand font-bold">IR</button>
-                </form>
-            </div>
-        </div>
-
-        <div x-show="mobileMenuOpen" x-transition.origin.top class="md:hidden bg-zinc-900 border-b border-zinc-800 absolute w-full left-0 shadow-2xl">
-            <div class="px-4 pt-4 pb-6 space-y-2">
-                <a href="index.html" class="block px-4 py-3 rounded-lg text-slate-300 hover:bg-zinc-800 hover:text-white transition">Inicio</a>
-                <a href="search.html" class="block px-4 py-3 rounded-lg text-slate-300 hover:bg-zinc-800 hover:text-white transition">Ver Catálogo Completo</a>
-                
-                <template x-if="site?.social?.instagram">
-                    <a :href="site.social.instagram" target="_blank" class="block px-4 py-3 rounded-lg text-slate-300 hover:bg-zinc-800 hover:text-white transition"><i class="fab fa-instagram mr-2"></i> Instagram</a>
-                </template>
-                
-                <template x-if="site?.whatsappNumber || site?.contact?.whatsapp">
-                    <div class="pt-4 mt-4 border-t border-zinc-800">
-                        <a :href="'https://wa.me/' + (site.whatsappNumber || site.contact.whatsapp).replace(/[^0-9]/g, '')" class="flex w-full items-center justify-center gap-2 bg-green-600 text-white py-3 rounded-lg font-bold">
-                            <i class="fab fa-whatsapp text-lg"></i> Hablar por WhatsApp
-                        </a>
-                    </div>
-                </template>
-            </div>
-        </div>
-    </nav>
-    <div class="h-20"></div>
-
-    <template x-if="isLoading">
-        <div class="min-h-[60vh] flex flex-col items-center justify-center">
-            <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-white mb-4" :style="'border-color: var(--brand-color)'"></div>
-            <p class="text-slate-400 font-bold">Cargando producto...</p>
-        </div>
-    </template>
-
-    <div x-show="!isLoading && product" x-transition.opacity>
-        
-        <div class="border-b border-zinc-800 bg-black/50">
-            <div class="max-w-7xl mx-auto px-4 py-3 text-xs text-slate-500">
-                <a href="index.html" class="hover:text-white transition">Inicio</a> / 
-                <a href="search.html" class="hover:text-white transition">Catálogo</a> / 
-                <span class="text-brand font-bold" x-text="product?.name"></span>
-            </div>
-        </div>
-
-        <main class="max-w-7xl mx-auto px-4 py-12">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
-                
-                <div class="space-y-4">
-                    <div class="aspect-square bg-zinc-900 rounded-3xl overflow-hidden border border-zinc-800 shadow-2xl relative group">
-                        <template x-if="product?.imageUrl && !product.imageUrl.includes('placehold')">
-                            <img :src="product.imageUrl" class="w-full h-full object-cover">
-                        </template>
-                        <template x-if="!product?.imageUrl || product.imageUrl.includes('placehold')">
-                            <div class="w-full h-full flex items-center justify-center bg-zinc-800 text-slate-600">
-                                <i class="fas fa-image text-6xl"></i>
-                            </div>
-                        </template>
-
-                        <template x-if="product?.stock <= 0">
-                            <div class="absolute inset-0 bg-black/70 flex items-center justify-center backdrop-blur-sm">
-                                <span class="text-white font-bold text-3xl border-4 border-white px-8 py-3 uppercase -rotate-12">Agotado</span>
-                            </div>
-                        </template>
-                    </div>
-                </div>
-
-                <div>
-                    <a :href="'search.html?category=' + encodeURIComponent(product?.category || '')" class="inline-block bg-brand/10 text-brand px-3 py-1 rounded text-xs font-bold uppercase tracking-wider mb-4 hover:bg-brand/20 transition" x-text="product?.category || 'General'"></a>
-                    
-                    <h1 class="text-3xl md:text-5xl font-bold text-white mb-6 leading-tight" x-text="product?.name"></h1>
-                    
-                    <div class="flex items-center gap-6 border-b border-zinc-800 pb-8 mb-8">
-                        <span class="text-4xl font-bold text-brand" x-text="formatMoney(product?.price)"></span>
-                        <template x-if="product?.stock > 0">
-                            <span class="flex items-center gap-2 text-green-400 text-sm font-bold bg-green-500/10 px-3 py-1 rounded-full border border-green-500/20">
-                                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> Disponible
-                            </span>
-                        </template>
-                    </div>
-
-                    <div class="prose prose-invert prose-p:text-slate-400 mb-8">
-                        <p x-text="product?.description || 'Sin descripción detallada.'"></p>
-                    </div>
-
-                    <a :href="getWhatsappLink()" 
-                       target="_blank"
-                       class="block w-full bg-green-600 hover:bg-green-500 text-white font-bold text-xl py-5 rounded-2xl shadow-lg shadow-green-900/50 transition transform hover:-translate-y-1 flex items-center justify-center gap-3">
-                        <i class="fab fa-whatsapp text-3xl"></i>
-                        <div>
-                            <span class="block text-xs uppercase font-normal opacity-80 tracking-wider">Comprar ahora en</span>
-                            WhatsApp
-                        </div>
-                    </a>
-                    
-                    <p class="text-center text-slate-600 text-xs mt-4">
-                        <i class="fas fa-lock mr-1"></i> Compra directa y segura con el vendedor.
-                    </p>
-                </div>
-            </div>
-
-            <template x-if="relatedProducts.length > 0">
-                <div class="mt-24 pt-16 border-t border-zinc-800">
-                    <div class="flex items-center justify-between mb-8">
-                        <h2 class="text-2xl font-bold text-white">También te puede gustar</h2>
-                        <a href="search.html" class="text-brand text-sm font-bold hover:underline">Ver todo</a>
-                    </div>
-                    
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-                        <template x-for="rel in relatedProducts" :key="rel._id">
-                            <a :href="'product.html?id=' + rel._id" class="group block bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden transition hover:shadow-lg hover:shadow-brand/10" style="transition: border-color 0.3s; cursor: pointer;" onmouseover="this.style.borderColor='var(--brand-color)'" onmouseout="this.style.borderColor='inherit'">
-                                <div class="aspect-square bg-zinc-800 overflow-hidden relative">
-                                    <template x-if="rel.imageUrl && !rel.imageUrl.includes('placehold')">
-                                        <img :src="rel.imageUrl" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
-                                    </template>
-                                    <template x-if="!rel.imageUrl || rel.imageUrl.includes('placehold')">
-                                        <div class="w-full h-full flex items-center justify-center text-slate-600">
-                                            <i class="fas fa-image text-3xl"></i>
-                                        </div>
-                                    </template>
-                                    <template x-if="rel.stock <= 0">
-                                        <div class="absolute top-2 right-2 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded">AGOTADO</div>
-                                    </template>
-                                </div>
-                                <div class="p-4">
-                                    <p class="text-xs text-brand font-bold uppercase mb-1" x-text="rel.category || 'General'"></p>
-                                    <h4 class="text-white font-bold truncate transition" onmouseover="this.style.color='var(--brand-color)'" onmouseout="this.style.color='inherit'" x-text="rel.name"></h4>
-                                    <p class="text-slate-400 text-sm mt-1" x-text="formatMoney(rel.price)"></p>
-                                </div>
-                            </a>
-                        </template>
-                    </div>
-                </div>
-            </template>
-        </main>
-
-        <footer class="bg-black border-t border-zinc-800 pt-16 pb-8 text-slate-400 text-sm relative">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                
-                <div class="mb-16 p-8 rounded-2xl bg-zinc-900 border border-zinc-800 relative overflow-hidden text-center md:text-left md:flex md:items-center md:justify-between gap-6 group">
-                    <div class="absolute top-0 right-0 w-64 h-64 bg-brand opacity-5 rounded-full blur-3xl -mr-16 -mt-16 transition group-hover:opacity-10"></div>
-                    
-                    <div class="relative z-10">
-                        <h3 class="text-xl font-bold text-white mb-1">¿Te gusta esta tienda?</h3>
-                        <p class="text-slate-400">Crea tu propio sitio web profesional como este en minutos.</p>
-                    </div>
-                    
-                    <a href="http://lfaftech.com" class="relative z-10 inline-flex items-center gap-2 bg-white text-slate-950 px-6 py-3 rounded-xl font-bold hover-bg-brand hover:text-white transition shadow-lg transform hover:-translate-y-1">
-                        <i class="fas fa-magic"></i> Crear mi tienda ahora
-                    </a>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
-                    
-                    <div class="space-y-4">
-                        <h3 class="text-2xl font-bold text-white" x-text="site?.name"></h3>
-                        <p class="leading-relaxed" x-text="site?.content?.aboutText || 'Bienvenido a nuestra tienda oficial.'"></p>
-                        <div class="flex gap-4 pt-2">
-                            <template x-if="site?.social?.facebook"> <a :href="site.social.facebook" target="_blank" class="w-10 h-10 rounded-full bg-zinc-900 flex items-center justify-center hover-bg-brand hover:text-white transition"><i class="fab fa-facebook-f"></i></a> </template>
-                            <template x-if="site?.social?.instagram"> <a :href="site.social.instagram" target="_blank" class="w-10 h-10 rounded-full bg-zinc-900 flex items-center justify-center hover-bg-brand hover:text-white transition"><i class="fab fa-instagram"></i></a> </template>
-                            <template x-if="site?.social?.tiktok"> <a :href="site.social.tiktok" target="_blank" class="w-10 h-10 rounded-full bg-zinc-900 flex items-center justify-center hover-bg-brand hover:text-white transition"><i class="fab fa-tiktok"></i></a> </template>
-                        </div>
-                    </div>
-
-                    <div>
-                        <h4 class="text-white font-bold mb-6 text-lg">Tienda</h4>
-                        <ul class="space-y-3">
-                            <li><a href="index.html" class="hover:text-white transition flex items-center gap-2" onmouseover="this.style.color='var(--brand-color)'" onmouseout="this.style.color='inherit'"><i class="fas fa-chevron-right text-xs"></i> Inicio</a></li>
-                            <li><a href="search.html" class="hover:text-white transition flex items-center gap-2" onmouseover="this.style.color='var(--brand-color)'" onmouseout="this.style.color='inherit'"><i class="fas fa-chevron-right text-xs"></i> Catálogo</a></li>
-                        </ul>
-                    </div>
-
-                    <div>
-                        <h4 class="text-white font-bold mb-6 text-lg">Contáctanos</h4>
-                        <ul class="space-y-4">
-                            <template x-if="site?.contact?.address">
-                                <li class="flex items-start gap-3">
-                                    <i class="fas fa-map-marker-alt mt-1 text-brand"></i>
-                                    <span x-text="site.contact.address"></span>
-                                </li>
-                            </template>
-                            <template x-if="site?.whatsappNumber || site?.contact?.whatsapp || site?.contact?.phone">
-                                <li class="flex items-start gap-3">
-                                    <i class="fab fa-whatsapp mt-1 text-brand"></i>
-                                    <span x-text="site.whatsappNumber || site.contact?.whatsapp || site.contact?.phone"></span>
-                                </li>
-                            </template>
-                            <template x-if="site?.contact?.email">
-                                <li class="flex items-start gap-3">
-                                    <i class="far fa-envelope mt-1 text-brand"></i>
-                                    <span x-text="site.contact.email"></span>
-                                </li>
-                            </template>
-                        </ul>
-                    </div>
-                    
-                    <div>
-                        <h4 class="text-white font-bold mb-6 text-lg">Novedades</h4>
-                        <p class="mb-4 text-xs">Suscríbete para recibir ofertas.</p>
-                        <form onsubmit="event.preventDefault(); alert('Gracias por suscribirte!');" class="space-y-2">
-                            <input type="email" placeholder="Tu correo" required class="w-full bg-zinc-900 border border-zinc-800 rounded px-4 py-2 focus:ring-1 focus:ring-brand focus:border-transparent outline-none text-white">
-                            <button class="w-full bg-zinc-800 hover-bg-brand hover:text-white text-slate-300 py-2 rounded font-bold transition">Suscribirse</button>
-                        </form>
-                    </div>
-                </div>
-
-                <div class="border-t border-zinc-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs">
-                    <p>&copy; <span x-text="new Date().getFullYear()"></span> <span x-text="site?.name"></span>. Todos los derechos reservados.</p>
-                    <p>Tecnología por <a href="http://lfaftech.com" class="text-slate-500 hover:text-white font-bold">LFAFTECH</a></p>
-                </div>
-            </div>
-        </footer>
+<div>
+    
+    <div class="bg-brand/10 text-brand text-xs font-bold py-3 text-center tracking-widest uppercase border-b border-brand/5">
+        <span class="inline-block animate-pulse">✨</span> Envíos gratis en compras mayores a $50 <span class="inline-block animate-pulse">✨</span>
     </div>
 
-    <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('productPage', () => ({
-                site: null,
-                product: null,
-                relatedProducts: [],
-                isLoading: true,
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-stone-100 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-6 h-24 flex justify-between items-center">
+            
+            <nav class="hidden md:flex gap-8 text-sm font-bold uppercase tracking-widest text-stone-500">
+                <a href="index.html" class="hover:text-brand transition relative group">
+                    Inicio
+                    <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-brand transition-all group-hover:w-full"></span>
+                </a>
+                <a href="search.html" class="hover:text-brand transition relative group">
+                    Colección
+                    <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-brand transition-all group-hover:w-full"></span>
+                </a>
+                <a href="#footer" class="hover:text-brand transition relative group">
+                    Contacto
+                    <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-brand transition-all group-hover:w-full"></span>
+                </a>
+            </nav>
 
-                async init() {
-                    try {
-                        const urlParams = new URLSearchParams(window.location.search);
-                        const productId = urlParams.get('id');
+            <a href="index.html" class="text-3xl lg:text-4xl font-serif font-bold text-stone-800 italic hover:opacity-80 transition transform hover:scale-105 absolute left-1/2 -translate-x-1/2">
+                <template x-if="site?.logoUrl"><div class="contents">
+                    <img :src="site?.logoUrl" class="h-16 w-auto object-contain">
+                </div></template><template x-if="!(site?.logoUrl)"><div class="contents">
+                    <span x-text="site?.name"></span>
+                </div></template>
+            </a>
 
-                        if (!productId) {
-                            window.location.href = 'index.html';
-                            return;
-                        }
+            <div class="flex items-center gap-6 ml-auto">
+                <button @click="searchOpen = !searchOpen" class="text-stone-400 hover:text-brand transition">
+                    <i class="fas fa-search text-xl"></i>
+                </button>
+                
+                <a :href="waLink(product)" target="_blank" class="hidden sm:flex items-center gap-2 text-stone-400 hover:text-green-600 transition group">
+                    <span class="text-xs font-bold uppercase hidden lg:block group-hover:text-stone-600">Ayuda</span>
+                    <i class="fab fa-whatsapp text-2xl"></i>
+                </a>
 
-                        const hostname = window.location.hostname;
-                        const qStore = new URLSearchParams(window.location.search).get('store');
-                        let subdomain = qStore || hostname.split('.')[0];
-                        
-                        if (!qStore && (hostname === 'localhost' || hostname === '127.0.0.1' || subdomain === 'undefined' || subdomain === 'wuepy')) {
-                            subdomain = 'demo';
-                        }
+                <button @click="mobileMenu = !mobileMenu" class="md:hidden text-stone-600 p-2">
+                    <i class="fas fa-bars text-2xl"></i>
+                </button>
+            </div>
+        </div>
 
-                        const res = await fetch(`${window.API_URL || 'https://wuepyback.onrender.com/api'}/store/public/${subdomain}`);
-                        const data = await res.json();
-                        
-                        if (data.success) {
-                            this.site = data.site;
-                            const allProducts = data.products || [];
-                            
-                            this.product = allProducts.find(p => p._id === productId);
-                            
-                            if (!this.product) {
-                                window.location.href = 'index.html';
-                                return;
-                            }
+        <div x-show="searchOpen" x-transition.opacity class="absolute w-full bg-white border-b border-stone-100 py-8 z-40 shadow-soft">
+            <div class="max-w-3xl mx-auto px-6 relative">
+                <form action="search.html" method="GET">
+                    <input type="text" name="q" placeholder="¿Qué estás buscando hoy?" class="w-full border-b-2 border-stone-200 py-4 text-2xl font-serif text-center focus:outline-none focus:border-brand bg-transparent placeholder-stone-300 text-stone-700 italic">
+                </form>
+                <button @click="searchOpen = false" class="absolute right-0 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600"><i class="fas fa-times text-xl"></i></button>
+            </div>
+        </div>
+    </header>
 
-                            // Obtener relacionados
-                            this.relatedProducts = allProducts
-                                .filter(p => p.category === this.product.category && p._id !== productId)
-                                .slice(0, 4);
+    <div x-show="mobileMenu" class="fixed inset-0 z-50 flex justify-end">
+        <div @click="mobileMenu = false" x-show="mobileMenu" x-transition.opacity class="absolute inset-0 bg-stone-900/20 backdrop-blur-sm"></div>
+        
+        <div x-show="mobileMenu" x-transition:enter="transform transition ease-out duration-500" x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0" class="relative w-80 bg-[#fbf9f4] h-full p-10 rounded-l-[3rem] shadow-2xl flex flex-col border-l border-white">
+            
+            <div class="flex justify-between items-center mb-12">
+                <span class="font-serif italic text-2xl text-stone-800">Menú</span>
+                <button @click="mobileMenu = false" class="text-stone-400 hover:text-brand"><i class="fas fa-times text-2xl"></i></button>
+            </div>
 
-                            if (this.relatedProducts.length === 0) {
-                                this.relatedProducts = allProducts.filter(p => p._id !== productId).slice(0, 4);
-                            }
-                            
-                            // Inyectar colores
-                            if(this.site.primaryColor) document.documentElement.style.setProperty('--brand-color', this.site.primaryColor);
-                            if(this.site.secondaryColor) document.documentElement.style.setProperty('--dark-color', this.site.secondaryColor);
-                        } else {
-                            window.location.href = 'index.html';
-                        }
-                    } catch (error) {
-                        console.error('Error al cargar producto:', error);
-                        window.location.href = 'index.html';
-                    }
-                    this.isLoading = false;
-                },
+            <nav class="space-y-8 text-center flex-1">
+                <a href="index.html" class="block text-2xl font-serif text-stone-800 hover:text-brand hover:italic transition">Inicio</a>
+                <a href="search.html" class="block text-2xl font-serif text-stone-800 hover:text-brand hover:italic transition">Catálogo</a>
+                <a href="#footer" class="block text-2xl font-serif text-stone-800 hover:text-brand hover:italic transition">Contacto</a>
+                <a href="search.html?category=Ofertas" class="block text-2xl font-serif text-brand italic font-bold">Ofertas</a>
+            </nav>
 
-                formatMoney(amount) {
-                    if(!amount) return '0';
-                    return (this.site?.currency === 'PYG' ? 'Gs. ' : '$ ') + parseInt(amount).toLocaleString('es-PY');
-                },
+            <div class="mt-auto">
+                <p class="text-center text-xs text-stone-400 mb-4 uppercase tracking-widest">Síguenos</p>
+                <div class="flex justify-center gap-6 text-stone-400 mb-8">
+                    <i class="fab fa-instagram text-xl"></i>
+                    <i class="fab fa-facebook text-xl"></i>
+                    <i class="fab fa-tiktok text-xl"></i>
+                </div>
+                <a :href="waLink(product)" class="btn-soft block w-full text-center">
+                    <i class="fab fa-whatsapp mr-2"></i> WhatsApp
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
 
-                getWhatsappLink() {
-                    if (!this.site || !this.product) return '#';
-                    const phone = this.site.whatsappNumber || this.site.contact?.whatsapp || this.site.contact?.phone || '';
-                    const cleanPhone = phone.replace(/[^0-9]/g, '');
-                    const message = `Hola! Me interesa *${this.product.name}* (${this.formatMoney(this.product.price)}). ¿Está disponible?`;
-                    return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
-                }
-            }));
-        });
-    </script>
+
+    <div class="max-w-7xl mx-auto px-6 py-12">
+        <div class="text-center mb-16">
+            <div class="inline-flex items-center gap-3 text-xs text-stone-400 font-bold tracking-widest uppercase bg-white px-6 py-2 rounded-full shadow-sm border border-stone-100">
+                <a href="index.html" class="hover:text-brand">Inicio</a> 
+                <span class="text-stone-300">/</span> 
+                <a href="search.html" class="hover:text-brand">Tienda</a> 
+                <span class="text-stone-300">/</span> 
+                <span class="text-brand"><span x-text="product?.name"></span></span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-24 items-start">
+            
+            <div class="lg:col-span-7 bg-white p-4 rounded-[3rem] shadow-soft border border-stone-50">
+                <div class="aspect-square rounded-[2.5rem] overflow-hidden relative group">
+                    <img :src="product?.imageUrl" class="w-full h-full object-cover transform group-hover:scale-105 transition duration-[1.5s]">
+                    <template x-if="product?.stock <= 0"><div class="contents">
+                        <div class="absolute inset-0 bg-white/60 flex items-center justify-center backdrop-blur-sm">
+                            <span class="text-stone-900 font-serif italic text-4xl border-b-2 border-stone-900 pb-2">Agotado</span>
+                        </div>
+                    </div></template>
+                </div>
+            </div>
+
+            <div class="lg:col-span-5 lg:sticky lg:top-32">
+                <div class="mb-8">
+                    <span class="bg-brand/10 text-brand px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest mb-6 inline-block"><span x-text="product?.category"></span></span>
+                    <h1 class="text-5xl lg:text-6xl font-serif font-bold text-stone-900 mb-6 leading-none italic"><span x-text="product?.name"></span></h1>
+                    <div class="flex items-center gap-4">
+                        <p class="text-4xl text-stone-800 font-light"><span x-text="formatMoney(product?.price)"></span></p>
+                        <template x-if="product?.stock > 0"><div class="contents">
+                            <span class="text-green-600 text-xs font-bold bg-green-50 px-3 py-1 rounded-full">Disponible</span>
+                        </div></template>
+                    </div>
+                </div>
+                
+                <div class="border-t border-b border-stone-100 py-8 mb-8">
+                    <h3 class="font-serif text-lg text-stone-800 mb-4 font-bold">Detalles</h3>
+                    <div class="prose prose-stone text-stone-500 font-light leading-relaxed">
+                        <p><span x-text="product?.description || 'Una pieza única seleccionada especialmente para ti.'"></span></p>
+                    </div>
+                </div>
+
+                <a :href="waLink(product)" 
+                   target="_blank"
+                   class="btn-soft w-full flex items-center justify-center gap-3 text-lg py-5 mb-6 group">
+                    <span>Comprar ahora</span>
+                    <i class="fas fa-arrow-right transform group-hover:translate-x-1 transition"></i>
+                </a>
+                
+                <p class="text-center text-xs text-stone-400">
+                    <i class="fas fa-lock mr-1"></i> Compra segura vía WhatsApp directamente con nosotros.
+                </p>
+            </div>
+        </div>
+
+        <template x-if="relatedProducts && relatedProducts.length > 0"><div class="contents">
+            <div class="mt-32 pt-20 border-t border-dashed border-stone-200">
+                <div class="text-center mb-16">
+                    <h2 class="text-4xl font-serif italic text-stone-800">Completa tu estilo</h2>
+                    <div class="w-24 h-1 bg-brand mx-auto mt-4 rounded-full opacity-50"></div>
+                </div>
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-8">
+                    <template x-for="rel in relatedProducts" :key="rel?._id"><div class="contents">
+                        <a :href="'product.html?id=' + rel?._id" class="group block text-center">
+                            <div class="aspect-[4/5] rounded-[2rem] overflow-hidden mb-6 shadow-md group-hover:shadow-2xl transition duration-500 bg-white p-2 border border-stone-50">
+                                <img :src="rel?.imageUrl" class="w-full h-full object-cover rounded-[1.5rem] transform group-hover:scale-105 transition duration-1000">
+                            </div>
+                            <h4 class="font-serif text-xl text-stone-900 group-hover:text-brand transition"><span x-text="rel?.name"></span></h4>
+                            <p class="text-stone-400 font-light mt-1"><span x-text="formatMoney(rel?.price)"></span></p>
+                        </a>
+                    </div></template>
+                </div>
+            </div>
+        </div></template>
+    </div>
+
+    
+<footer id="footer" class="bg-white pt-24 pb-12 mt-20 relative overflow-hidden">
+    
+    <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-brand/30 to-transparent"></div>
+    <div class="absolute -top-40 right-0 w-96 h-96 bg-brand/5 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="max-w-6xl mx-auto px-6 relative z-10">
+        
+        <div class="bg-[#f9f7f2] rounded-[3rem] p-10 md:p-16 text-center border border-white shadow-soft mb-20 relative overflow-hidden group">
+            <div class="absolute inset-0 bg-white/40 opacity-0 group-hover:opacity-100 transition duration-1000"></div>
+            
+            <h3 class="text-3xl md:text-4xl font-serif italic font-bold text-stone-800 mb-4 relative z-10">
+                ¿Te gusta el estilo de esta tienda?
+            </h3>
+            <p class="text-stone-500 font-light text-lg mb-8 max-w-xl mx-auto relative z-10">
+                Puedes crear tu propia tienda online con este diseño profesional en cuestión de minutos. Sin programar.
+            </p>
+            <a href="http://lfaftech.com" class="relative z-10 inline-block bg-stone-800 text-white px-10 py-4 rounded-full font-bold uppercase tracking-widest text-xs hover:bg-brand transition shadow-lg transform hover:-translate-y-1">
+                Crear mi sitio gratis
+            </a>
+        </div>
+
+        <div class="grid md:grid-cols-12 gap-12 text-center md:text-left">
+            
+            <div class="md:col-span-5">
+                <h2 class="text-4xl font-serif italic font-bold text-stone-800 mb-6"><span x-text="site?.name"></span></h2>
+                <p class="text-stone-500 font-light leading-relaxed mb-8 pr-0 md:pr-10">
+                    <span x-text="site?.content?.aboutText"></span>
+                </p>
+                <div class="flex justify-center md:justify-start gap-4">
+                    <template x-if="site?.social?.instagram"><div class="contents"> 
+                        <a :href="site?.social?.instagram" target="_blank" class="w-12 h-12 rounded-full bg-stone-50 flex items-center justify-center text-stone-400 hover:bg-brand hover:text-white transition duration-300 shadow-sm"><i class="fab fa-instagram"></i></a> 
+                    </div></template>
+                    <template x-if="site?.social?.facebook"><div class="contents"> 
+                        <a :href="site?.social?.facebook" target="_blank" class="w-12 h-12 rounded-full bg-stone-50 flex items-center justify-center text-stone-400 hover:bg-brand hover:text-white transition duration-300 shadow-sm"><i class="fab fa-facebook-f"></i></a> 
+                    </div></template>
+                    <template x-if="site?.social?.tiktok"><div class="contents"> 
+                        <a :href="site?.social?.tiktok" target="_blank" class="w-12 h-12 rounded-full bg-stone-50 flex items-center justify-center text-stone-400 hover:bg-brand hover:text-white transition duration-300 shadow-sm"><i class="fab fa-tiktok"></i></a> 
+                    </div></template>
+                </div>
+            </div>
+
+            <div class="md:col-span-3">
+                <h4 class="font-bold text-stone-900 uppercase tracking-widest text-xs mb-6">Explorar</h4>
+                <ul class="space-y-4 text-stone-500 font-light">
+                    <li><a href="index.html" class="hover:text-brand hover:italic transition">Inicio</a></li>
+                    <li><a href="search.html" class="hover:text-brand hover:italic transition">Colección Completa</a></li>
+                    <li><a href="search.html?category=Nuevos" class="hover:text-brand hover:italic transition">Recién Llegados</a></li>
+                    <li><a href="search.html?category=Ofertas" class="hover:text-brand hover:italic transition">Ofertas Especiales</a></li>
+                </ul>
+            </div>
+
+            <div class="md:col-span-4">
+                <h4 class="font-bold text-stone-900 uppercase tracking-widest text-xs mb-6">Estamos aquí para ti</h4>
+                <ul class="space-y-6 text-stone-500 font-light">
+                    <template x-if="site?.contact?.address"><div class="contents">
+                        <li class="flex flex-col md:flex-row items-center md:items-start gap-3">
+                            <i class="fas fa-map-pin mt-1 text-brand"></i>
+                            <span><span x-text="site?.contact?.address"></span></span>
+                        </li>
+                    </div></template>
+                    <li class="flex flex-col md:flex-row items-center md:items-start gap-3">
+                        <i class="fab fa-whatsapp mt-1 text-brand"></i>
+                        <span class="font-serif italic text-lg text-stone-700"><span x-text="site?.contact?.phone"></span></span>
+                    </li>
+                    <li class="flex flex-col md:flex-row items-center md:items-start gap-3">
+                        <i class="far fa-envelope mt-1 text-brand"></i>
+                        <span><span x-text="site?.contact?.email"></span></span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="mt-20 pt-8 border-t border-stone-100 text-xs text-stone-400 font-light flex flex-col md:flex-row justify-between items-center text-center">
+            <p>&copy; <span x-text="new Date().getFullYear()"></span> <span x-text="site?.name"></span>. Todos los derechos reservados.</p>
+            <p class="mt-2 md:mt-0">Diseñado con tecnología <a href="http://lfaftech.com" class="text-stone-600 font-bold hover:text-brand">LFAFTECH</a></p>
+        </div>
+    </div>
+</footer>
+
 </body>
 </html>
