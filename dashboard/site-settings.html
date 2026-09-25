@@ -10,6 +10,7 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="/js/api.js"></script>
+    <script src="/js/platform.js"></script>
 
     <style>
         body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background-color: #f1f5f9; }
@@ -53,7 +54,7 @@
                     <i class="fas fa-cog text-slate-400"></i> Ajustes de Tienda
                 </h1>
             </div>
-            <a :href="'https://' + site?.subdomain + '.wuepy.com'" target="_blank" class="inline-flex items-center justify-center gap-2 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 px-5 py-2.5 rounded-xl font-bold transition border border-indigo-200">
+            <a :href="WuepyPlatform.storeUrl(site)" target="_blank" x-show="WuepyPlatform.storeUrl(site)" class="inline-flex items-center justify-center gap-2 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 px-5 py-2.5 rounded-xl font-bold transition border border-indigo-200">
                 Ver Tienda <i class="fas fa-external-link-alt text-xs"></i>
             </a>
         </div>
@@ -289,29 +290,18 @@
                                 <div x-show="formData.designMode === 'template'" x-collapse>
                                     <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200">
                                         <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Plantilla Activa</label>
-                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                            <label class="relative cursor-pointer group">
-                                                <input type="radio" x-model="formData.template" value="template1" class="peer sr-only">
-                                                <div class="border-2 border-slate-200 rounded-xl p-4 bg-white hover:bg-slate-50 transition peer-checked:border-blue-500 peer-checked:bg-blue-50">
-                                                    <div class="w-full h-24 bg-slate-200 rounded-lg mb-3 bg-cover bg-center" style="background-image: url('https://placehold.co/400x200?text=E-Commerce+Moderno');"></div>
-                                                    <h4 class="font-black text-slate-800 text-sm">Plantilla 1: Moderna</h4>
-                                                    <p class="text-[10px] text-slate-500 mt-1">E-Commerce completo, diseño claro y minimalista.</p>
-                                                </div>
-                                                <div class="absolute top-3 right-3 w-5 h-5 rounded-full border-2 border-slate-300 peer-checked:border-blue-500 peer-checked:bg-blue-500 flex items-center justify-center transition">
-                                                    <i class="fas fa-check text-white text-[10px] opacity-0 peer-checked:opacity-100"></i>
-                                                </div>
-                                            </label>
-                                            <label class="relative cursor-pointer group">
-                                                <input type="radio" x-model="formData.template" value="template2" class="peer sr-only">
-                                                <div class="border-2 border-slate-200 rounded-xl p-4 bg-white hover:bg-slate-50 transition peer-checked:border-blue-500 peer-checked:bg-blue-50">
-                                                    <div class="w-full h-24 bg-slate-800 rounded-lg mb-3 bg-cover bg-center" style="background-image: url('https://placehold.co/400x200/1e293b/ffffff?text=Diseño+Oscuro');"></div>
-                                                    <h4 class="font-black text-slate-800 text-sm">Plantilla 2: Oscura</h4>
-                                                    <p class="text-[10px] text-slate-500 mt-1">Diseño agresivo, ideal para electrónica o motor.</p>
-                                                </div>
-                                                <div class="absolute top-3 right-3 w-5 h-5 rounded-full border-2 border-slate-300 peer-checked:border-blue-500 peer-checked:bg-blue-500 flex items-center justify-center transition">
-                                                    <i class="fas fa-check text-white text-[10px] opacity-0 peer-checked:opacity-100"></i>
-                                                </div>
-                                            </label>
+                                        <p class="text-xs font-bold text-violet-700 bg-violet-50 border border-violet-100 rounded-xl px-4 py-3 mb-4" x-show="hasSavedAi">Tu diseño con IA sigue guardado en la cuenta. Podés volver al orquestador sin perderlo.</p>
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-80 overflow-y-auto pr-1">
+                                            <template x-for="tpl in templates" :key="tpl.id">
+                                                <label class="relative cursor-pointer">
+                                                    <input type="radio" x-model="formData.template" :value="tpl.id" class="peer sr-only" @change="formData.primaryColor = tpl.primary; formData.secondaryColor = tpl.secondary">
+                                                    <div class="border-2 border-slate-200 rounded-xl p-4 bg-white transition peer-checked:border-blue-500 peer-checked:bg-blue-50">
+                                                        <div class="w-full h-14 rounded-lg mb-3" :style="'background: linear-gradient(135deg,' + tpl.primary + ',' + tpl.secondary + ')'"></div>
+                                                        <h4 class="font-black text-slate-800 text-sm" x-text="tpl.name"></h4>
+                                                        <p class="text-[10px] text-slate-500 mt-1" x-text="tpl.description"></p>
+                                                    </div>
+                                                </label>
+                                            </template>
                                         </div>
                                     </div>
                                 </div>
@@ -335,6 +325,13 @@
                                         </div>
                                         <i class="fas fa-brain absolute -bottom-10 -right-10 text-9xl text-white opacity-5 transform -rotate-12"></i>
                                     </div>
+                                </div>
+
+                                <div class="bg-slate-50 border border-slate-200 rounded-2xl p-5 mt-6">
+                                    <h3 class="font-black text-slate-900 mb-1">Sitemap para Google</h3>
+                                    <p class="text-sm text-slate-500 mb-3">Este archivo lista el inicio, el catálogo y cada producto para que se puedan indexar.</p>
+                                    <p class="text-sm font-bold text-indigo-700 break-all" x-text="sitemapUrl"></p>
+                                    <button type="button" @click="publishSitemap" class="mt-3 bg-slate-900 text-white text-xs font-black uppercase tracking-widest px-4 py-2 rounded-xl">Publicar sitemap</button>
                                 </div>
 
                                 <div class="flex justify-end pt-6 border-t border-slate-100">
@@ -468,6 +465,8 @@
                 },
                 logoFile: null, logoPreview: null,
                 aiPromptInput: '',
+                templates: window.WuepyPlatform.TEMPLATES,
+                hasSavedAi: false,
                 employees: [],
                 showAddEmployeeModal: false,
                 newEmployee: { name: '', email: '', password: '', role: 'cajero' },
@@ -522,6 +521,7 @@
                             };
 
                             this.aiPromptInput = this.site.aiPrompt || '';
+                            this.hasSavedAi = !!(this.site.aiPrompt || (this.site.aiGeneratedPages && this.site.aiGeneratedPages.length));
                             
                             if (this.site.logoUrl && !this.site.logoUrl.includes('placehold')) {
                                 this.logoPreview = this.site.logoUrl;
@@ -577,38 +577,71 @@
                     this.isSaving = false;
                 },
 
+                get sitemapUrl() {
+                    const host = WuepyPlatform.storeHost(this.site || this.formData);
+                    return host ? 'https://' + host + '/sitemap.xml' : '';
+                },
+
                 async updateDesignSettings() {
                     this.isSaving = true;
+                    const mode = this.formData.designMode;
                     try {
-                        const form = new FormData();
-                        form.append('currency', this.formData.currency);
-                        form.append('template', this.formData.template);
-                        form.append('primaryColor', this.formData.primaryColor);
-                        form.append('secondaryColor', this.formData.secondaryColor);
-                        form.append('designMode', this.formData.designMode); 
-                        
-                        if (this.logoFile) form.append('logo', this.logoFile);
-
-                        const response = await fetch(`${API_URL}/dashboard/site/${this.siteId}/update-design`, {
+                        const switched = await WuepyAPI.fetch(`/dashboard/site/${this.siteId}/switch-design`, {
                             method: 'POST',
-                            headers: { 'Authorization': `Bearer ${this.user.token}` },
-                            body: form
+                            body: JSON.stringify({
+                                designMode: mode,
+                                template: this.formData.template,
+                                primaryColor: this.formData.primaryColor,
+                                secondaryColor: this.formData.secondaryColor,
+                                currency: this.formData.currency,
+                                preserveAiPages: true
+                            })
                         });
 
-                        const data = await response.json();
-                        if(response.ok) {
-                            Swal.fire({ icon: 'success', title: 'Diseño Actualizado', timer: 2000, showConfirmButton: false });
-                            this.logoFile = null;
-                            await this.loadSiteData();
-                        } else {
-                            alert(data.message || 'Error al guardar el diseño.');
+                        if (mode === 'template' || !switched.ok) {
+                            const form = new FormData();
+                            form.append('currency', this.formData.currency);
+                            form.append('template', this.formData.template);
+                            form.append('primaryColor', this.formData.primaryColor);
+                            form.append('secondaryColor', this.formData.secondaryColor);
+                            form.append('designMode', mode);
+                            form.append('preserveAiPages', 'true');
+                            if (this.logoFile) form.append('logo', this.logoFile);
+                            if (mode === 'template') {
+                                const response = await fetch(`${API_URL}/dashboard/site/${this.siteId}/update-design`, {
+                                    method: 'POST',
+                                    headers: { 'Authorization': `Bearer ${this.user.token}` },
+                                    body: form
+                                });
+                                const data = await response.json();
+                                if (!response.ok) {
+                                    alert(data.message || 'Error al guardar el diseño.');
+                                    this.isSaving = false;
+                                    return;
+                                }
+                            }
                         }
-                    } catch (error) { alert('Error de red al subir la imagen.'); }
+
+                        localStorage.setItem('wuepy_mode_' + this.siteId, mode);
+                        Swal.fire({ icon: 'success', title: 'Diseño guardado', text: mode === 'ai_generated' ? 'La IA sigue disponible en esta cuenta.' : 'Plantilla activa. La IA quedó guardada por si querés volver.', timer: 2200, showConfirmButton: false });
+                        this.logoFile = null;
+                        await this.loadSiteData();
+                        if (localStorage.getItem('wuepy_mode_' + this.siteId) === 'ai_generated' && this.hasSavedAi) {
+                            this.formData.designMode = 'ai_generated';
+                        }
+                    } catch (error) { alert('Error de red al guardar el diseño.'); }
                     this.isSaving = false;
                 },
 
+                async publishSitemap() {
+                    const res = await WuepyAPI.fetch(`/dashboard/site/${this.siteId}/sitemap`, { method: 'POST', body: JSON.stringify({ publicUrl: this.sitemapUrl }) });
+                    Swal.fire({ icon: res.ok ? 'success' : 'info', title: res.ok ? 'Sitemap publicado' : 'Enlace listo', text: this.sitemapUrl });
+                },
+
                 async regenerateAi() {
-                    if(!confirm('¡ADVERTENCIA DE DESTRUCCIÓN!\n\nEsto borrará la arquitectura web actual y la IA generará una estructura totalmente nueva basándose en tu texto. \n\n¡Tranquilo! Tus productos y ventas no se verán afectados. ¿Quieres detonar el proceso?')) return;
+                    const gate = WuepyPlatform.canUseAi(Object.assign({}, this.site, { plan: this.site?.plan || 'basico' }), [this.site]);
+                    if (!gate.ok) { Swal.fire({ icon: 'info', title: 'Límite de IA', text: gate.reason }); return; }
+                    if(!confirm('La IA va a rearmar la web con tu texto. Productos y ventas no se borran. ¿Seguimos?')) return;
                     
                     this.isRegenerating = true;
                     try {
@@ -617,7 +650,10 @@
                         });
 
                         if(res.status === 200) {
-                            Swal.fire({ icon: 'success', title: '¡Mutación Completada!', text: 'El Orquestador ha forjado una web completamente nueva. Ve a mirarla.', confirmButtonColor: '#4f46e5' });
+                            WuepyPlatform.bumpAiUsage(this.siteId);
+                            this.formData.designMode = 'ai_generated';
+                            localStorage.setItem('wuepy_mode_' + this.siteId, 'ai_generated');
+                            Swal.fire({ icon: 'success', title: 'Web lista', text: 'El orquestador armó la tienda de nuevo. Podés volver a una plantilla sin perder este diseño.', confirmButtonColor: '#4f46e5' });
                             await this.loadSiteData();
                         } else {
                             Swal.fire({ icon: 'error', title: 'Fallo en la Matriz', text: res.data?.message || 'La IA no pudo regenerar el diseño.' });

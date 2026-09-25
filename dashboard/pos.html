@@ -399,7 +399,13 @@
                         const res = await WuepyAPI.fetch(`/dashboard/site/${siteId}/pos`);
                         if(res.status === 200) {
                             this.site = res.data.site;
-                            this.products = res.data.products || [];
+                            this.products = (res.data.products || []).map(p => ({
+                                ...p,
+                                _id: p._id || p.id,
+                                stock: (p.stock === undefined || p.stock === null || p.stock === '') ? 99 : Number(p.stock),
+                                price: Number(p.price || 0),
+                                imageUrl: p.imageUrl || (p.images && p.images[0]) || ''
+                            }));
                             this.deliveries = res.data.deliveries || [];
                         } else { alert('Error al cargar la caja.'); }
                     } catch(e) { alert('Error de conexión.'); }
@@ -496,20 +502,43 @@
                     if(confirm(mensaje)) {
                         this.isProcessing = true;
                         try {
+                            const siteId = this.siteId || this.site?._id;
+                            const items = this.cart.map(item => ({
+                                _id: item.isCustom ? null : item._id,
+                                productId: item.isCustom ? null : item._id,
+                                name: item.name,
+                                price: Number(item.price),
+                                quantity: Number(item.quantity),
+                                isCustom: !!item.isCustom,
+                                sku: item.sku || ''
+                            }));
                             const payload = {
-                                cartData: JSON.stringify(this.cart), totalAmount: this.total, paymentMethod: this.paymentMethod,
-                                saleChannel: this.isDelivery ? 'whatsapp' : 'pos', requiresDelivery: this.isDelivery ? 'on' : 'off',
-                                deliveryAddress: this.deliveryAddress, assignedDeliveryId: this.assignedDeliveryId, customerName: this.customerName,
-                                customerPhone: this.customerPhone, discount: this.discount, deliveryFee: this.deliveryFee
+                                cartData: JSON.stringify(items),
+                                items,
+                                totalAmount: Number(this.total),
+                                paymentMethod: this.paymentMethod,
+                                saleChannel: this.isDelivery ? 'whatsapp' : 'pos',
+                                requiresDelivery: this.isDelivery,
+                                deliveryAddress: this.deliveryAddress,
+                                assignedDeliveryId: this.assignedDeliveryId,
+                                customerName: this.customerName || 'Cliente ocasional',
+                                customerPhone: this.customerPhone || '',
+                                discount: Number(this.discount) || 0,
+                                deliveryFee: Number(this.deliveryFee) || 0,
+                                cashReceived: Number(this.cashReceived) || 0
                             };
-                            const res = await WuepyAPI.fetch(`/dashboard/site/${this.site._id}/pos/checkout`, {
+                            const res = await WuepyAPI.fetch(`/dashboard/site/${siteId}/pos/checkout`, {
                                 method: 'POST', body: JSON.stringify(payload)
                             });
-                            if(res.status === 200 || res.status === 201) {
-                                alert('✅ Venta registrada con éxito.');
-                                this.cart = []; this.isDelivery = false; // Reset simple
-                                await this.loadPOSData(this.site._id); // Recargar para actualizar stock visualmente
-                            } else { alert(res.data?.message || 'Error en checkout.'); }
+                            if(res.ok) {
+                                alert(res.data?.message || 'Venta registrada.');
+                                this.cart = [];
+                                this.isDelivery = false;
+                                this.cashReceived = '';
+                                this.discount = '';
+                                this.deliveryFee = '';
+                                await this.loadPOSData(siteId);
+                            } else { alert(res.data?.message || 'La venta no se registró.'); }
                         } catch(e) { alert('Error conectando al servidor.'); }
                         this.isProcessing = false;
                     }

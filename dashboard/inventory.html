@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="/js/api.js"></script>
+    <script src="/js/platform.js"></script>
     
     <style>
         [x-cloak] { display: none !important; }
@@ -342,6 +343,8 @@
 
                                     <div>
                                         <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Descripción Completa</label>
+                                        <input type="text" x-model="formData.shortHint" placeholder="Una frase corta: de qué se trata" class="w-full px-4 py-3 mb-2 bg-slate-50 border-2 border-slate-100 rounded-xl font-medium text-slate-700 outline-none">
+                                        <button type="button" @click="generateCopy" class="mb-2 text-xs font-black uppercase tracking-widest text-violet-700 bg-violet-50 border border-violet-100 px-3 py-2 rounded-lg">Generar con IA</button>
                                         <textarea name="description" x-model="formData.description" rows="4" placeholder="Describe los detalles, materiales, garantía..." class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl focus:ring-0 focus:bg-white focus:border-indigo-500 font-medium text-slate-700 transition outline-none resize-none"></textarea>
                                     </div>
                                 </div>
@@ -484,7 +487,7 @@
                 formData: {
                     name: '', category: '', sku: '', description: '',
                     price: '', compareAtPrice: '', stock: 1, lowStockThreshold: 5,
-                    isActive: 'true'
+                    isActive: 'true', shortHint: ''
                 },
 
                 get uniqueCategories() {
@@ -608,6 +611,20 @@
                     this.imagePreview = null;
                     const fileInput = document.getElementById('imageInput');
                     if(fileInput) fileInput.value = '';
+                },
+
+                async generateCopy() {
+                    if (!this.formData.name) { alert('Primero escribí el título del producto.'); return; }
+                    const hint = this.formData.shortHint || '';
+                    try {
+                        const res = await WuepyAPI.fetch(`/dashboard/site/${this.siteId}/products/ai-copy`, {
+                            method: 'POST',
+                            body: JSON.stringify({ title: this.formData.name, hint })
+                        });
+                        this.formData.description = (res.ok && (res.data.description || res.data.text)) || WuepyPlatform.draftProductCopy(this.formData.name, hint);
+                    } catch (e) {
+                        this.formData.description = WuepyPlatform.draftProductCopy(this.formData.name, hint);
+                    }
                 },
 
                 previewImage(event) {

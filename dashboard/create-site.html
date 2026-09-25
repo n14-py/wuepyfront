@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="/js/api.js"></script>
+    <script src="/js/platform.js"></script>
     
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
@@ -164,9 +165,10 @@
                                 <label class="block text-xs font-black text-slate-600 uppercase tracking-widest mb-2">Enlace de tu Tienda (Subdominio) <span class="text-red-500">*</span></label>
                                 <div class="flex relative rounded-xl shadow-sm border-2 border-slate-100 focus-within:border-indigo-500 transition-colors bg-slate-50 focus-within:bg-white overflow-hidden">
                                     <span class="inline-flex items-center px-4 rounded-l-xl border-r border-slate-200 bg-slate-100 text-slate-500 sm:text-sm font-bold">https://</span>
-                                    <input type="text" name="subdomain" x-model="formData.subdomain" @input="cleanSubdomain" placeholder="minegocio" required class="flex-1 block w-full min-w-0 px-4 py-4 sm:text-lg font-black text-indigo-600 outline-none bg-transparent">
+                                    <input type="text" name="subdomain" x-model="formData.subdomain" @input="onSubdomainInput" placeholder="minegocio" required class="flex-1 block w-full min-w-0 px-4 py-4 sm:text-lg font-black text-indigo-600 outline-none bg-transparent">
                                     <span class="inline-flex items-center px-4 rounded-r-xl border-l border-slate-200 bg-slate-100 text-slate-500 sm:text-sm font-bold">.wuepy.com</span>
                                 </div>
+                                <p class="text-xs font-bold mt-2" :class="slugOk ? 'text-emerald-600' : 'text-amber-600'" x-text="slugHint"></p>
                             </div>
 
                             <div class="relative" x-data="{ open: false }">
@@ -278,29 +280,17 @@
                                         <div>
                                             <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Elige tu Plantilla</label>
                                             <input type="hidden" name="template" :value="formData.template">
-                                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                                <label class="relative cursor-pointer group">
-                                                    <input type="radio" x-model="formData.template" value="template1" class="peer sr-only">
-                                                    <div class="border-2 border-slate-200 rounded-xl p-4 bg-white hover:bg-slate-50 transition peer-checked:border-indigo-500 peer-checked:bg-indigo-50">
-                                                        <div class="w-full h-24 bg-slate-200 rounded-lg mb-3 bg-cover bg-center" style="background-image: url('https://placehold.co/400x200?text=E-Commerce+Moderno');"></div>
-                                                        <h4 class="font-black text-slate-800 text-sm">Plantilla 1: Moderna</h4>
-                                                        <p class="text-[10px] text-slate-500 mt-1">E-Commerce completo, diseño claro y minimalista.</p>
-                                                    </div>
-                                                    <div class="absolute top-3 right-3 w-5 h-5 rounded-full border-2 border-slate-300 peer-checked:border-indigo-500 peer-checked:bg-indigo-500 flex items-center justify-center transition">
-                                                        <i class="fas fa-check text-white text-[10px] opacity-0 peer-checked:opacity-100"></i>
-                                                    </div>
-                                                </label>
-                                                <label class="relative cursor-pointer group">
-                                                    <input type="radio" x-model="formData.template" value="template2" class="peer sr-only">
-                                                    <div class="border-2 border-slate-200 rounded-xl p-4 bg-white hover:bg-slate-50 transition peer-checked:border-indigo-500 peer-checked:bg-indigo-50">
-                                                        <div class="w-full h-24 bg-slate-800 rounded-lg mb-3 bg-cover bg-center" style="background-image: url('https://placehold.co/400x200/1e293b/ffffff?text=Diseño+Oscuro');"></div>
-                                                        <h4 class="font-black text-slate-800 text-sm">Plantilla 2: Oscura</h4>
-                                                        <p class="text-[10px] text-slate-500 mt-1">Diseño agresivo y elegante, ideal para electrónica o motor.</p>
-                                                    </div>
-                                                    <div class="absolute top-3 right-3 w-5 h-5 rounded-full border-2 border-slate-300 peer-checked:border-indigo-500 peer-checked:bg-indigo-500 flex items-center justify-center transition">
-                                                        <i class="fas fa-check text-white text-[10px] opacity-0 peer-checked:opacity-100"></i>
-                                                    </div>
-                                                </label>
+                                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-80 overflow-y-auto pr-1">
+                                                <template x-for="tpl in templates" :key="tpl.id">
+                                                    <label class="relative cursor-pointer">
+                                                        <input type="radio" x-model="formData.template" :value="tpl.id" class="peer sr-only" @change="applyTemplateColors(tpl)">
+                                                        <div class="border-2 border-slate-200 rounded-xl p-4 bg-white transition peer-checked:border-indigo-500 peer-checked:bg-indigo-50">
+                                                            <div class="w-full h-16 rounded-lg mb-3" :style="'background: linear-gradient(135deg,' + tpl.primary + ',' + tpl.secondary + ')'"></div>
+                                                            <h4 class="font-black text-slate-800 text-sm" x-text="tpl.name"></h4>
+                                                            <p class="text-[10px] text-slate-500 mt-1" x-text="tpl.description"></p>
+                                                        </div>
+                                                    </label>
+                                                </template>
                                             </div>
                                         </div>
 
@@ -414,10 +404,13 @@
         document.addEventListener('alpine:init', () => {
             Alpine.data('siteWizard', () => ({
                 user: null,
+                sites: [],
                 step: 1,
                 imagePreview: null,
                 isLoading: false,
                 errorMsg: '',
+                slugTouched: false,
+                templates: window.WuepyPlatform.TEMPLATES,
 
                 isGenerating: false,
                 currentPhase: 0,
@@ -448,19 +441,33 @@
                     contactEmail: '', aiPrompt: ''
                 },
 
-                init() {
+                async init() {
                     this.user = WuepyAPI.getUser();
                     if(!this.user) { window.location.href = '/auth/login.html'; return; }
                     this.formData.contactEmail = this.user.email;
+                    try {
+                        const res = await WuepyAPI.fetch('/dashboard');
+                        this.sites = (res.data && res.data.sites) || [];
+                    } catch (e) { this.sites = []; }
+                },
+
+                get slugOk() { return WuepyPlatform.isValidSlug(this.formData.subdomain); },
+                get slugHint() {
+                    if (!this.formData.subdomain) return 'El enlace se arma con el nombre. Tiene que quedar algo como minegocio.wuepy.com.';
+                    return this.slugOk ? 'Tu tienda va a abrir en https://' + this.formData.subdomain + '.wuepy.com' : 'Usá solo letras y números, mínimo 3. No puede llamarse undefined.';
                 },
 
                 generateSubdomain() {
-                    if (this.step === 1 && !this.formData.subdomain) {
-                        this.formData.subdomain = this.formData.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, '');
-                    }
+                    if (this.slugTouched) return;
+                    this.formData.subdomain = WuepyPlatform.slugify(this.formData.name);
                 },
-                cleanSubdomain() {
-                    this.formData.subdomain = this.formData.subdomain.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, '');
+                onSubdomainInput() {
+                    this.slugTouched = true;
+                    this.formData.subdomain = WuepyPlatform.slugify(this.formData.subdomain);
+                },
+                applyTemplateColors(tpl) {
+                    this.formData.primaryColor = tpl.primary;
+                    this.formData.secondaryColor = tpl.secondary;
                 },
                 previewLogo(event) {
                     const file = event.target.files[0];
@@ -481,13 +488,32 @@
 
                 validateStep1() {
                     if(!this.formData.businessType) { Swal.fire({ icon: 'warning', title: 'Ups', text: 'Selecciona el Tipo de Negocio.' }); return false; }
-                    if(!this.formData.name || !this.formData.subdomain) { Swal.fire({ icon: 'warning', title: 'Ups', text: 'Nombre y subdominio obligatorios.' }); return false; }
+                    if (!this.slugTouched) this.formData.subdomain = WuepyPlatform.slugify(this.formData.name);
+                    if(!this.formData.name || !WuepyPlatform.isValidSlug(this.formData.subdomain)) {
+                        Swal.fire({ icon: 'warning', title: 'Enlace incompleto', text: 'Escribí el nombre del negocio. El enlace no puede quedar vacío ni llamarse undefined.' });
+                        return false;
+                    }
+                    return true;
+                },
+                validateStep2() {
+                    const gate = WuepyPlatform.canCreateSite(this.sites, this.formData.plan);
+                    if (!gate.ok) {
+                        Swal.fire({ icon: 'info', title: 'Límite del plan', text: 'El plan ' + gate.plan.name + ' permite ' + gate.max + ' tienda(s). Ya tenés ' + gate.count + '.' });
+                        return false;
+                    }
                     return true;
                 },
                 validateStep3() {
-                    if (this.formData.designMode === 'ai_generated' && this.formData.aiPrompt.trim() === '') {
-                        Swal.fire({ icon: 'warning', title: 'Falta tu idea', text: 'Por favor dile a la IA qué tipo de tienda quieres crear en el recuadro.' });
-                        return false;
+                    if (this.formData.designMode === 'ai_generated') {
+                        const plan = WuepyPlatform.PLANS[this.formData.plan];
+                        const aiSites = this.sites.filter(s => s.designMode === 'ai_generated').length;
+                        if (aiSites >= plan.aiSites) {
+                            Swal.fire({ icon: 'info', title: 'IA del plan', text: 'El plan ' + plan.name + ' permite ' + plan.aiSites + ' web con IA.' });
+                            return false;
+                        }
+                        if (this.formData.aiPrompt.trim() === '') {
+                            this.formData.aiPrompt = WuepyPlatform.buildAiPrompt(this.formData);
+                        }
                     }
                     return true;
                 },
@@ -499,6 +525,7 @@
                 nextStep() {
                     let valid = true;
                     if (this.step === 1) valid = this.validateStep1();
+                    if (this.step === 2) valid = this.validateStep2();
                     if (this.step === 3) valid = this.validateStep3();
                     if (valid) { window.scrollTo({ top: 0, behavior: 'smooth' }); this.step++; }
                 },
@@ -518,8 +545,37 @@
                     }
                     
                     try {
+                        const slug = WuepyPlatform.slugify(this.formData.subdomain || this.formData.name);
+                        if (!WuepyPlatform.isValidSlug(slug)) {
+                            this.isGenerating = false;
+                            this.isLoading = false;
+                            this.errorMsg = 'El enlace de la tienda no es válido.';
+                            return;
+                        }
+                        this.formData.subdomain = slug;
+                        if (this.formData.designMode === 'ai_generated') {
+                            this.formData.aiPrompt = WuepyPlatform.buildAiPrompt({
+                                name: this.formData.name,
+                                businessType: this.formData.businessType,
+                                primaryColor: this.formData.primaryColor,
+                                secondaryColor: this.formData.secondaryColor,
+                                idea: this.formData.aiPrompt
+                            });
+                        }
                         const formElement = document.getElementById('createSiteForm');
                         const formDataPayload = new FormData(formElement);
+                        formDataPayload.set('name', this.formData.name);
+                        formDataPayload.set('subdomain', slug);
+                        formDataPayload.set('businessType', this.formData.businessType);
+                        formDataPayload.set('plan', this.formData.plan);
+                        formDataPayload.set('designMode', this.formData.designMode);
+                        formDataPayload.set('template', this.formData.template || 'template1');
+                        formDataPayload.set('primaryColor', this.formData.primaryColor);
+                        formDataPayload.set('secondaryColor', this.formData.secondaryColor);
+                        formDataPayload.set('currency', this.formData.currency);
+                        formDataPayload.set('whatsapp', this.formData.whatsapp);
+                        formDataPayload.set('contactEmail', this.formData.contactEmail || '');
+                        formDataPayload.set('aiPrompt', this.formData.aiPrompt || '');
                         
                         const response = await fetch(`${API_URL}/dashboard/site/create`, {
                             method: 'POST',

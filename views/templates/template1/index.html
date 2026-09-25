@@ -319,10 +319,10 @@
                 async init() {
                     try {
                         const hostname = window.location.hostname;
-                        let subdomain = hostname.split('.')[0];
-                        
-                        if (hostname === 'localhost' || hostname === '127.0.0.1') {
-                            subdomain = 'demo'; 
+                        const qStore = new URLSearchParams(window.location.search).get('store');
+                        let subdomain = qStore || hostname.split('.')[0];
+                        if (!qStore && (!subdomain || subdomain === 'undefined' || subdomain === 'wuepy' || subdomain === 'www' || hostname === 'localhost' || hostname === '127.0.0.1')) {
+                            subdomain = 'demo';
                         }
 
                         // 1. CARGA A LA VELOCIDAD DE LA LUZ (Caché Local del Navegador)

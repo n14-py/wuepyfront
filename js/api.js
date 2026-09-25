@@ -195,45 +195,68 @@ const WuepyStoreEngine = {
     },
 
     // Inyector del Muro de Pago
-    injectPaymentWall(paymentAlias) {
+    injectPaymentWall(paymentAlias, site) {
         console.log("[Wuepy Engine] Bloqueo por falta de pago activado.");
-        
+        const alias = paymentAlias || (window.WuepyPlatform && WuepyPlatform.paymentAlias()) || 'wuepy.com';
+        const plan = (site && site.plan) || 'basico';
+        const prices = { basico: 30000, medio: 60000, profesional: 150000 };
+        const amount = prices[plan] || 30000;
+        const siteId = (site && (site._id || site.id)) || '';
+        const user = WuepyAPI.getUser();
+
         const wall = document.createElement('div');
         wall.className = "fixed inset-0 z-[99999] bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto";
         wall.innerHTML = `
-            <div class="bg-white rounded-[2rem] p-8 max-w-md w-full shadow-2xl border border-slate-200 text-center transform transition-all relative">
+            <div class="bg-white rounded-[2rem] p-8 max-w-md w-full shadow-2xl border border-slate-200 text-center relative my-8">
                 <div class="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-white shadow-lg absolute -top-10 left-1/2 -translate-x-1/2">
                     <i class="fas fa-lock text-3xl text-red-500"></i>
                 </div>
-                
-                <div class="pt-10">
-                    <h2 class="text-3xl font-black text-slate-900 mb-3">Sitio Suspendido</h2>
-                    <p class="text-slate-500 mb-8 font-medium leading-relaxed">Esta tienda se encuentra temporalmente inactiva por falta de pago o vencimiento de la prueba gratuita.</p>
-                    
-                    <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200 mb-8 relative overflow-hidden shadow-inner">
-                        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-red-600"></div>
-                        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Para reactivar, transfiere al Alias:</p>
-                        <p class="text-2xl font-black text-slate-800 tracking-wider bg-white py-2 px-4 rounded-xl border border-slate-200 inline-block">${paymentAlias || 'WUEPY.PAGOS'}</p>
+                <div class="pt-10 text-left">
+                    <h2 class="text-3xl font-black text-slate-900 mb-3 text-center">Esta tienda venció</h2>
+                    <p class="text-slate-500 mb-6 font-medium leading-relaxed text-center">La suscripción o la prueba gratis terminó. Transferí el plan y subí el comprobante acá mismo para reactivarla.</p>
+                    <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 mb-5 text-center">
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Alias SIPAP</p>
+                        <p class="text-2xl font-black text-slate-800 tracking-wider bg-white py-2 px-4 rounded-xl border border-slate-200 inline-block">${alias}</p>
+                        <p class="text-sm font-bold text-slate-600 mt-3">Monto del mes: ${amount.toLocaleString('es-PY')} Gs.</p>
                     </div>
-                    
-                    <div class="text-sm text-slate-500 mb-8 p-4 bg-blue-50 text-blue-800 rounded-xl border border-blue-100">
-                        <i class="fas fa-info-circle mr-1"></i> Si eres el dueño, ingresa a tu <strong>Panel de Control</strong> en Wuepy para subir tu comprobante de pago.
-                    </div>
-                    
-                    <div class="flex flex-col gap-3">
-                        <a href="https://wuepy.com/auth/login.html" class="inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 px-6 rounded-xl transition-colors w-full shadow-lg shadow-indigo-600/30">
-                            Ir al Panel de Control
-                        </a>
-                        <a href="https://wuepy.com" class="inline-block text-slate-500 font-bold py-3 px-6 rounded-xl transition-colors w-full hover:bg-slate-50">
-                            Conocer más sobre Wuepy
-                        </a>
-                    </div>
+                    ${user && user.token && siteId ? `
+                    <form id="wuepy-receipt-form" class="space-y-3 mb-4">
+                        <label class="block text-xs font-black text-slate-500 uppercase">Foto o PDF del comprobante</label>
+                        <input id="wuepy-receipt-file" type="file" accept="image/*,.pdf" required class="w-full text-sm">
+                        <p id="wuepy-receipt-msg" class="text-sm font-bold text-slate-500"></p>
+                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3.5 rounded-xl">Enviar comprobante</button>
+                    </form>` : `
+                    <a href="https://wuepy.com/auth/login.html" class="inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 px-6 rounded-xl w-full text-center mb-3">Ingresar y subir comprobante</a>`}
+                    <a href="https://wuepy.com/dashboard/billing.html?id=${siteId}" class="inline-block text-slate-500 font-bold py-3 px-6 rounded-xl w-full text-center hover:bg-slate-50">Abrir facturación en el panel</a>
                 </div>
             </div>
         `;
         
         document.body.appendChild(wall);
         document.body.style.overflow = 'hidden';
+        const form = wall.querySelector('#wuepy-receipt-form');
+        if (form && siteId) {
+            form.addEventListener('submit', async (ev) => {
+                ev.preventDefault();
+                const msg = wall.querySelector('#wuepy-receipt-msg');
+                const file = wall.querySelector('#wuepy-receipt-file').files[0];
+                if (!file) return;
+                msg.textContent = 'Subiendo a Cloudflare R2...';
+                const body = new FormData();
+                body.append('receiptImage', file);
+                body.append('siteId', siteId);
+                body.append('planRequested', plan);
+                body.append('amount', String(amount));
+                body.append('monthsPaid', '1');
+                body.append('aliasOrBankUsed', alias);
+                try {
+                    const res = await WuepyAPI.fetch('/dashboard/billing/upload-receipt', { method: 'POST', body });
+                    msg.textContent = res.ok ? 'Comprobante enviado. Lo revisamos y reactivamos la tienda.' : (res.data && res.data.message) || 'No se pudo enviar.';
+                } catch (err) {
+                    msg.textContent = 'Error de conexión al subir el archivo.';
+                }
+            });
+        }
         
         // Desenfoque extremo de todos los elementos hermanos
         const children = document.body.children;
@@ -291,7 +314,7 @@ const WuepyStoreEngine = {
 
         // 6. 🔥 EVALUACIÓN DE ESTADO FINANCIERO (MURO DE PAGO) 🔥
         if (data.needsPayment) {
-            this.injectPaymentWall(data.paymentAlias);
+            this.injectPaymentWall(data.paymentAlias, data.site);
         }
 
         return true;
