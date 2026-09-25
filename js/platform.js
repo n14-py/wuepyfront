@@ -50,16 +50,16 @@
     ];
 
     const BASES = [
-        ['template1', 'Moderna', 'Catálogo claro, ideal para ropa y retail.'],
-        ['template2', 'Oscura', 'Fondo oscuro para electrónica, motor o gaming.'],
-        ['template3', 'Boutique', 'Look editorial para moda y belleza.'],
-        ['template4', 'Mercado', 'Grilla de ofertas para supermercado y bodega.'],
-        ['template5', 'Servicios', 'Portada para consultorios, talleres y agencias.'],
-        ['template6', 'Gastronomía', 'Menú visual para restaurantes y lomiterías.'],
-        ['template7', 'Deportes', 'Bloques grandes para gimnasio y artículos sport.'],
-        ['template8', 'Inmobiliaria', 'Fichas amplias para propiedades y vehículos.'],
-        ['template9', 'Mayorista', 'Listado denso para fábrica y venta por volumen.'],
-        ['template10', 'Minimal', 'Mucho aire, tipografía grande, pocas distracciones.']
+        ['template1', 'Moderna', 'Fondo oscuro, letra geométrica y botones redondos.', '#4f46e5', '#0f172a'],
+        ['template2', 'Clara', 'Fondo blanco, letra Inter y botones pastilla.', '#2563eb', '#0f172a'],
+        ['template3', 'Editorial', 'Papel crema, letra serif y botones rectos.', '#1c1917', '#44403c'],
+        ['template4', 'Noche', 'Fondo negro, letra Syne y botones esmeralda.', '#10b981', '#022c22'],
+        ['template5', 'Arena', 'Fondo arena, letra clásica y botones ámbar.', '#b45309', '#78350f'],
+        ['template6', 'Bosque', 'Fondo verde oscuro y botones suaves.', '#86efac', '#052e16'],
+        ['template7', 'Papel', 'Fondo blanco, letra de diario y botones cuadrados.', '#111827', '#1f2937'],
+        ['template8', 'Terminal', 'Fondo negro, letra mono y botones lima.', '#a3e635', '#111827'],
+        ['template9', 'Pétalo', 'Fondo rosa claro y botones redondos.', '#be123c', '#4c0519'],
+        ['template10', 'Marea', 'Fondo celeste, letra ancha y botones amplios.', '#0369a1', '#0c4a6e']
     ];
 
     function buildTemplates() {
@@ -67,44 +67,11 @@
             id: b[0],
             name: b[1],
             description: b[2],
-            primary: PALETTES[i][0],
-            secondary: PALETTES[i][1],
-            tone: PALETTES[i][2],
+            primary: b[3],
+            secondary: b[4],
+            tone: b[1],
             base: b[0]
         }));
-        const extra = [
-            ['Atelier', 'Ropa editorial, fotos grandes y tipografía de revista.', '#111111', '#f4efe8'],
-            ['Pasarela', 'Ropa streetwear, alto contraste y grilla apretada.', '#0a0a0a', '#e11d48'],
-            ['Boutique', 'Ropa suave, mucho aire y detalles en crema.', '#7c5c45', '#faf6f1'],
-            ['Circuito', 'Electrónica oscura, fichas técnicas y neón.', '#22d3ee', '#020617'],
-            ['Vitrina', 'Electrónica clara, estilo showroom.', '#0f172a', '#f8fafc'],
-            ['Arcade', 'Gaming, bloques negros y acento eléctrico.', '#a3e635', '#09090b'],
-            ['Mesa', 'Restaurante, portada a sangre y carta.', '#b45309', '#1c1917'],
-            ['Horno', 'Panadería, tonos cálidos y vitrina de productos.', '#9a3412', '#fff7ed'],
-            ['Barra', 'Cafetería, layout editorial y menú corto.', '#44403c', '#f5f5f4'],
-            ['Bruma', 'Spa y belleza, curvas suaves y rosa polvo.', '#9d174d', '#fff1f2'],
-            ['Vanidad', 'Cosmética, lujo claro y tipografía fina.', '#a16207', '#fffbeb'],
-            ['Botica', 'Farmacia, limpieza clínica y confianza.', '#0f766e', '#f0fdfa'],
-            ['Casa', 'Muebles y deco, fotos amplias y neutros.', '#44403c', '#fafaf9'],
-            ['Góndola', 'Supermercado, categorías y precios a la vista.', '#15803d', '#f7fee7'],
-            ['Obra', 'Ferretería, bloques firmes y amarillo obra.', '#ca8a04', '#18181b'],
-            ['Llave', 'Inmobiliaria, fichas grandes y datos claros.', '#1d4ed8', '#f8fafc'],
-            ['Box', 'Taller y vehículos, metal oscuro.', '#f97316', '#18181b'],
-            ['Oro', 'Joyería, negro y dorado, piezas grandes.', '#d6b25e', '#0c0a09'],
-            ['Cancha', 'Deportes, energía y grilla de equipo.', '#16a34a', '#052e16'],
-            ['Bulto', 'Mayorista, tabla clara y compra por volumen.', '#1e3a8a', '#f8fafc']
-        ];
-        extra.forEach((row, n) => {
-            list.push({
-                id: 'template' + (11 + n),
-                name: row[0],
-                description: row[1],
-                primary: row[2],
-                secondary: row[3],
-                tone: row[0],
-                base: 'template' + (11 + n)
-            });
-        });
         return list;
     }
 

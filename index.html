@@ -568,7 +568,8 @@
                         } catch(e) {}
                     };
 
-                    const source = data.site.template || 'template1';
+                    let source = (data.site && data.site.template) || 'template1';
+                    if (!/^template([1-9]|10)$/.test(source)) source = 'template1';
                     let file = 'index.html';
                     if (isProductRoute) file = 'product.html?id=' + encodeURIComponent(productId || '');
                     else if (isSearchRoute) file = 'search.html' + (cleanQuery ? '?' + cleanQuery : '');
