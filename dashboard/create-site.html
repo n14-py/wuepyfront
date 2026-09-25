@@ -199,7 +199,7 @@
                         <div class="space-y-8">
                             <div x-show="accountPlanId" class="bg-indigo-50 border border-indigo-100 rounded-2xl p-6">
                                 <p class="text-xs font-black uppercase tracking-widest text-indigo-500 mb-2">Plan de la cuenta</p>
-                                <h3 class="text-2xl font-black text-slate-900" x-text="WuepyPlatform.PLANS[accountPlanId].name"></h3>
+                                <h3 class="text-2xl font-black text-slate-900" x-text="accountPlanId ? WuepyPlatform.PLANS[accountPlanId].name : ''"></h3>
                                 <p class="text-sm text-slate-600 font-medium mt-2">El plan se elige una sola vez para toda la cuenta. Esta tienda nueva entra en ese mismo plan. Si necesitás más tiendas, subí de plan en Facturación. Si más adelante bajás, las tiendas que se pasen del límite quedan bloqueadas.</p>
                             </div>
                             <div class="grid grid-cols-1 sm:grid-cols-3 gap-5" x-show="!accountPlanId">
