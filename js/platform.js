@@ -98,7 +98,16 @@
     function templatePreview(layout, primary, secondary) {
         const p = primary;
         const s = secondary;
-        const box = 'width:100%;height:188px;overflow:hidden;box-sizing:border-box;';
+        const box = 'width:100%;height:168px;overflow:hidden;box-sizing:border-box;';
+        if (layout === 'moderna') {
+            return '<div style="' + box + 'background:#0f172a;color:#e2e8f0;font-family:Space Grotesk,sans-serif;padding:8px">'
+                + '<div style="display:flex;justify-content:space-between;align-items:center;font-size:9px"><b>Tienda</b><span style="background:' + p + ';color:#fff;border-radius:999px;padding:2px 6px">WhatsApp</span></div>'
+                + '<div style="font-size:16px;font-weight:800;margin-top:10px">Tu tienda</div>'
+                + '<div style="margin-top:6px;display:inline-block;background:' + p + ';color:#fff;border-radius:10px;font-size:8px;padding:3px 7px">Ver catálogo</div>'
+                + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-top:10px">'
+                + [1,2,3].map(function () { return '<div style="background:#1e293b;border-radius:8px;overflow:hidden"><div style="height:28px;background:' + p + ';opacity:.8"></div><div style="font-size:7px;padding:2px">Gs.</div></div>'; }).join('')
+                + '</div></div>';
+        }
         if (layout === 'minimal') {
             return '<div style="' + box + 'background:#f8fafc;color:#0f172a;font-family:Plus Jakarta Sans,sans-serif">'
                 + '<div style="background:' + p + ';color:#fff;font-size:8px;padding:3px 8px">Envíos a todo el país</div>'
