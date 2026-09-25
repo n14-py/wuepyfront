@@ -312,12 +312,53 @@ const WuepyStoreEngine = {
             window.Alpine.initTree(document.body);
         }
 
+        this.enrichAiPage(data);
+
         // 6. 🔥 EVALUACIÓN DE ESTADO FINANCIERO (MURO DE PAGO) 🔥
         if (data.needsPayment) {
             this.injectPaymentWall(data.paymentAlias, data.site);
         }
 
         return true;
+    },
+
+    enrichAiPage(data) {
+        const site = data.site || {};
+        const name = site.name || 'Tienda';
+        const logo = site.logoUrl || '';
+        const about = (site.content && site.content.aboutText) || '';
+        const wa = (site.contact && (site.contact.whatsapp || site.contact.phone)) || '';
+        const address = (site.contact && site.contact.address) || '';
+
+        if (!document.querySelector('img') && logo) {
+            const bar = document.createElement('header');
+            bar.style.cssText = 'display:flex;align-items:center;gap:12px;padding:16px 24px;background:#fff;border-bottom:1px solid #e2e8f0';
+            bar.innerHTML = '<img src="' + logo + '" alt="' + name + '" style="height:48px;width:48px;object-fit:cover;border-radius:12px"><strong style="font-size:20px">' + name + '</strong>';
+            document.body.prepend(bar);
+        } else if (logo) {
+            document.querySelectorAll('img').forEach((img) => {
+                const src = img.getAttribute('src') || '';
+                if (!src || src.includes('placeholder') || src.includes('logo')) img.src = logo;
+            });
+        }
+
+        if (wa && !document.querySelector('a[href*="wa.me"]')) {
+            const btn = document.createElement('a');
+            btn.href = 'https://wa.me/' + String(wa).replace(/[^0-9]/g, '');
+            btn.target = '_blank';
+            btn.textContent = 'Escribir por WhatsApp';
+            btn.style.cssText = 'position:fixed;right:16px;bottom:16px;z-index:9999;background:#16a34a;color:#fff;padding:14px 18px;border-radius:999px;font-weight:800;text-decoration:none';
+            document.body.appendChild(btn);
+        }
+
+        const text = (document.body.innerText || '').trim();
+        if (text.length < 180) {
+            const block = document.createElement('section');
+            block.style.cssText = 'max-width:960px;margin:32px auto;padding:24px;font-family:Inter,sans-serif';
+            block.innerHTML = '<h2 style="font-size:32px;margin:0 0 12px">' + name + '</h2><p style="font-size:18px;line-height:1.6;color:#334155">' + (about || 'Catálogo online con atención por WhatsApp en Paraguay.') + '</p>' + (address ? '<p style="margin-top:8px;color:#64748b">' + address + '</p>' : '') + '<div id="wuepy-dynamic-products" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;margin-top:24px"></div>';
+            document.body.appendChild(block);
+            if (data.products) this.injectDynamicProducts(data.products, site.primaryColor || '#4f46e5');
+        }
     }
 };
 

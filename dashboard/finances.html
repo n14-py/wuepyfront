@@ -266,7 +266,8 @@
             Alpine.data('financesApp', () => ({
                 user: null, siteId: null, site: null,
                 isLoading: true, isSaving: false,
-                transactions: [], 
+                transactions: [],
+                allTransactions: [], 
                 summary: { income: 0, expense: 0, net: 0 },
                 period: 'month',
                 showExpenseModal: false,
@@ -302,8 +303,39 @@
                         const res = await WuepyAPI.fetch(`/dashboard/site/${this.siteId}/finances?period=${this.period}`);
                         if (res.status === 200 || res.status === 201) {
                             this.site = res.data.site;
-                            this.transactions = res.data.transactions || [];
-                            this.calculateSummary();
+                            const sales = res.data.recentSales || res.data.sales || [];
+                            const expenses = res.data.recentExpenses || res.data.expenses || [];
+                            const fromApi = res.data.transactions || [];
+                            const mapped = [
+                                ...sales.map(s => ({
+                                    id: s._id,
+                                    type: 'income',
+                                    amount: Number(s.totalAmount) || 0,
+                                    date: s.createdAt,
+                                    description: (s.items && s.items[0] && s.items[0].name) ? ('Venta: ' + s.items.map(i => i.name).slice(0, 3).join(', ')) : 'Venta en caja',
+                                    category: s.saleChannel === 'pos' ? 'POS' : (s.saleChannel || 'Venta'),
+                                    reference: s.paymentMethod || s._id
+                                })),
+                                ...expenses.map(e => ({
+                                    id: e._id,
+                                    type: 'expense',
+                                    amount: Number(e.amount) || 0,
+                                    date: e.date || e.createdAt,
+                                    description: e.description || 'Gasto',
+                                    category: e.category || 'Gasto',
+                                    reference: 'Egreso'
+                                })),
+                                ...fromApi
+                            ];
+                            this.allTransactions = mapped;
+                            this.applyPeriod();
+                            if (!mapped.length && res.data.stats) {
+                                this.summary = {
+                                    income: Number(res.data.stats.monthlyTotal) || 0,
+                                    expense: Number(res.data.stats.monthlyExpenses) || 0,
+                                    net: (Number(res.data.stats.monthlyTotal) || 0) - (Number(res.data.stats.monthlyExpenses) || 0)
+                                };
+                            }
                         } else {
                             console.warn("Respuesta no exitosa al cargar finanzas:", res.data);
                             this.transactions = [];
@@ -321,7 +353,20 @@
 
                 setFilter(newPeriod) {
                     this.period = newPeriod;
-                    this.loadData();
+                    this.applyPeriod();
+                },
+
+                applyPeriod() {
+                    const now = new Date();
+                    const list = this.allTransactions || [];
+                    this.transactions = list.filter(t => {
+                        if (this.period === 'all' || !t.date) return true;
+                        const d = new Date(t.date);
+                        if (this.period === 'today') return d.toDateString() === now.toDateString();
+                        if (this.period === 'week') return (now - d) <= 7 * 86400000;
+                        return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+                    }).sort((a, b) => new Date(b.date) - new Date(a.date));
+                    this.calculateSummary();
                 },
 
                 calculateSummary() {
@@ -356,7 +401,7 @@
                             category: this.expenseData.category,
                             reference: 'Manual'
                         };
-                        const res = await WuepyAPI.fetch(`/dashboard/site/${this.siteId}/finances/transaction`, {
+                        const res = await WuepyAPI.fetch(`/dashboard/site/${this.siteId}/expenses/add`, {
                             method: 'POST', body: JSON.stringify(payload)
                         });
 

@@ -121,7 +121,13 @@
             <template x-if="!isLoading && sites.length > 0">
                 <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
                     <template x-for="site in sites" :key="site._id">
-                        <div class="bg-white rounded-[2rem] shadow-sm border border-slate-200 flex flex-col hover-card relative group overflow-hidden">
+                        <div class="bg-white rounded-[2rem] shadow-sm border border-slate-200 flex flex-col hover-card relative group overflow-hidden" :class="isBlocked(site) ? 'opacity-70' : ''">
+                            <div x-show="isBlocked(site)" class="absolute inset-0 z-20 bg-white/80 flex flex-col items-center justify-center text-center p-6">
+                                <i class="fas fa-lock text-3xl text-red-500 mb-3"></i>
+                                <p class="font-black text-slate-900">Bloqueada por el plan</p>
+                                <p class="text-sm text-slate-500 font-medium mt-1">Tu cuenta volvió a un plan con menos tiendas. Subí de plan para reabrir esta web.</p>
+                                <a :href="'/dashboard/billing.html?id=' + site._id" class="mt-4 bg-indigo-600 text-white text-xs font-black uppercase tracking-widest px-4 py-2 rounded-xl">Cambiar plan</a>
+                            </div>
                             
                             <div class="absolute top-5 right-5 z-10">
                                 <template x-if="site.subscriptionStatus === 'active'">
@@ -286,6 +292,7 @@
                 user: null, sites: [], isLoading: true, showApoyaModal: false,
                 storeHost(site) { return WuepyPlatform.storeHost(site); },
                 storeUrl(site) { return WuepyPlatform.storeUrl(site); },
+                isBlocked(site) { return WuepyPlatform.siteBlocked(site, this.sites, this.user); },
                 async init() {
                     this.user = WuepyAPI.getUser();
                     if (!this.user) { window.location.href = '/auth/login.html'; return; }

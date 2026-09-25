@@ -327,13 +327,6 @@
                                     </div>
                                 </div>
 
-                                <div class="bg-slate-50 border border-slate-200 rounded-2xl p-5 mt-6">
-                                    <h3 class="font-black text-slate-900 mb-1">Sitemap para Google</h3>
-                                    <p class="text-sm text-slate-500 mb-3">Este archivo lista el inicio, el catálogo y cada producto para que se puedan indexar.</p>
-                                    <p class="text-sm font-bold text-indigo-700 break-all" x-text="sitemapUrl"></p>
-                                    <button type="button" @click="publishSitemap" class="mt-3 bg-slate-900 text-white text-xs font-black uppercase tracking-widest px-4 py-2 rounded-xl">Publicar sitemap</button>
-                                </div>
-
                                 <div class="flex justify-end pt-6 border-t border-slate-100">
                                     <button type="submit" :disabled="isSaving" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-black shadow-lg shadow-blue-600/30 transition transform active:scale-95 disabled:opacity-70 flex items-center gap-2 uppercase tracking-widest text-sm">
                                         <i class="fas" :class="isSaving ? 'fa-spinner fa-spin' : 'fa-save'"></i> Guardar Diseño
