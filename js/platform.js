@@ -72,21 +72,19 @@
             tone: PALETTES[i][2],
             base: b[0]
         }));
-        // 20 variantes: dos vueltas de color sobre las 10 bases.
-        for (let n = 0; n < 20; n++) {
-            const base = BASES[n % 10];
-            const pal = PALETTES[(n + 3) % 10];
-            const id = 'template' + (11 + n);
+        const extra = ['Revista','Brutal','Terminal','Menú','Lujo','Feria','Cancha','Spa','Almacén','Propiedades','Neón','Diario','Panadería','Clínica','Taller','Infantil','Joyería','Pizarra','Mayorista','Cine'];
+        extra.forEach((name, n) => {
+            const pal = PALETTES[n % PALETTES.length];
             list.push({
-                id,
-                name: base[1] + ' ' + pal[2],
-                description: base[2] + ' Paleta ' + pal[2].toLowerCase() + '.',
+                id: 'template' + (11 + n),
+                name: name,
+                description: 'Maquetación propia: ' + name.toLowerCase() + '. No es un cambio de color de la misma web.',
                 primary: pal[0],
                 secondary: pal[1],
                 tone: pal[2],
-                base: base[0]
+                base: 'template' + (11 + n)
             });
-        }
+        });
         return list;
     }
 
@@ -174,7 +172,8 @@
             'Páginas obligatorias: inicio, catálogo, ficha de producto, contacto.',
             'Bloques: hero con título, texto de quiénes somos, grilla de productos en #wuepy-dynamic-products, ficha en #wuepy-dynamic-product-detail, WhatsApp de ventas, pie con dirección.',
             'Tono: español de Paraguay, frases cortas, sin lorem ipsum.',
-            'Idea del dueño: ' + (b.idea || 'Tienda clara para vender por WhatsApp.')
+            'Idea del dueño: ' + (b.idea || 'Tienda clara para vender por WhatsApp.') + '.',
+            'La página no puede verse vacía. Incluí logo de la marca, hero con foto, texto de quiénes somos, beneficios, catálogo con el id wuepy-dynamic-products, ficha con el id wuepy-dynamic-product-detail, preguntas frecuentes, horarios, dirección, WhatsApp visible y pie con redes. Usá imágenes de https://images.unsplash.com relacionadas al rubro si no hay logo. Textos reales en español, nada de lorem ipsum ni secciones en blanco.'
         ].join(' ');
     }
 
@@ -190,10 +189,38 @@
         return 'wuepy.com';
     }
 
+    function accountPlanId(sites, user) {
+        if (user && user.plan && PLANS[user.plan]) return user.plan;
+        try {
+            const saved = localStorage.getItem('wuepy_account_plan');
+            if (saved && PLANS[saved]) return saved;
+        } catch (e) {}
+        const first = (sites || []).find(s => s && PLANS[s.plan]);
+        return first ? first.plan : null;
+    }
+
+    function setAccountPlan(planId) {
+        if (!PLANS[planId]) return;
+        localStorage.setItem('wuepy_account_plan', planId);
+    }
+
+    function orderedSites(sites) {
+        return (sites || []).slice().sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
+    }
+
+    function siteBlocked(site, sites, user) {
+        const planId = accountPlanId(sites, user) || 'basico';
+        const max = (PLANS[planId] || PLANS.basico).maxSites;
+        const ordered = orderedSites(sites);
+        const index = ordered.findIndex(s => (s._id || s.id) === (site._id || site.id));
+        return index >= max;
+    }
+
     window.WuepyPlatform = {
         PLANS, TEMPLATES, PALETTES,
         slugify, isValidSlug, storeHost, storeUrl,
         highestPlan, canCreateSite, canUseAi, bumpAiUsage, aiUpdatesUsed,
-        buildAiPrompt, draftProductCopy, paymentAlias
+        buildAiPrompt, draftProductCopy, paymentAlias,
+        accountPlanId, setAccountPlan, siteBlocked, orderedSites
     };
 })();
