@@ -8,6 +8,7 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="/js/api.js"></script>
+    <script src="/js/platform.js"></script>
     <style>
         .hover-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .hover-card:hover { 
@@ -154,9 +155,10 @@
                                     </div>
                                     <div class="flex-1 min-w-0">
                                         <h3 class="text-2xl font-black text-slate-900 truncate leading-tight mb-2" x-text="site.name"></h3>
-                                        <a :href="'https://' + site.subdomain + '.wuepy.com'" target="_blank" class="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:text-white hover:bg-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg font-bold transition border border-blue-100 hover:border-blue-600">
-                                            <span x-text="site.subdomain + '.wuepy.com'"></span> <i class="fas fa-external-link-alt text-[10px]"></i>
+                                        <a :href="storeUrl(site)" target="_blank" class="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:text-white hover:bg-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg font-bold transition border border-blue-100 hover:border-blue-600" x-show="storeUrl(site)">
+                                            <span x-text="storeHost(site)"></span> <i class="fas fa-external-link-alt text-[10px]"></i>
                                         </a>
+                                        <p x-show="!storeUrl(site)" class="text-xs font-bold text-amber-600">Falta el enlace. Entrá a ajustes y guardá el subdominio.</p>
                                     </div>
                                 </div>
                             </div>
@@ -251,7 +253,7 @@
                             <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Selecciona tu Tienda</label>
                             <select name="siteId" required class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl focus:border-indigo-500 font-bold text-slate-800 outline-none">
                                 <template x-for="site in sites" :key="site._id">
-                                    <option :value="site._id" x-text="site.name + ' (' + site.subdomain + ')'"></option>
+                                    <option :value="site._id" x-text="site.name + (storeHost(site) ? ' (' + storeHost(site) + ')' : '')"></option>
                                 </template>
                             </select>
                         </div>
@@ -282,6 +284,8 @@
         document.addEventListener('alpine:init', () => {
             Alpine.data('dashboardSetup', () => ({
                 user: null, sites: [], isLoading: true, showApoyaModal: false,
+                storeHost(site) { return WuepyPlatform.storeHost(site); },
+                storeUrl(site) { return WuepyPlatform.storeUrl(site); },
                 async init() {
                     this.user = WuepyAPI.getUser();
                     if (!this.user) { window.location.href = '/auth/login.html'; return; }

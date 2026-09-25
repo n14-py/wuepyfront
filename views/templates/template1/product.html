@@ -322,10 +322,11 @@
                         }
 
                         const hostname = window.location.hostname;
-                        let subdomain = hostname.split('.')[0];
+                        const qStore = new URLSearchParams(window.location.search).get('store');
+                        let subdomain = qStore || hostname.split('.')[0];
                         
-                        if (hostname === 'localhost' || hostname === '127.0.0.1') {
-                            subdomain = 'demo'; // Cambia esto en pruebas locales por tu subdominio real
+                        if (!qStore && (hostname === 'localhost' || hostname === '127.0.0.1' || subdomain === 'undefined' || subdomain === 'wuepy')) {
+                            subdomain = 'demo';
                         }
 
                         const res = await fetch(`${window.API_URL || 'https://wuepyback.onrender.com/api'}/store/public/${subdomain}`);

@@ -14,6 +14,7 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js"></script>
     
     <script src="/js/api.js"></script>
+    <script src="/js/platform.js"></script>
     <script>
         const _hostname = window.location.hostname;
         const _mainDomain = 'wuepy.com'; 
@@ -63,6 +64,7 @@
                 
                 <div class="hidden md:flex items-center gap-8 bg-white/50 px-6 py-2.5 rounded-full border border-slate-200 shadow-sm">
                     <a href="#como-funciona" class="text-sm font-bold text-slate-600 hover:text-indigo-600 transition">¿Cómo funciona?</a>
+                    <a href="/nosotros.html" class="text-sm font-bold text-slate-600 hover:text-indigo-600 transition">Quiénes somos</a>
                     <a href="#planes" class="text-sm font-bold text-slate-600 hover:text-indigo-600 transition">Planes en Gs.</a>
                     <a href="#invita" class="text-sm font-bold text-blue-600 hover:text-blue-700 transition"><i class="fas fa-gift mr-1"></i> Invita y Gana</a>
                     <a href="#apoyo" class="text-sm font-bold text-emerald-600 hover:text-emerald-700 transition"><i class="fas fa-seedling mr-1"></i> Wuepy Apoya</a>
@@ -84,6 +86,7 @@
         <div x-show="mobileMenuOpen" x-collapse class="md:hidden bg-white border-b border-slate-200 shadow-xl absolute w-full">
             <div class="px-4 pt-2 pb-6 space-y-2 flex flex-col">
                 <a href="#como-funciona" @click="mobileMenuOpen = false" class="block px-3 py-3 rounded-md text-base font-bold text-slate-700 hover:bg-slate-50">¿Cómo funciona?</a>
+                <a href="/nosotros.html" class="block px-3 py-3 rounded-md text-base font-bold text-slate-700 hover:bg-slate-50">Quiénes somos</a>
                 <a href="#planes" @click="mobileMenuOpen = false" class="block px-3 py-3 rounded-md text-base font-bold text-slate-700 hover:bg-slate-50">Ver Precios</a>
                 <a href="/auth/login.html" class="block px-3 py-3 rounded-md text-base font-bold text-slate-700 hover:bg-slate-50">Iniciar Sesión</a>
                 <a href="/auth/register.html" class="block px-3 py-3 mt-4 rounded-xl text-base font-bold text-white bg-indigo-600 text-center shadow-lg">Crear mi Tienda Gratis</a>
@@ -166,6 +169,42 @@
         </div>
     </section>
 
+    <section id="que-es" class="py-24 bg-white border-t border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div data-aos="fade-up">
+                    <p class="text-xs font-black uppercase tracking-widest text-indigo-600 mb-3">Quiénes somos</p>
+                    <h2 class="text-3xl md:text-5xl font-black text-slate-900 mb-4">Wuepy es la tienda online de cualquier negocio paraguayo.</h2>
+                    <p class="text-lg text-slate-500 font-medium leading-relaxed mb-4">No hace falta saber programar. Creás tu cuenta, elegís una plantilla o le pedís a la IA un diseño, cargás productos y compartís tu link. Los pedidos llegan a tu WhatsApp y a la caja del panel.</p>
+                    <p class="text-lg text-slate-500 font-medium leading-relaxed mb-8">Detrás está LFAFTECH, en Paraguay. La historia, la misión y el plan para un marketplace local están en la página de nosotros.</p>
+                    <a href="/nosotros.html" class="inline-flex items-center gap-2 bg-slate-900 text-white font-black px-6 py-3 rounded-xl">Conocer a Wuepy <i class="fas fa-arrow-right"></i></a>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="bg-slate-50 border border-slate-200 rounded-2xl p-6">
+                        <i class="fas fa-store text-indigo-600 text-2xl mb-3"></i>
+                        <h3 class="font-black text-slate-900 mb-1">Tu subdominio</h3>
+                        <p class="text-sm text-slate-500 font-medium">Cada tienda vive en un nombre claro, por ejemplo minegocio.wuepy.com. Nunca un enlace vacío.</p>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-200 rounded-2xl p-6">
+                        <i class="fas fa-magic text-indigo-600 text-2xl mb-3"></i>
+                        <h3 class="font-black text-slate-900 mb-1">IA o plantilla</h3>
+                        <p class="text-sm text-slate-500 font-medium">Podés pasar de la IA a una plantilla y volver. El diseño anterior queda guardado en la cuenta.</p>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-200 rounded-2xl p-6">
+                        <i class="fas fa-cash-register text-indigo-600 text-2xl mb-3"></i>
+                        <h3 class="font-black text-slate-900 mb-1">Caja y stock</h3>
+                        <p class="text-sm text-slate-500 font-medium">El POS registra la venta, descuenta stock y la muestra en finanzas el mismo día.</p>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-200 rounded-2xl p-6">
+                        <i class="fas fa-sitemap text-indigo-600 text-2xl mb-3"></i>
+                        <h3 class="font-black text-slate-900 mb-1">Google</h3>
+                        <p class="text-sm text-slate-500 font-medium">Cada tienda publica sitemap.xml y robots.txt para que el catálogo se pueda indexar.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <section id="planes" class="py-24 bg-slate-50 border-t border-slate-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center max-w-3xl mx-auto mb-16" data-aos="fade-up">
@@ -198,7 +237,7 @@
                             </li>
                             <li class="flex items-start gap-3">
                                 <i class="fas fa-check-circle text-emerald-500 mt-0.5"></i>
-                                <span class="text-slate-700 text-sm font-medium">Plantillas de Diseño Clásicas</span>
+                                <span class="text-slate-700 text-sm font-medium">30 plantillas y 1 web con IA</span>
                             </li>
                             <li class="flex items-start gap-3">
                                 <i class="fas fa-check-circle text-emerald-500 mt-0.5"></i>
@@ -235,7 +274,7 @@
                                 </li>
                                 <li class="flex items-start gap-3">
                                     <i class="fas fa-magic text-emerald-400 mt-0.5"></i>
-                                    <span class="text-white text-sm font-bold">Diseño Web con Inteligencia Artificial</span>
+                                    <span class="text-white text-sm font-bold">IA: hasta 5 actualizaciones al mes</span>
                                 </li>
                                 <li class="flex items-start gap-3">
                                     <i class="fas fa-check-circle text-emerald-400 mt-0.5"></i>
@@ -268,7 +307,7 @@
                         <ul class="space-y-3">
                             <li class="flex items-start gap-3">
                                 <i class="fas fa-check-circle text-blue-400 mt-0.5"></i>
-                                <span class="text-slate-200 text-sm font-bold">Hasta 10 Tiendas Online Independientes</span>
+                                <span class="text-slate-200 text-sm font-bold">Tiendas e IA casi ilimitadas</span>
                             </li>
                             <li class="flex items-start gap-3">
                                 <i class="fas fa-check-circle text-blue-400 mt-0.5"></i>
@@ -371,7 +410,8 @@
                 <div>
                     <h4 class="font-bold text-slate-900 uppercase tracking-widest text-xs mb-6">Nosotros</h4>
                     <ul class="space-y-4">
-                        <li><a href="/nosotros.html" class="text-sm font-medium text-slate-500 hover:text-indigo-600 transition">Nuestra Misión y Visión</a></li>
+                        <li><a href="/nosotros.html" class="text-sm font-medium text-slate-500 hover:text-indigo-600 transition">Quiénes somos</a></li>
+                        <li><a href="/sitemap.xml" class="text-sm font-medium text-slate-500 hover:text-indigo-600 transition">Mapa del sitio</a></li>
                         <li><a href="/terminos.html" class="text-sm font-medium text-slate-500 hover:text-indigo-600 transition">Términos y Condiciones</a></li>
                         <li><a href="/wuepy-apoya.html" class="text-sm font-medium text-emerald-600 hover:text-emerald-700 transition">Wuepy Apoya</a></li>
                     </ul>
@@ -404,6 +444,7 @@
             const subdomain = _hostname.split('.')[0];
             const storeView = document.getElementById('store-view');
             storeView.style.display = 'block';
+            const badSlug = !subdomain || subdomain === 'undefined' || subdomain === 'null' || subdomain === 'www';
 
             let currentPath = window.location.pathname;
             let isProductRoute = currentPath.startsWith('/p/');
@@ -425,6 +466,34 @@
                     <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-indigo-500"></div>
                 </div>
             `;
+
+            if (badSlug) {
+                storeView.innerHTML = '<div class="h-screen flex items-center justify-center bg-slate-50 text-slate-700 font-bold px-6 text-center">Esta tienda no tiene un enlace válido. Volvé al panel y elegí un subdominio.</div>';
+                return;
+            }
+
+            if (currentPath === '/sitemap.xml' || currentPath === '/robots.txt') {
+                try {
+                    const mapRes = await fetch(`${window.API_URL}/store/public/${subdomain}/sitemap?_t=${Date.now()}`);
+                    const mapData = await mapRes.json();
+                    const origin = window.location.origin;
+                    const urls = (mapData.urls && mapData.urls.length) ? mapData.urls : [origin + '/'];
+                    if (currentPath === '/robots.txt') {
+                        document.open();
+                        document.write('User-agent: *\nAllow: /\nSitemap: ' + origin + '/sitemap.xml\n');
+                        document.close();
+                        return;
+                    }
+                    const xml = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
+                        urls.map((u) => '<url><loc>' + u + '</loc></url>').join('\n') + '\n</urlset>';
+                    document.open();
+                    document.write(xml);
+                    document.close();
+                } catch (err) {
+                    storeView.innerHTML = '<p class="p-8">No se pudo armar el sitemap.</p>';
+                }
+                return;
+            }
 
             try {
                 let endpoint = '';
@@ -487,8 +556,11 @@
                     const currentSearch = window.location.search;
                     const queryJoiner = currentSearch ? '&' : '?';
                     
-                    iframe.src = `/views/templates/${source}${currentPath}${currentSearch}${queryJoiner}_t=${timestamp}`;
+                    iframe.src = `/views/templates/${source}${currentPath}${currentSearch}${queryJoiner}store=${encodeURIComponent(subdomain)}&_t=${timestamp}`;
                     storeView.appendChild(iframe);
+                    if (data.needsPayment && window.WuepyStoreEngine) {
+                        window.WuepyStoreEngine.injectPaymentWall(data.paymentAlias, data.site);
+                    }
                 }
 
             } catch (error) {
