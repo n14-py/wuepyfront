@@ -50,29 +50,29 @@
     ];
 
     const BASES = [
-        ['template1', 'Moderna', 'Fondo oscuro, letra geométrica y botones redondos.', '#4f46e5', '#0f172a'],
-        ['template2', 'Clara', 'Fondo blanco, letra Inter y botones pastilla.', '#2563eb', '#0f172a'],
-        ['template3', 'Editorial', 'Papel crema, letra serif y botones rectos.', '#1c1917', '#44403c'],
-        ['template4', 'Noche', 'Fondo negro, letra Syne y botones esmeralda.', '#10b981', '#022c22'],
-        ['template5', 'Arena', 'Fondo arena, letra clásica y botones ámbar.', '#b45309', '#78350f'],
-        ['template6', 'Bosque', 'Fondo verde oscuro y botones suaves.', '#86efac', '#052e16'],
-        ['template7', 'Papel', 'Fondo blanco, letra de diario y botones cuadrados.', '#111827', '#1f2937'],
-        ['template8', 'Terminal', 'Fondo negro, letra mono y botones lima.', '#a3e635', '#111827'],
-        ['template9', 'Pétalo', 'Fondo rosa claro y botones redondos.', '#be123c', '#4c0519'],
-        ['template10', 'Marea', 'Fondo celeste, letra ancha y botones amplios.', '#0369a1', '#0c4a6e']
+        ['template1', 'Moderna', 'Oscura, geométrica, con catálogo en grilla.', '#4f46e5', '#0f172a', 'moderna'],
+        ['template2', 'Clara', 'Blanca, barra de anuncios y tarjetas clásicas.', '#3b82f6', '#1e293b', 'minimal'],
+        ['template3', 'Urbana', 'Amarillo y negro, bordes gruesos y sombra dura.', '#facc15', '#000000', 'brutal'],
+        ['template4', 'Boutique', 'Rosa, papel crema y títulos en serif.', '#f9a8d4', '#334155', 'boutique'],
+        ['template5', 'Terminal', 'Negro, letra mono y verde neón.', '#22c55e', '#0a0a0a', 'terminal'],
+        ['template6', 'Glamour', 'Rosa fuerte, letra script y fichas redondas.', '#ec4899', '#1f2937', 'glam'],
+        ['template7', 'Gourmet', 'Hero a pantalla completa y letra de restaurante.', '#ea580c', '#292524', 'gourmet'],
+        ['template8', 'Studio', 'Mucho blanco, foto grande y botones finos.', '#a8a29e', '#1c1917', 'studio'],
+        ['template9', 'Power', 'Rojo, títulos condensados y botones inclinados.', '#ef4444', '#111827', 'power'],
+        ['template10', 'Feria', 'Puestos de mercado, sellos y filas, no una grilla.', '#e11d48', '#431407', 'feria']
     ];
 
     const LOOKS = {
         template1: { page: '#0f172a', ink: '#e2e8f0', nav: 'rgba(15,23,42,.9)', btn: '999px', font: 'Space Grotesk, sans-serif' },
-        template2: { page: '#ffffff', ink: '#0f172a', nav: '#ffffff', btn: '999px', font: 'Inter, sans-serif' },
-        template3: { page: '#f6f1e8', ink: '#1c1917', nav: '#f6f1e8', btn: '0px', font: 'Fraunces, Georgia, serif' },
-        template4: { page: '#030712', ink: '#e5e7eb', nav: '#030712', btn: '12px', font: 'Syne, sans-serif' },
-        template5: { page: '#faf6f1', ink: '#44403c', nav: '#faf6f1', btn: '8px', font: 'Literata, Georgia, serif' },
-        template6: { page: '#052e16', ink: '#ecfdf5', nav: '#052e16', btn: '18px', font: 'Outfit, sans-serif' },
-        template7: { page: '#ffffff', ink: '#111827', nav: '#ffffff', btn: '0px', font: 'Newsreader, Georgia, serif' },
-        template8: { page: '#09090b', ink: '#f4f4f5', nav: '#09090b', btn: '0px', font: 'IBM Plex Mono, monospace' },
-        template9: { page: '#fff1f2', ink: '#4c0519', nav: '#fff1f2', btn: '999px', font: 'Nunito, sans-serif' },
-        template10: { page: '#f0f9ff', ink: '#0c4a6e', nav: '#f0f9ff', btn: '20px', font: 'Manrope, sans-serif' }
+        template2: { page: '#f8fafc', ink: '#1e293b', nav: '#ffffff', btn: '6px', font: 'Plus Jakarta Sans, sans-serif' },
+        template3: { page: '#facc15', ink: '#000000', nav: '#ffffff', btn: '0px', font: 'Archivo, sans-serif' },
+        template4: { page: '#fdfbf7', ink: '#334155', nav: '#ffffff', btn: '999px', font: 'Playfair Display, serif' },
+        template5: { page: '#0a0a0a', ink: '#22c55e', nav: '#111111', btn: '0px', font: 'Space Mono, monospace' },
+        template6: { page: '#fff0f5', ink: '#4a044e', nav: '#ffffff', btn: '999px', font: 'Great Vibes, cursive' },
+        template7: { page: '#1c1917', ink: '#fff7ed', nav: '#292524', btn: '999px', font: 'Lora, serif' },
+        template8: { page: '#ffffff', ink: '#1c1917', nav: '#ffffff', btn: '0px', font: 'Outfit, sans-serif' },
+        template9: { page: '#111827', ink: '#fee2e2', nav: '#111827', btn: '0px', font: 'Oswald, sans-serif' },
+        template10: { page: '#fff6e8', ink: '#431407', nav: '#fff6e8', btn: '999px', font: 'Fraunces, serif' }
     };
 
     function buildTemplates() {
@@ -89,9 +89,69 @@
             nav: LOOKS[b[0]].nav,
             btn: LOOKS[b[0]].btn,
             font: LOOKS[b[0]].font,
-            tile: (LOOKS[b[0]].ink.charAt(1) === 'e' || LOOKS[b[0]].ink.charAt(1) === 'f') ? 'rgba(255,255,255,.08)' : '#ffffff'
+            tile: (LOOKS[b[0]].ink.charAt(1) === 'e' || LOOKS[b[0]].ink.charAt(1) === 'f') ? 'rgba(255,255,255,.08)' : '#ffffff',
+            layout: b[5]
         }));
         return list;
+    }
+
+    function templatePreview(layout, primary, secondary) {
+        const p = primary;
+        const s = secondary;
+        const box = 'width:100%;height:188px;overflow:hidden;box-sizing:border-box;';
+        if (layout === 'minimal') {
+            return '<div style="' + box + 'background:#f8fafc;color:#0f172a;font-family:Plus Jakarta Sans,sans-serif">'
+                + '<div style="background:' + p + ';color:#fff;font-size:8px;padding:3px 8px">Envíos a todo el país</div>'
+                + '<div style="background:#fff;height:22px;display:flex;align-items:center;justify-content:space-between;padding:0 8px;border-bottom:1px solid #e2e8f0;font-size:10px;font-weight:800">Tienda <span style="color:' + p + '">Buscar</span></div>'
+                + '<div style="text-align:center;padding:8px 10px 4px;font-weight:800;font-size:13px">Novedades</div>'
+                + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:4px;padding:0 8px">'
+                + [1,2,3,4].map(function () { return '<div style="background:#fff;border:1px solid #e2e8f0;border-radius:4px;overflow:hidden"><div style="height:28px;background:#e2e8f0"></div><div style="font-size:7px;padding:2px;font-weight:700;color:' + s + '">Gs.</div></div>'; }).join('')
+                + '</div></div>';
+        }
+        if (layout === 'brutal') {
+            return '<div style="' + box + 'background:#fff;color:#000;font-family:Archivo,sans-serif;border:3px solid #000">'
+                + '<div style="display:flex;height:100%"><div style="width:52%;border-right:3px solid #000;padding:8px"><div style="display:inline-block;background:' + p + ';border:2px solid #000;font-size:8px;font-weight:900;padding:1px 4px">OFICIAL</div><div style="font-size:16px;font-weight:900;line-height:.9;margin-top:6px">ROMPE LAS REGLAS</div><div style="margin-top:8px;display:inline-block;background:' + p + ';border:3px solid #000;box-shadow:3px 3px 0 #000;font-size:8px;font-weight:900;padding:3px 6px">COMPRAR</div></div>'
+                + '<div style="width:48%;background:' + p + '"></div></div></div>';
+        }
+        if (layout === 'boutique') {
+            return '<div style="' + box + 'background:#fdfbf7;color:#334155;font-family:Playfair Display,serif;text-align:center;padding:10px">'
+                + '<div style="font-style:italic;font-size:16px">Elegancia</div><div style="width:28px;height:2px;background:' + p + ';margin:4px auto"></div>'
+                + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:8px">'
+                + [1,2,3].map(function () { return '<div style="background:#fff;border-radius:12px;padding:3px"><div style="height:46px;border-radius:10px;background:' + p + '"></div><div style="font-size:8px;margin-top:3px">Pieza</div></div>'; }).join('')
+                + '</div></div>';
+        }
+        if (layout === 'terminal') {
+            return '<div style="' + box + 'background:#0a0a0a;color:' + p + ';font-family:Space Mono,monospace;padding:8px">'
+                + '<div style="font-size:8px;opacity:.7">> SYS_READY</div><div style="font-size:13px;margin-top:4px;text-shadow:0 0 8px ' + p + '">INITIALIZING...</div>'
+                + '<div style="margin-top:8px;border:1px solid ' + p + ';padding:4px;font-size:8px">CATALOG // 04 ITEMS<br>[OK] SEARCH<br>[OK] PRODUCT</div></div>';
+        }
+        if (layout === 'glam') {
+            return '<div style="' + box + 'background:#fff0f5;color:#4a044e;font-family:Quicksand,sans-serif;padding:8px">'
+                + '<div style="font-family:Great Vibes,cursive;font-size:22px;text-align:center;color:' + p + '">Glamour</div>'
+                + '<div style="display:flex;gap:6px;margin-top:6px">'
+                + [1,2,3].map(function () { return '<div style="flex:1;background:#fff;border-radius:16px;padding:4px;text-align:center"><div style="height:48px;border-radius:12px;background:linear-gradient(135deg,' + p + ',#fff)"></div><div style="font-size:8px;margin-top:3px;background:#fce7f3;color:' + p + ';border-radius:8px">ver</div></div>'; }).join('')
+                + '</div></div>';
+        }
+        if (layout === 'gourmet') {
+            return '<div style="' + box + 'background:#1c1917;color:#fff;font-family:Lora,serif">'
+                + '<div style="height:112px;background:linear-gradient(160deg,#292524,' + p + ');display:flex;align-items:center;justify-content:center;flex-direction:column"><div style="font-style:italic;color:' + p + ';font-size:11px">Sabor</div><div style="font-size:18px">Gourmet</div></div>'
+                + '<div style="display:flex;gap:6px;padding:8px">' + [1,2,3].map(function () { return '<div style="flex:1;height:36px;background:#292524;border-radius:8px"></div>'; }).join('') + '</div></div>';
+        }
+        if (layout === 'studio') {
+            return '<div style="' + box + 'background:#fff;color:#1c1917;font-family:Outfit,sans-serif;display:flex">'
+                + '<div style="width:58%;background:#e7e5e4"></div><div style="width:42%;padding:12px"><div style="font-size:18px;font-weight:500;line-height:1">Espacios que inspiran</div><div style="margin-top:10px;display:inline-block;border:1px solid #1c1917;font-size:8px;padding:3px 6px">Ver tienda</div></div></div>';
+        }
+        if (layout === 'power') {
+            return '<div style="' + box + 'background:#f3f4f6;color:#111827;font-family:Oswald,sans-serif">'
+                + '<div style="background:#111827;color:#fff;padding:8px 10px;font-size:18px;letter-spacing:.04em">ROMPE TUS LÍMITES</div>'
+                + '<div style="padding:8px"><div style="display:inline-block;background:' + p + ';color:#fff;transform:skewX(-12deg);font-size:10px;padding:4px 8px;box-shadow:4px 4px 0 #111">ENTRENAR</div>'
+                + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:8px"><div style="height:40px;background:#111"></div><div style="height:40px;background:' + p + '"></div></div></div></div>';
+        }
+        return '<div style="' + box + 'background:#fff6e8;color:#431407;font-family:Fraunces,serif;padding:8px">'
+            + '<div style="display:flex;justify-content:space-between;align-items:center"><b>Feria</b><span style="border:2px dashed ' + p + ';border-radius:99px;font-size:8px;padding:2px 6px;color:' + p + '">puesto</span></div>'
+            + '<div style="margin-top:8px">'
+            + [1,2,3].map(function (n) { return '<div style="display:flex;gap:6px;align-items:center;margin-top:4px"><div style="width:28px;height:28px;border-radius:50%;background:' + (n === 2 ? s : p) + '"></div><div style="flex:1;border-bottom:1px dashed #d6d3d1;font-size:9px">Producto ' + n + '</div><b style="font-size:9px">Gs</b></div>'; }).join('')
+            + '</div></div>';
     }
 
     const TEMPLATES = buildTemplates();
@@ -223,7 +283,7 @@
     }
 
     window.WuepyPlatform = {
-        PLANS, TEMPLATES, PALETTES,
+        PLANS, TEMPLATES, PALETTES, templatePreview,
         slugify, isValidSlug, storeHost, storeUrl,
         highestPlan, canCreateSite, canUseAi, bumpAiUsage, aiUpdatesUsed,
         buildAiPrompt, draftProductCopy, paymentAlias,
