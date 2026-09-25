@@ -72,16 +72,36 @@
             tone: PALETTES[i][2],
             base: b[0]
         }));
-        const extra = ['Revista','Brutal','Terminal','Menú','Lujo','Feria','Cancha','Spa','Almacén','Propiedades','Neón','Diario','Panadería','Clínica','Taller','Infantil','Joyería','Pizarra','Mayorista','Cine'];
-        extra.forEach((name, n) => {
-            const pal = PALETTES[n % PALETTES.length];
+        const extra = [
+            ['Atelier', 'Ropa editorial, fotos grandes y tipografía de revista.', '#111111', '#f4efe8'],
+            ['Pasarela', 'Ropa streetwear, alto contraste y grilla apretada.', '#0a0a0a', '#e11d48'],
+            ['Boutique', 'Ropa suave, mucho aire y detalles en crema.', '#7c5c45', '#faf6f1'],
+            ['Circuito', 'Electrónica oscura, fichas técnicas y neón.', '#22d3ee', '#020617'],
+            ['Vitrina', 'Electrónica clara, estilo showroom.', '#0f172a', '#f8fafc'],
+            ['Arcade', 'Gaming, bloques negros y acento eléctrico.', '#a3e635', '#09090b'],
+            ['Mesa', 'Restaurante, portada a sangre y carta.', '#b45309', '#1c1917'],
+            ['Horno', 'Panadería, tonos cálidos y vitrina de productos.', '#9a3412', '#fff7ed'],
+            ['Barra', 'Cafetería, layout editorial y menú corto.', '#44403c', '#f5f5f4'],
+            ['Bruma', 'Spa y belleza, curvas suaves y rosa polvo.', '#9d174d', '#fff1f2'],
+            ['Vanidad', 'Cosmética, lujo claro y tipografía fina.', '#a16207', '#fffbeb'],
+            ['Botica', 'Farmacia, limpieza clínica y confianza.', '#0f766e', '#f0fdfa'],
+            ['Casa', 'Muebles y deco, fotos amplias y neutros.', '#44403c', '#fafaf9'],
+            ['Góndola', 'Supermercado, categorías y precios a la vista.', '#15803d', '#f7fee7'],
+            ['Obra', 'Ferretería, bloques firmes y amarillo obra.', '#ca8a04', '#18181b'],
+            ['Llave', 'Inmobiliaria, fichas grandes y datos claros.', '#1d4ed8', '#f8fafc'],
+            ['Box', 'Taller y vehículos, metal oscuro.', '#f97316', '#18181b'],
+            ['Oro', 'Joyería, negro y dorado, piezas grandes.', '#d6b25e', '#0c0a09'],
+            ['Cancha', 'Deportes, energía y grilla de equipo.', '#16a34a', '#052e16'],
+            ['Bulto', 'Mayorista, tabla clara y compra por volumen.', '#1e3a8a', '#f8fafc']
+        ];
+        extra.forEach((row, n) => {
             list.push({
                 id: 'template' + (11 + n),
-                name: name,
-                description: 'Maquetación propia: ' + name.toLowerCase() + '. No es un cambio de color de la misma web.',
-                primary: pal[0],
-                secondary: pal[1],
-                tone: pal[2],
+                name: row[0],
+                description: row[1],
+                primary: row[2],
+                secondary: row[3],
+                tone: row[0],
                 base: 'template' + (11 + n)
             });
         });
