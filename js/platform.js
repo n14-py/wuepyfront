@@ -174,8 +174,17 @@
             .slice(0, 32);
     }
 
+    const RESERVED_SLUGS = {
+        www: 1, wuepy: 1, shop: 1, business: 1, api: 1, admin: 1, app: 1,
+        mail: 1, dashboard: 1, auth: 1, blog: 1, cdn: 1, static: 1, soporte: 1, help: 1
+    };
+
+    function isReservedSlug(slug) {
+        return !!RESERVED_SLUGS[slug];
+    }
+
     function isValidSlug(slug) {
-        return /^[a-z0-9]{3,32}$/.test(slug || '') && slug !== 'undefined' && slug !== 'null' && slug !== 'www' && slug !== 'wuepy';
+        return /^[a-z0-9]{3,32}$/.test(slug || '') && !isReservedSlug(slug);
     }
 
     function storeHost(site) {
@@ -293,7 +302,7 @@
 
     window.WuepyPlatform = {
         PLANS, TEMPLATES, PALETTES, templatePreview,
-        slugify, isValidSlug, storeHost, storeUrl,
+        slugify, isValidSlug, isReservedSlug, storeHost, storeUrl,
         highestPlan, canCreateSite, canUseAi, bumpAiUsage, aiUpdatesUsed,
         buildAiPrompt, draftProductCopy, paymentAlias,
         accountPlanId, setAccountPlan, siteBlocked, orderedSites

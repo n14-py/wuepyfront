@@ -7,7 +7,65 @@ const isLocal = window.location.hostname === 'localhost' || window.location.host
 
 // URL del backend en Render (Asegúrate de que no termine en /)
 const RENDER_BACKEND_URL = 'https://wuepyback.onrender.com/api'; 
-const API_URL = isLocal ? 'http://localhost:3000/api' : RENDER_BACKEND_URL; 
+const API_URL = isLocal ? 'http://localhost:3000/api' : RENDER_BACKEND_URL;
+
+// La tienda pinta con la última respuesta guardada y recién después confirma con el servidor.
+// Así una segunda visita no espera el arranque del backend. El contrato del JSON no cambia.
+// Si más adelante /store/public responde Cache-Control: public, max-age=60, el navegador
+// se queda con esa copia sin tocar este archivo.
+(function warmApiConnection() {
+    try {
+        const origin = new URL(API_URL).origin;
+        if (!document.head || document.head.querySelector('link[data-wuepy-api]')) return;
+        const link = document.createElement('link');
+        link.rel = 'preconnect';
+        link.href = origin;
+        link.crossOrigin = 'anonymous';
+        link.setAttribute('data-wuepy-api', '1');
+        document.head.appendChild(link);
+    } catch (e) {}
+})();
+
+const WuepyPublicCache = {
+    key(subdomain) {
+        return 'wuepy_pub_v1_' + subdomain;
+    },
+    read(subdomain) {
+        try {
+            const raw = localStorage.getItem(this.key(subdomain));
+            if (!raw) return null;
+            const data = JSON.parse(raw);
+            if (!data || !data.savedAt || !data.site) return null;
+            return data;
+        } catch (e) {
+            return null;
+        }
+    },
+    write(subdomain, payload) {
+        if (!payload || !payload.site) return;
+        const slim = {
+            savedAt: Date.now(),
+            success: true,
+            site: payload.site,
+            products: payload.products || [],
+            isAiGenerated: !!payload.isAiGenerated,
+            needsPayment: !!payload.needsPayment,
+            paymentAlias: payload.paymentAlias || ''
+        };
+        if (payload.htmlContent && String(payload.htmlContent).length < 120000) {
+            slim.htmlContent = payload.htmlContent;
+        }
+        try {
+            localStorage.setItem(this.key(subdomain), JSON.stringify(slim));
+        } catch (e) {
+            try { localStorage.removeItem(this.key(subdomain)); } catch (err) {}
+        }
+    },
+    age(entry) {
+        if (!entry || !entry.savedAt) return Infinity;
+        return Date.now() - entry.savedAt;
+    }
+};
 
 // ==========================================================================
 // MÓDULO 1: WUEPY API (GESTIÓN DE PETICIONES Y SESIONES)
@@ -367,4 +425,5 @@ const WuepyStoreEngine = {
 // ==========================================================================
 window.WuepyAPI = WuepyAPI;
 window.WuepyStoreEngine = WuepyStoreEngine;
+window.WuepyPublicCache = WuepyPublicCache;
 window.API_URL = API_URL;

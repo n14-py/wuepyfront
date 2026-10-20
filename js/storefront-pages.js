@@ -14,6 +14,26 @@
         return window.API_URL || 'https://wuepyback.onrender.com/api';
     }
 
+    function cachedStore(subdomain) {
+        return window.WuepyPublicCache ? WuepyPublicCache.read(subdomain) : null;
+    }
+
+    function rememberStore(subdomain, data) {
+        if (window.WuepyPublicCache && data && data.success) WuepyPublicCache.write(subdomain, data);
+    }
+
+    function tuneImages() {
+        const images = document.querySelectorAll('img');
+        images.forEach(function (img, index) {
+            img.decoding = 'async';
+            if (index === 0) {
+                img.setAttribute('fetchpriority', 'high');
+                return;
+            }
+            if (!img.getAttribute('loading')) img.loading = 'lazy';
+        });
+    }
+
     function paint(site) {
         if (!site) return;
         const root = document.documentElement.style;
@@ -71,28 +91,30 @@
                 products: [],
                 async init() {
                     const subdomain = subdomainFromLocation();
-                    const cacheKey = 'wuepy_cache_' + subdomain;
+                    const cached = cachedStore(subdomain);
+                    if (cached) {
+                        this.site = cached.site;
+                        this.products = cached.products || [];
+                        paint(this.site);
+                    }
+                    const age = window.WuepyPublicCache ? WuepyPublicCache.age(cached) : Infinity;
+                    if (age < 20000) {
+                        this.$nextTick(tuneImages);
+                        return;
+                    }
                     try {
-                        const cached = localStorage.getItem(cacheKey);
-                        if (cached) {
-                            const parsed = JSON.parse(cached);
-                            this.site = parsed.site;
-                            this.products = parsed.products || [];
-                            paint(this.site);
-                        }
-                    } catch (e) {}
-                    try {
-                        const res = await fetch(apiBase() + '/store/public/' + subdomain + '?_t=' + Date.now());
+                        const res = await fetch(apiBase() + '/store/public/' + subdomain);
                         const data = await res.json();
                         if (data.success) {
                             this.site = data.site;
                             this.products = data.products || [];
                             paint(this.site);
-                            localStorage.setItem(cacheKey, JSON.stringify(data));
+                            rememberStore(subdomain, data);
                         }
                     } catch (error) {
                         console.error('Error al cargar la tienda:', error);
                     }
+                    this.$nextTick(tuneImages);
                 }
             });
         });
@@ -111,21 +133,34 @@
                     this.searchQuery = urlParams.get('q') || '';
                     this.currentCategory = urlParams.get('category') || '';
                     const subdomain = subdomainFromLocation();
-                    try {
-                        const res = await fetch(apiBase() + '/store/public/' + subdomain + '?_t=' + Date.now());
-                        const data = await res.json();
-                        if (data.success) {
-                            this.site = data.site;
-                            this.allProducts = data.products || [];
-                            const cats = new Set(this.allProducts.map(function (p) { return p.category; }).filter(Boolean));
-                            this.categories = Array.from(cats).sort();
-                            this.filterProducts();
-                            paint(this.site);
+                    const cached = cachedStore(subdomain);
+                    const apply = (data) => {
+                        this.site = data.site;
+                        this.allProducts = data.products || [];
+                        const cats = new Set(this.allProducts.map(function (p) { return p.category; }).filter(Boolean));
+                        this.categories = Array.from(cats).sort();
+                        this.filterProducts();
+                        paint(this.site);
+                    };
+                    if (cached && cached.site) {
+                        apply(cached);
+                        this.isLoading = false;
+                    }
+                    const age = window.WuepyPublicCache ? WuepyPublicCache.age(cached) : Infinity;
+                    if (!(cached && cached.site && age < 20000)) {
+                        try {
+                            const res = await fetch(apiBase() + '/store/public/' + subdomain);
+                            const data = await res.json();
+                            if (data.success) {
+                                apply(data);
+                                rememberStore(subdomain, data);
+                            }
+                        } catch (error) {
+                            console.error('Error al cargar la tienda:', error);
                         }
-                    } catch (error) {
-                        console.error('Error al cargar la tienda:', error);
                     }
                     this.isLoading = false;
+                    this.$nextTick(tuneImages);
                 },
                 filterProducts() {
                     let result = this.allProducts;
@@ -155,33 +190,60 @@
                         return;
                     }
                     const subdomain = subdomainFromLocation();
-                    try {
-                        const res = await fetch(apiBase() + '/store/public/' + subdomain + '?_t=' + Date.now());
-                        const data = await res.json();
-                        if (!data.success) {
-                            window.location.href = 'index.html';
-                            return;
-                        }
-                        this.site = data.site;
-                        const allProducts = data.products || [];
-                        this.product = allProducts.find(function (p) { return p._id === productId; }) || null;
-                        if (!this.product) {
-                            window.location.href = 'index.html';
-                            return;
-                        }
-                        this.relatedProducts = allProducts.filter(function (p) {
-                            return p.category === this.product.category && p._id !== productId;
-                        }, this).slice(0, 4);
+                    const paintProduct = (site, product, allProducts) => {
+                        this.site = site;
+                        this.product = product;
+                        const pool = allProducts || [];
+                        this.relatedProducts = pool.filter(function (p) {
+                            return p.category === product.category && p._id !== productId;
+                        }).slice(0, 4);
                         if (!this.relatedProducts.length) {
-                            this.relatedProducts = allProducts.filter(function (p) { return p._id !== productId; }).slice(0, 4);
+                            this.relatedProducts = pool.filter(function (p) { return p._id !== productId; }).slice(0, 4);
                         }
                         paint(this.site);
-                        document.title = this.product.name + ' | ' + (this.site.name || 'Tienda');
+                        document.title = product.name + ' | ' + (site.name || 'Tienda');
+                    };
+                    const cached = cachedStore(subdomain);
+                    const cachedProduct = cached && (cached.products || []).find(function (p) { return p._id === productId; });
+                    if (cached && cachedProduct) {
+                        paintProduct(cached.site, cachedProduct, cached.products || []);
+                        this.isLoading = false;
+                        const age = WuepyPublicCache.age(cached);
+                        if (age < 20000) {
+                            this.$nextTick(tuneImages);
+                            return;
+                        }
+                    }
+                    try {
+                        let data = null;
+                        const detail = await fetch(apiBase() + '/store/public/' + subdomain + '/p/' + encodeURIComponent(productId));
+                        if (detail.ok) {
+                            const parsed = await detail.json();
+                            if (parsed && parsed.success && parsed.product) data = parsed;
+                        }
+                        if (!data) {
+                            const res = await fetch(apiBase() + '/store/public/' + subdomain);
+                            const parsed = await res.json();
+                            if (parsed && parsed.success) data = parsed;
+                        }
+                        if (!data) {
+                            if (!this.product) window.location.href = 'index.html';
+                            return;
+                        }
+                        const allProducts = data.products || [];
+                        const product = data.product || allProducts.find(function (p) { return p._id === productId; }) || null;
+                        if (!product) {
+                            if (!this.product) window.location.href = 'index.html';
+                            return;
+                        }
+                        paintProduct(data.site, product, allProducts.length ? allProducts : [product]);
+                        if (allProducts.length) rememberStore(subdomain, data);
                     } catch (error) {
                         console.error('Error al cargar producto:', error);
-                        window.location.href = 'index.html';
+                        if (!this.product) window.location.href = 'index.html';
                     }
                     this.isLoading = false;
+                    this.$nextTick(tuneImages);
                 }
             });
         });
