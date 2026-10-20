@@ -3,148 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wuepy | Tienda oficial</title>
-    <meta name="description" content="Tienda oficial de Wuepy. Electrónica de la marca, en blanco y negro.">
+    <title>Wuepy | Tienda oficial · Próximamente</title>
+    <meta name="description" content="Tienda oficial de Wuepy. Próximamente: auriculares, rasuradoras eléctricas, carga, audio, energía y accesorios.">
     <link rel="preconnect" href="https://wuepyback.onrender.com" crossorigin>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,560;1,9..144,560&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="/js/api.js"></script>
     <script src="/js/brand.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js"></script>
     <style>
         [x-cloak] { display: none !important; }
         * { box-sizing: border-box; }
-        body { margin: 0; background: #fff; color: #0a0a0a; font-family: Inter, system-ui, sans-serif; }
+        html, body { margin: 0; width: 100%; min-height: 100%; background: #050505; color: #f5f5f5; font-family: Outfit, system-ui, sans-serif; }
         a { color: inherit; text-decoration: none; }
-        button, input { font: inherit; }
-        .wrap { width: min(1120px, calc(100% - 32px)); margin: 0 auto; }
-        header.bar { position: sticky; top: 0; z-index: 30; background: rgba(255,255,255,.92); backdrop-filter: blur(12px); border-bottom: 1px solid #e5e5e5; }
-        .bar-row { height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-        .mark { font-weight: 600; letter-spacing: .28em; font-size: 14px; }
-        .nav-links { display: none; gap: 28px; color: #737373; font-size: 14px; }
-        .menu-btn { height: 44px; padding: 0 12px; background: none; border: 0; font-weight: 600; }
-        .menu-panel { border-top: 1px solid #e5e5e5; padding: 8px 0 16px; }
-        .menu-panel a { display: block; padding: 14px 0; font-size: 18px; font-weight: 500; }
-        .note { background: #0a0a0a; color: #fff; }
-        .note p { margin: 0; padding: 12px 0; font-size: 14px; line-height: 1.4; }
-        .hero { padding: 48px 0 12px; }
-        .kicker { margin: 0; font-size: 12px; font-weight: 600; letter-spacing: .22em; text-transform: uppercase; color: #a3a3a3; }
-        h1 { margin: 16px 0 0; font-size: 64px; line-height: .9; font-weight: 600; letter-spacing: -.04em; }
-        .lead { margin: 20px 0 0; max-width: 440px; font-size: 20px; line-height: 1.45; color: #525252; }
-        .tools { display: flex; flex-direction: column; gap: 12px; border-top: 1px solid #e5e5e5; border-bottom: 1px solid #e5e5e5; padding: 12px 0; margin-top: 28px; }
-        .cats { display: flex; gap: 4px; overflow-x: auto; }
-        .cats button, .back { background: none; border: 0; cursor: pointer; }
-        .cats button { height: 48px; padding: 0 14px; font-size: 16px; font-weight: 500; color: #a3a3a3; border-bottom: 2px solid transparent; white-space: nowrap; }
-        .cats button.on { color: #0a0a0a; border-color: #0a0a0a; }
-        .search { height: 48px; width: 100%; border: 1px solid #d4d4d4; padding: 0 14px; font-size: 16px; }
-        .search:focus { outline: none; border-color: #0a0a0a; }
-        .grid { display: grid; grid-template-columns: 1fr; gap: 48px 32px; margin-top: 36px; padding-bottom: 72px; }
-        .card { display: block; width: 100%; text-align: left; background: none; border: 0; padding: 0; cursor: pointer; }
-        .shot { aspect-ratio: 1; background: #f4f4f4; overflow: hidden; }
+        button, input, summary { font: inherit; color: inherit; }
+        .wrap { width: min(1180px, calc(100% - 40px)); margin: 0 auto; }
+        header { position: sticky; top: 0; z-index: 20; background: rgba(5,5,5,.92); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255,255,255,.08); }
+        .bar { position: relative; min-height: 68px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+        .mark { font-weight: 600; letter-spacing: .32em; font-size: 13px; }
+        nav.desk { display: none; gap: 28px; font-size: 14px; color: #a3a3a3; }
+        nav.desk a:hover { color: #fff; }
+        details.nav { position: static; }
+        details.nav summary { list-style: none; cursor: pointer; min-height: 44px; display: flex; align-items: center; font-weight: 600; }
+        details.nav summary::-webkit-details-marker { display: none; }
+        details.nav .sheet { position: absolute; left: 0; right: 0; top: calc(100% + 8px); width: auto; background: #111; border: 1px solid rgba(255,255,255,.12); padding: 6px 18px 14px; z-index: 30; }
+        details.nav .sheet a { display: block; padding: 14px 0; font-size: 18px; border-bottom: 1px solid rgba(255,255,255,.08); }
+        .hero { padding: 64px 0 20px; }
+        .kicker { margin: 0; font-size: 12px; font-weight: 600; letter-spacing: .22em; text-transform: uppercase; color: #737373; }
+        h1 { margin: 18px 0 0; font-family: Fraunces, Georgia, serif; font-weight: 560; font-size: clamp(42px, 11vw, 118px); line-height: .9; letter-spacing: -.045em; }
+        h1 em { font-style: italic; color: #a3a3a3; }
+        .lead { margin: 28px 0 0; max-width: 680px; font-size: 18px; line-height: 1.6; color: #d4d4d4; }
+        .lines { margin: 48px 0 0; border-top: 1px solid rgba(255,255,255,.12); }
+        .line { display: grid; grid-template-columns: 1fr; gap: 8px; padding: 26px 0; border-bottom: 1px solid rgba(255,255,255,.12); }
+        .num { font-size: 12px; letter-spacing: .16em; color: #737373; }
+        .line h2 { margin: 0; font-family: Fraunces, Georgia, serif; font-weight: 560; font-size: clamp(32px, 5vw, 48px); letter-spacing: -.03em; }
+        .soon { display: inline-flex; align-items: center; height: 28px; padding: 0 10px; border: 1px solid rgba(255,255,255,.25); border-radius: 999px; font-family: Outfit, system-ui, sans-serif; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: #d4d4d4; }
+        .line p { margin: 0; color: #a3a3a3; line-height: 1.5; font-size: 16px; max-width: 520px; }
+        .note { margin: 28px 0 0; max-width: 680px; color: #a3a3a3; line-height: 1.55; }
+        .actions { display: flex; flex-direction: column; gap: 10px; margin: 28px 0 72px; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 52px; padding: 0 20px; background: #f5f5f5; color: #050505; font-weight: 600; }
+        .btn.ghost { background: transparent; color: #f5f5f5; border: 1px solid rgba(255,255,255,.35); }
+        .catalog { padding: 10px 0 80px; }
+        .grid { display: grid; grid-template-columns: 1fr; gap: 28px; margin-top: 28px; }
+        .card { display: block; width: 100%; text-align: left; background: none; border: 0; padding: 0; cursor: pointer; color: inherit; }
+        .shot { aspect-ratio: 1; background: #141414; overflow: hidden; }
         .shot img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .card .kicker, .detail .kicker { margin-top: 18px; }
-        .card h2 { margin: 8px 0 0; font-size: 28px; font-weight: 600; letter-spacing: -.03em; }
-        .price { margin: 8px 0 0; font-size: 18px; }
-        .empty { padding: 64px 0 96px; }
-        .empty h2 { margin: 0; font-size: 36px; letter-spacing: -.03em; }
-        .empty p { font-size: 18px; line-height: 1.5; color: #525252; max-width: 520px; }
-        .solid { display: inline-flex; align-items: center; justify-content: center; min-height: 56px; padding: 0 22px; background: #0a0a0a; color: #fff; font-weight: 600; font-size: 17px; }
-        .solid.block { width: 100%; margin-top: 28px; }
+        .card h3, .detail h2 { margin: 12px 0 0; font-family: Fraunces, Georgia, serif; font-weight: 560; font-size: 32px; letter-spacing: -.03em; }
+        .price { margin: 6px 0 0; font-size: 18px; }
         .detail { padding: 12px 0 80px; }
-        .back { height: 48px; padding: 0; font-size: 16px; font-weight: 500; }
-        .detail h2 { margin: 12px 0 0; font-size: 44px; line-height: .95; font-weight: 600; letter-spacing: -.04em; }
-        .detail .price { font-size: 24px; margin-top: 20px; }
-        .copy { margin-top: 20px; font-size: 18px; line-height: 1.55; color: #525252; }
-        .quiet { margin-top: 28px; color: #737373; }
-        footer.bar-foot { border-top: 1px solid #e5e5e5; }
-        .foot { padding: 28px 0 40px; display: flex; flex-direction: column; gap: 10px; color: #737373; font-size: 14px; }
-        .foot strong { color: #0a0a0a; letter-spacing: .18em; font-weight: 600; }
-        @media (min-width: 760px) {
-            .nav-links { display: flex; }
-            .menu-btn, .menu-panel { display: none !important; }
-            h1 { font-size: 96px; }
-            .tools { flex-direction: row; align-items: center; justify-content: space-between; }
-            .search { width: 280px; }
-            .grid { grid-template-columns: 1fr 1fr; }
-            .split { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: start; margin-top: 12px; }
-            .detail h2 { font-size: 64px; }
-            .foot { flex-direction: row; align-items: center; justify-content: space-between; }
+        .back { border: 0; background: none; padding: 18px 0; font-size: 16px; cursor: pointer; }
+        .copy { color: #a3a3a3; font-size: 18px; line-height: 1.55; }
+        footer { border-top: 1px solid rgba(255,255,255,.12); }
+        .foot { padding: 28px 0 48px; display: flex; flex-direction: column; gap: 10px; color: #737373; font-size: 14px; }
+        .foot strong { color: #f5f5f5; letter-spacing: .22em; font-weight: 600; }
+        @media (min-width: 860px) {
+            nav.desk { display: flex; }
+            details.nav { display: none; }
+            .line { grid-template-columns: 64px minmax(220px, 1.1fr) 1.4fr auto; gap: 24px; align-items: center; }
+            .line p { justify-self: start; }
+            .actions { flex-direction: row; }
+            .grid { grid-template-columns: 1fr 1fr; gap: 36px; }
+            .split { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start; }
+            .foot { flex-direction: row; justify-content: space-between; align-items: center; }
         }
     </style>
     <script>
         document.addEventListener('alpine:init', function () {
-            var DEMO = [
-                { _id: 'demo-air', name: 'Wuepy Air', category: 'Audio', price: 349000, description: 'Auriculares cerrados, graves limpios y almohadillas suaves para el día entero.', imageUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1000&q=70' },
-                { _id: 'demo-buds', name: 'Wuepy Buds', category: 'Audio', price: 219000, description: 'In-ear livianos, estuche de carga y micrófono para llamadas.', imageUrl: 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&w=1000&q=70' },
-                { _id: 'demo-gan', name: 'Wuepy GaN 65', category: 'Carga', price: 189000, description: 'Cargador compacto de 65W para el teléfono y la notebook.', imageUrl: 'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&w=1000&q=70' },
-                { _id: 'demo-cable', name: 'Cable Wuepy C', category: 'Carga', price: 49000, description: 'USB-C a USB-C, un metro, refuerzo en las puntas.', imageUrl: 'https://images.unsplash.com/photo-1616578273508-5555b6b1e6c7?auto=format&fit=crop&w=1000&q=70' },
-                { _id: 'demo-mini', name: 'Wuepy Mini', category: 'Audio', price: 279000, description: 'Parlante de mesa. Se escucha claro en una habitación y entra en la mochila.', imageUrl: 'https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?auto=format&fit=crop&w=1000&q=70' },
-                { _id: 'demo-cell', name: 'Wuepy Cell', category: 'Energía', price: 259000, description: 'Batería para el día que se alarga. Carga el teléfono más de una vez.', imageUrl: 'https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?auto=format&fit=crop&w=1000&q=70' }
-            ];
-
             Alpine.data('shopApp', function () {
                 return {
                     products: [],
                     site: { name: 'Wuepy', currency: 'PYG', contact: {} },
-                    q: '',
-                    cat: 'Todo',
                     active: null,
                     loading: true,
-                    demo: false,
-                    menu: false,
                     async init() {
-                        var params = new URLSearchParams(window.location.search);
-                        var host = window.location.hostname;
-                        var preview = params.get('demo') === '1' || host === 'localhost' || host === '127.0.0.1' || host.endsWith('.pages.dev');
-                        var cache = window.WuepyPublicCache && WuepyPublicCache.read('shop');
-                        if (cache && cache.products && cache.products.length && params.get('demo') !== '1') {
-                            this.site = cache.site;
-                            this.products = cache.products;
-                            this.loading = false;
-                        }
                         try {
                             var base = window.API_URL || 'https://wuepyback.onrender.com/api';
+                            var cached = window.WuepyPublicCache && WuepyPublicCache.read('shop');
+                            if (cached && cached.products && cached.products.length) {
+                                this.site = cached.site || this.site;
+                                this.products = cached.products;
+                                this.loading = false;
+                            }
                             var res = await fetch(base + '/store/public/shop');
                             if (res.ok) {
                                 var data = await res.json();
-                                if (data && data.success && data.products && data.products.length && params.get('demo') !== '1') {
+                                if (data && data.success && data.products && data.products.length) {
                                     this.site = data.site || this.site;
                                     this.products = data.products;
-                                    this.demo = false;
                                     if (window.WuepyPublicCache) WuepyPublicCache.write('shop', data);
-                                    this.loading = false;
-                                    this.openFromHash();
-                                    return;
                                 }
                             }
                         } catch (e) {}
-                        if (preview) {
-                            this.products = DEMO;
-                            this.demo = true;
-                        }
                         this.loading = false;
-                        this.openFromHash();
-                    },
-                    openFromHash() {
-                        var id = (window.location.hash || '').replace('#', '');
-                        if (!id) return;
-                        var found = this.products.find(function (p) { return p._id === id; });
-                        if (found) this.active = found;
-                    },
-                    categories() {
-                        var set = {};
-                        this.products.forEach(function (p) { if (p.category) set[p.category] = 1; });
-                        return Object.keys(set);
-                    },
-                    shown() {
-                        var q = (this.q || '').trim().toLowerCase();
-                        var cat = this.cat;
-                        return this.products.filter(function (p) {
-                            var byCat = cat === 'Todo' || p.category === cat;
-                            var byQ = !q || (p.name || '').toLowerCase().indexOf(q) !== -1 || (p.category || '').toLowerCase().indexOf(q) !== -1;
-                            return byCat && byQ;
-                        });
+                        var id = (location.hash || '').replace('#', '');
+                        if (id) {
+                            var found = this.products.find(function (p) { return p._id === id; });
+                            if (found) this.active = found;
+                        }
                     },
                     money(n) {
                         var value = (parseInt(n, 10) || 0).toLocaleString('es-PY');
@@ -153,96 +109,112 @@
                     photo(p) {
                         if (!p) return '';
                         if (p.imageUrl && String(p.imageUrl).indexOf('placehold') === -1) return p.imageUrl;
-                        if (p.images && p.images.length) return p.images[0];
-                        return '';
+                        return (p.images && p.images[0]) || '';
                     },
                     open(p) {
                         this.active = p;
-                        this.menu = false;
                         if (p && p._id) history.replaceState(null, '', '#' + p._id);
                         window.scrollTo(0, 0);
                     },
                     close() {
                         this.active = null;
-                        history.replaceState(null, '', window.location.pathname + window.location.search);
+                        history.replaceState(null, '', location.pathname + location.search);
                     },
                     wa(p) {
                         if (!p) return '';
                         var contact = (this.site && this.site.contact) || {};
-                        var phone = String(this.site.whatsappNumber || contact.whatsapp || contact.phone || '').replace(/[^0-9]/g, '');
+                        var phone = String(this.site.whatsappNumber || contact.whatsapp || contact.phone || '').replace(/\D/g, '');
                         if (!phone) return '';
-                        var text = 'Hola, quiero ' + p.name + ' (' + this.money(p.price) + ') de la tienda Wuepy.';
-                        return 'https://wa.me/' + phone + '?text=' + encodeURIComponent(text);
+                        return 'https://wa.me/' + phone + '?text=' + encodeURIComponent('Hola, quiero ' + p.name + ' (' + this.money(p.price) + ') de Wuepy.');
                     },
-                    businessHref() {
-                        return window.WuepyBrand ? WuepyBrand.businessUrl() : 'https://business.wuepy.com';
-                    },
-                    homeHref() {
-                        return window.WuepyBrand ? WuepyBrand.homeUrl() : 'https://wuepy.com';
-                    }
+                    home() { return window.WuepyBrand ? WuepyBrand.homeUrl() : 'https://wuepy.com'; },
+                    business() { return window.WuepyBrand ? WuepyBrand.businessUrl() : 'https://business.wuepy.com'; }
                 };
             });
         });
     </script>
 </head>
-<body x-data="shopApp()" x-cloak>
-    <header class="bar">
-        <div class="wrap bar-row">
-            <a class="mark" :href="homeHref()">WUEPY</a>
-            <nav class="nav-links">
-                <a href="#coleccion">Colección</a>
-                <a :href="businessHref()">Wuepy Business</a>
+<body x-data="shopApp()">
+    <header>
+        <div class="wrap bar">
+            <a class="mark" href="https://wuepy.com" :href="home()">WUEPY</a>
+            <nav class="desk">
+                <a href="#linea">La línea</a>
+                <a href="https://business.wuepy.com" :href="business()">Wuepy Business</a>
+                <a href="https://wuepy.com" :href="home()">wuepy.com</a>
             </nav>
-            <button type="button" class="menu-btn" @click="menu = !menu" x-text="menu ? 'Cerrar' : 'Menú'"></button>
-        </div>
-        <div class="wrap menu-panel" x-show="menu">
-            <a href="#coleccion" @click="menu = false">Colección</a>
-            <a :href="businessHref()">Wuepy Business</a>
+            <details class="nav">
+                <summary>Menú</summary>
+                <div class="sheet">
+                    <a href="#linea" onclick="this.closest('details').open=false">La línea</a>
+                    <a href="https://business.wuepy.com" :href="business()" onclick="this.closest('details').open=false">Wuepy Business</a>
+                    <a href="https://wuepy.com" :href="home()" onclick="this.closest('details').open=false">wuepy.com</a>
+                </div>
+            </details>
         </div>
     </header>
 
-    <div class="note" x-show="demo">
-        <p class="wrap">Vista de muestra. Cuando la tienda shop tenga productos cargados, esta página muestra esa colección.</p>
-    </div>
-
-    <p class="wrap" x-show="loading" style="padding:72px 0;font-size:18px">Cargando la tienda…</p>
-
-    <main x-show="!loading && !active">
-        <section class="wrap hero">
+    <main x-show="!active">
+        <section class="wrap hero" id="linea">
             <p class="kicker">Tienda oficial</p>
-            <h1>Wuepy</h1>
-            <p class="lead">Electrónica de la marca. Pocas piezas, bien hechas, en blanco y negro.</p>
-        </section>
-        <section class="wrap" id="coleccion">
-            <div class="tools">
-                <div class="cats">
-                    <button type="button" @click="cat = 'Todo'" :class="cat === 'Todo' ? 'on' : ''">Todo</button>
-                    <template x-for="name in categories()" :key="name">
-                        <button type="button" @click="cat = name" :class="cat === name ? 'on' : ''" x-text="name"></button>
-                    </template>
+            <h1>Próximamente<em>.</em></h1>
+            <p class="lead">Esta es la tienda de la marca. Auriculares, rasuradoras eléctricas, carga, audio, energía y accesorios se están preparando. Cuando uno esté listo, va a figurar acá con foto, precio en guaraníes y pedido por WhatsApp. Hoy no hay precios ni un botón de compra.</p>
+            <div class="lines">
+                <div class="line">
+                    <span class="num">01</span>
+                    <h2>Auriculares</h2>
+                    <p>De oído y de diadema. Para la calle, el estudio y las llamadas.</p>
+                    <span class="soon">Próximamente</span>
                 </div>
-                <input class="search" x-model="q" type="search" placeholder="Buscar" aria-label="Buscar">
+                <div class="line">
+                    <span class="num">02</span>
+                    <h2>Rasuradoras</h2>
+                    <p>Rasuradoras eléctricas para el uso de todos los días.</p>
+                    <span class="soon">Próximamente</span>
+                </div>
+                <div class="line">
+                    <span class="num">03</span>
+                    <h2>Carga</h2>
+                    <p>Cargadores y cables USB-C, pensados para no romperse al mes.</p>
+                    <span class="soon">Próximamente</span>
+                </div>
+                <div class="line">
+                    <span class="num">04</span>
+                    <h2>Audio</h2>
+                    <p>Parlantes chicos, para una pieza o el mostrador de un local.</p>
+                    <span class="soon">Próximamente</span>
+                </div>
+                <div class="line">
+                    <span class="num">05</span>
+                    <h2>Energía</h2>
+                    <p>Baterías portátiles para cuando el día se hace largo.</p>
+                    <span class="soon">Próximamente</span>
+                </div>
+                <div class="line">
+                    <span class="num">06</span>
+                    <h2>Accesorios</h2>
+                    <p>Lo que acompaña al teléfono y a la notebook, con el nombre Wuepy.</p>
+                    <span class="soon">Próximamente</span>
+                </div>
             </div>
-
-            <div class="empty" x-show="products.length === 0">
-                <h2>La colección está por llegar.</h2>
-                <p>Los productos de Wuepy se publican desde el catálogo de la tienda shop. Mientras tanto, Wuepy Business sigue disponible para armar la tuya.</p>
-                <a class="solid" :href="businessHref()">Ir a Wuepy Business</a>
+            <p class="note">Si lo que buscás es publicar la tienda de tu propio comercio —catálogo, WhatsApp y caja— eso vive en Wuepy Business, no en esta página.</p>
+            <div class="actions">
+                <a class="btn" href="https://wuepy.com" :href="home()">Volver a wuepy.com</a>
+                <a class="btn ghost" href="https://business.wuepy.com" :href="business()">Tengo un negocio</a>
             </div>
+        </section>
 
-            <div class="empty" x-show="products.length > 0 && shown().length === 0">
-                <h2>Nada con esa búsqueda.</h2>
-                <button type="button" class="back" @click="q = ''; cat = 'Todo'">Ver todo</button>
-            </div>
-
-            <div class="grid" x-show="shown().length > 0">
-                <template x-for="(product, index) in shown()" :key="product._id">
+        <section class="wrap catalog" x-show="!loading && products.length" x-cloak>
+            <p class="kicker">Ya publicado</p>
+            <h2 style="font-family:Fraunces,Georgia,serif;font-weight:560;font-size:44px;letter-spacing:-.04em;margin:10px 0 0">Lo que ya está en la tienda</h2>
+            <div class="grid">
+                <template x-for="product in products" :key="product._id">
                     <button type="button" class="card" @click="open(product)">
                         <div class="shot">
-                            <img x-show="photo(product)" :src="photo(product)" :alt="product.name" :loading="index === 0 ? 'eager' : 'lazy'" decoding="async" width="800" height="800">
+                            <img x-show="photo(product)" :src="photo(product)" :alt="product.name" loading="lazy" decoding="async" width="800" height="800">
                         </div>
-                        <p class="kicker" x-text="product.category || 'Wuepy'"></p>
-                        <h2 x-text="product.name"></h2>
+                        <p class="kicker" style="margin-top:14px" x-text="product.category || 'Wuepy'"></p>
+                        <h3 x-text="product.name"></h3>
                         <p class="price" x-text="money(product.price)"></p>
                     </button>
                 </template>
@@ -250,27 +222,27 @@
         </section>
     </main>
 
-    <article class="wrap detail" x-show="!loading && active" x-cloak>
-        <button type="button" class="back" @click="close()">← Volver a la colección</button>
+    <article class="wrap detail" x-show="active" x-cloak>
+        <button type="button" class="back" @click="close()">← Volver a la línea</button>
         <div class="split">
             <div class="shot">
-                <img x-show="photo(active)" :src="photo(active)" :alt="active && active.name" width="1200" height="1200">
+                <img x-show="photo(active)" :src="photo(active)" :alt="active && active.name" width="1000" height="1000">
             </div>
             <div>
                 <p class="kicker" x-text="active && (active.category || 'Wuepy')"></p>
                 <h2 x-text="active && active.name"></h2>
                 <p class="price" x-text="active && money(active.price)"></p>
-                <p class="copy" x-text="(active && active.description) || 'Pieza de la colección Wuepy.'"></p>
-                <a class="solid block" x-show="active && wa(active)" :href="active && wa(active)" target="_blank" rel="noopener">Pedir por WhatsApp</a>
-                <p class="quiet" x-show="active && !wa(active)">El pedido por WhatsApp se activa cuando la tienda tiene un número cargado.</p>
+                <p class="copy" x-text="(active && active.description) || 'Producto de la marca Wuepy.'"></p>
+                <a class="btn" style="margin-top:24px" x-show="active && wa(active)" :href="active && wa(active)" target="_blank" rel="noopener">Pedir por WhatsApp</a>
             </div>
         </div>
     </article>
 
-    <footer class="bar-foot">
+    <footer>
         <div class="wrap foot">
             <strong>WUEPY</strong>
-            <a :href="businessHref()">¿Tenés un negocio? Wuepy Business</a>
+            <span>Próximamente · Electrónica de la marca</span>
+            <a href="https://business.wuepy.com" :href="business()">Wuepy Business</a>
         </div>
     </footer>
 </body>

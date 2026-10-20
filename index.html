@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wuepy</title>
-    <meta name="description" content="Wuepy es la marca de electrónica. Wuepy Business crea tu tienda online, el catálogo y la caja.">
+    <meta name="description" content="Wuepy es una marca paraguaya. Prepara su electrónica —auriculares, rasuradoras, carga y audio— y con Wuepy Business le da a cualquier comercio una tienda online, catálogo y caja.">
     <meta name="facebook-domain-verification" content="7fh3rtu0wywnydgk76mh193fwjbm3e" />
     <link rel="preconnect" href="https://wuepyback.onrender.com" crossorigin>
     <script src="/js/brand.js"></script>
@@ -21,7 +21,11 @@
                 return;
             }
             if (kind === 'shop') {
-                document.write('<style>#gateway-view,#landing-view{display:none!important}html,body{background:#fff!important;margin:0}</style>');
+                var shopPath = window.location.pathname;
+                if (shopPath === '/' || shopPath === '/index.html' || shopPath === '') {
+                    window.location.replace('/shop/' + window.location.search + window.location.hash);
+                }
+                document.write('<style>#gateway-view,#landing-view{display:none!important}html,body{background:#050505!important;margin:0;height:100%;overflow:hidden}#store-view,#wuepy-shop-frame{position:fixed;inset:0;width:100%;height:100%;max-width:none;border:0;background:#050505}</style>');
                 return;
             }
             if (kind === 'home') document.write('<style>#landing-view{display:none!important}</style>');
@@ -29,11 +33,12 @@
             document.title = kind === 'business'
                 ? 'Wuepy Business | Creá tu tienda y gestioná tu negocio'
                 : 'Wuepy | Electrónica y tiendas para tu negocio';
+            document.write('<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,560;0,9..144,650;1,9..144,560&family=Outfit:wght@400;500;600;700&display=swap">');
             document.write('<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">');
             document.write('<script src="https://cdn.tailwindcss.com"><\/script>');
             document.write('<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">');
             document.write('<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js"><\/script>');
-            document.write('<script src="/js/api.js"><\/script><script src="/js/platform.js"><\/script><script src="/js/guide.js"><\/script>');
+            document.write('<script src="/js/api.js"><\/script><script src="/js/platform.js"><\/script>');
         })();
     </script>
     <style>
@@ -59,76 +64,278 @@
             opacity: 0.4;
         }
         [x-cloak] { display: none !important; }
+        #gateway-view { font-family: Outfit, system-ui, sans-serif; }
+        #gateway-view h1, #gateway-view h2, #gateway-view .serif { font-family: Fraunces, Georgia, serif; font-weight: 560; font-optical-sizing: auto; }
     </style>
 </head>
 <body x-data="{ mobileMenuOpen: false }">
 
 <div id="gateway-view" class="bg-white min-h-screen text-neutral-950" x-data="{ open: false }">
     <nav class="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-neutral-200">
-        <div class="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
-            <a href="/" class="text-lg font-black tracking-[0.22em] text-neutral-950">WUEPY</a>
-            <div class="hidden md:flex items-center gap-8 text-sm font-semibold text-neutral-600">
-                <a data-brand="shop" href="/shop/" class="hover:text-neutral-950">Productos</a>
-                <a data-brand="business" href="/?vista=business" class="hover:text-neutral-950">Para tu negocio</a>
-                <a href="/auth/login.html" class="hover:text-neutral-950">Ingresar</a>
+        <div class="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between gap-4">
+            <a href="/" class="text-sm sm:text-base font-semibold tracking-[0.28em]">WUEPY</a>
+            <div class="hidden lg:flex items-center gap-7 text-sm font-medium text-neutral-600">
+                <a href="#electronica" class="hover:text-neutral-950">Electrónica</a>
+                <a href="#tiendas" class="hover:text-neutral-950">Tiendas</a>
+                <a href="#disenos" class="hover:text-neutral-950">Diseños</a>
+                <a href="#precios" class="hover:text-neutral-950">Planes</a>
+                <a href="/nosotros.html" class="hover:text-neutral-950">Nosotros</a>
             </div>
             <div class="flex items-center gap-2">
-                <a data-brand="shop" href="/shop/" class="hidden sm:inline-flex bg-neutral-950 text-white text-sm font-bold px-4 py-2.5 rounded-full">Tienda</a>
-                <button @click="open = !open" class="md:hidden w-11 h-11 text-xl" aria-label="Menú">
+                <a href="/auth/login.html" class="hidden sm:inline text-sm font-semibold text-neutral-600 px-3 py-2">Ingresar</a>
+                <a data-brand="business" href="/?vista=business" class="hidden sm:inline-flex h-10 items-center bg-neutral-950 text-white text-sm font-semibold px-4 rounded-full">Crear tienda</a>
+                <button @click="open = !open" class="lg:hidden w-11 h-11 text-xl" aria-label="Menú">
                     <i class="fas" :class="open ? 'fa-times' : 'fa-bars'"></i>
                 </button>
             </div>
         </div>
-        <div x-show="open" x-cloak class="md:hidden border-t border-neutral-200 bg-white px-5 py-4 space-y-2">
-            <a data-brand="shop" href="/shop/" class="block py-3 text-lg font-bold">Productos Wuepy</a>
-            <a data-brand="business" href="/?vista=business" class="block py-3 text-lg font-bold">Wuepy Business</a>
-            <a href="/auth/login.html" class="block py-3 text-lg font-bold">Ingresar al panel</a>
+        <div x-show="open" x-cloak class="lg:hidden border-t border-neutral-200 bg-white px-5 py-3">
+            <a href="#electronica" @click="open = false" class="block py-3 text-lg font-medium">Electrónica</a>
+            <a href="#tiendas" @click="open = false" class="block py-3 text-lg font-medium">Tiendas</a>
+            <a href="#disenos" @click="open = false" class="block py-3 text-lg font-medium">Diseños</a>
+            <a href="#precios" @click="open = false" class="block py-3 text-lg font-medium">Planes</a>
+            <a href="/nosotros.html" class="block py-3 text-lg font-medium">Nosotros</a>
+            <a href="/auth/login.html" class="block py-3 text-lg font-medium">Ingresar</a>
+            <a data-brand="business" href="/?vista=business" class="mt-2 flex h-12 items-center justify-center rounded-full bg-neutral-950 text-white font-semibold">Crear tienda</a>
         </div>
     </nav>
 
-    <header class="max-w-6xl mx-auto px-5 pt-16 pb-10 md:pt-24">
-        <p class="text-xs font-black tracking-[0.22em] uppercase text-neutral-400 mb-4">Paraguay</p>
-        <h1 class="text-5xl sm:text-7xl font-black tracking-tight text-neutral-950 leading-[0.95]">Dos puertas.<br>Una marca.</h1>
-        <p class="mt-6 max-w-xl text-lg text-neutral-500 leading-relaxed">Wuepy es la electrónica. Wuepy Business es el lugar donde armás tu propia tienda, el catálogo y la caja.</p>
+    <header class="bg-neutral-950 text-white overflow-hidden">
+        <div class="max-w-6xl mx-auto px-5 pt-14 pb-16 sm:pt-20 sm:pb-20">
+            <p class="text-xs font-semibold tracking-[0.28em] uppercase text-neutral-500">Asunción · Paraguay · LFAFTECH</p>
+            <h1 class="serif mt-6 text-[3.1rem] sm:text-7xl lg:text-8xl font-medium tracking-tight leading-[0.92] max-w-5xl">Electrónica con nombre propio. <span class="italic text-neutral-400">La tienda de tu negocio, hoy.</span></h1>
+            <p class="mt-8 max-w-2xl text-lg sm:text-xl leading-relaxed text-neutral-300">Wuepy es una marca que se está armando en Paraguay. En shop.wuepy.com va a estar la electrónica: auriculares, rasuradoras, carga, audio y accesorios. Esa línea todavía no tiene precio ni botón de compra. Lo que ya funciona, y se usa todos los días, es otra cosa: el sitio, el catálogo y la caja de un comercio que quiere vender con su propio nombre.</p>
+            <div class="mt-10 flex flex-col sm:flex-row gap-3">
+                <a href="#electronica" class="h-14 px-6 rounded-full bg-white text-neutral-950 font-semibold inline-flex items-center justify-center">Ver qué viene en la marca</a>
+                <a href="#tiendas" class="h-14 px-6 rounded-full border border-white/25 text-white font-semibold inline-flex items-center justify-center">Cómo es una tienda</a>
+            </div>
+        </div>
+        <div class="border-t border-white/10">
+            <div class="max-w-6xl mx-auto px-5 py-4 flex flex-wrap gap-x-6 gap-y-2 text-xs font-semibold tracking-[0.18em] uppercase text-neutral-500">
+                <span>Auriculares</span><span>Rasuradoras</span><span>Carga</span><span>Audio</span><span>Energía</span><span>Accesorios</span><span class="text-white">Próximamente</span>
+            </div>
+        </div>
     </header>
 
-    <section class="max-w-6xl mx-auto px-5 pb-8 grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <a data-brand="shop" href="/shop/" class="group bg-white border border-neutral-200 rounded-[2rem] p-8 sm:p-10 min-h-[320px] flex flex-col justify-between hover:border-neutral-950 transition">
-            <div>
-                <p class="text-xs font-black tracking-[0.2em] uppercase text-neutral-400">Tienda oficial</p>
-                <h2 class="mt-4 text-4xl sm:text-5xl font-black tracking-tight">Wuepy</h2>
-                <p class="mt-4 text-lg text-neutral-500 leading-relaxed max-w-md">Auriculares, carga, audio y accesorios. Blanco, negro y nada de ruido.</p>
+    <section id="marca" class="max-w-6xl mx-auto px-5 py-20 sm:py-28">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+            <div class="lg:col-span-5">
+                <p class="text-xs font-semibold tracking-[0.22em] uppercase text-neutral-400">Quién firma</p>
+                <h2 class="mt-4 text-4xl sm:text-5xl tracking-tight leading-[1.05]">Hecho por una persona, en Asunción, para que un negocio de acá no dependa de un enlace suelto.</h2>
             </div>
-            <span class="mt-10 inline-flex items-center justify-center h-14 px-6 rounded-full bg-neutral-950 text-white font-bold w-full sm:w-auto">Entrar a la tienda <i class="fas fa-arrow-right ml-2"></i></span>
-        </a>
-        <a data-brand="business-guide" href="/?vista=business&guia=1" class="group bg-neutral-950 text-white rounded-[2rem] p-8 sm:p-10 min-h-[320px] flex flex-col justify-between">
-            <div>
-                <p class="text-xs font-black tracking-[0.2em] uppercase text-blue-300">Para vender lo tuyo</p>
-                <h2 class="mt-4 text-4xl sm:text-5xl font-black tracking-tight">Wuepy <span class="text-blue-400">Business</span></h2>
-                <p class="mt-4 text-lg text-neutral-300 leading-relaxed max-w-md">Creá el sitio, cargá productos, cobrá en caja y recibí los pedidos por WhatsApp.</p>
-            </div>
-            <span class="mt-10 inline-flex items-center justify-center h-14 px-6 rounded-full bg-blue-600 text-white font-bold w-full sm:w-auto">Quiero crear mi tienda <i class="fas fa-arrow-right ml-2"></i></span>
-        </a>
-    </section>
-
-    <section id="elegir" class="max-w-6xl mx-auto px-5 py-16">
-        <div class="border border-neutral-200 rounded-[2rem] p-8 sm:p-12">
-            <h2 class="text-3xl sm:text-4xl font-black tracking-tight">¿Qué querés hacer?</h2>
-            <p class="mt-3 text-neutral-500 text-lg max-w-2xl">Si es tu negocio, la guía te muestra el primer botón y te explica el camino. Si es la marca, entrá directo a la tienda.</p>
-            <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <a data-brand="business-guide" href="/?vista=business&guia=1" class="h-16 rounded-2xl bg-blue-600 text-white font-black text-lg flex items-center justify-center px-4 text-center">Crear o gestionar mi tienda</a>
-                <a data-brand="shop" href="/shop/" class="h-16 rounded-2xl border-2 border-neutral-950 text-neutral-950 font-black text-lg flex items-center justify-center px-4 text-center">Ver productos Wuepy</a>
+            <div class="lg:col-span-7 text-lg leading-relaxed text-neutral-600 space-y-5">
+                <p>Detrás de la marca está Luis Fernando Arce Fretes, de LFAFTECH. Empezó a programar a los 14 años. A los 16 fundó y2k.py, una marca de ropa: el sistema, el sitio y las promociones los hizo él. En 2024 ganó un hackathon nacional con VeteriSoftware. De ese recorrido salió Wuepy: primero, una forma simple de publicar una tienda; después, una línea de electrónica con el mismo nombre.</p>
+                <p>Una tienda de Wuepy Business no es un catálogo prestado. Es una página con el nombre del comercio, en un subdominio propio —por ejemplo <span class="text-neutral-950 font-semibold">minegocio.wuepy.com</span>— donde el cliente ve los productos, el precio en guaraníes y un WhatsApp que ya trae escrito qué quiere comprar. El dueño ve el mismo stock en la web y en la caja del local.</p>
+                <p>La fase que viene, y que todavía no está abierta, es una tienda más grande: varios comercios en un solo lugar, con la entrega confirmada antes de soltar el pago. Hoy eso no existe. Hoy existe el sitio de cada negocio, y la promesa pública de la electrónica Wuepy.</p>
+                <a href="/nosotros.html" class="inline-flex h-12 items-center font-semibold text-neutral-950 underline underline-offset-4">La historia completa</a>
             </div>
         </div>
     </section>
 
+    <section id="electronica" class="bg-neutral-950 text-white">
+        <div class="max-w-6xl mx-auto px-5 py-20 sm:py-28">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-end">
+                <div class="lg:col-span-8">
+                    <p class="text-xs font-semibold tracking-[0.22em] uppercase text-neutral-500">shop.wuepy.com</p>
+                    <h2 class="mt-4 text-4xl sm:text-6xl tracking-tight leading-[1.02]">La electrónica todavía no está a la venta. La línea, sí se puede leer.</h2>
+                </div>
+                <div class="lg:col-span-4 lg:text-right">
+                    <a data-brand="shop" href="/shop/" class="h-14 px-6 rounded-full bg-white text-neutral-950 font-semibold inline-flex items-center justify-center">Abrir la tienda oficial</a>
+                </div>
+            </div>
+            <p class="mt-8 max-w-3xl text-lg leading-relaxed text-neutral-400">Cuando un producto esté listo, entra en la tienda oficial con foto, precio en guaraníes y pedido por WhatsApp. Hasta ese día la página dice Próximamente y no inventa un precio. Estas son las familias que se están preparando.</p>
+            <div class="mt-12 divide-y divide-white/10 border-y border-white/10">
+                <article class="grid grid-cols-1 sm:grid-cols-12 gap-3 sm:gap-6 py-7">
+                    <p class="sm:col-span-1 text-sm text-neutral-500">01</p>
+                    <h3 class="sm:col-span-4 text-3xl">Auriculares</h3>
+                    <p class="sm:col-span-5 text-neutral-400 leading-relaxed">De oído y de diadema. Para la calle, la facultad y las llamadas. Es la primera pieza de audio de la marca.</p>
+                    <p class="sm:col-span-2 text-xs font-semibold tracking-[0.16em] uppercase text-neutral-500 sm:text-right sm:pt-2">Próximamente</p>
+                </article>
+                <article class="grid grid-cols-1 sm:grid-cols-12 gap-3 sm:gap-6 py-7">
+                    <p class="sm:col-span-1 text-sm text-neutral-500">02</p>
+                    <h3 class="sm:col-span-4 text-3xl">Rasuradoras</h3>
+                    <p class="sm:col-span-5 text-neutral-400 leading-relaxed">Rasuradoras eléctricas para el uso de todos los días. Cuidado personal, pensado para conseguirse acá, no para encargarlo afuera.</p>
+                    <p class="sm:col-span-2 text-xs font-semibold tracking-[0.16em] uppercase text-neutral-500 sm:text-right sm:pt-2">Próximamente</p>
+                </article>
+                <article class="grid grid-cols-1 sm:grid-cols-12 gap-3 sm:gap-6 py-7">
+                    <p class="sm:col-span-1 text-sm text-neutral-500">03</p>
+                    <h3 class="sm:col-span-4 text-3xl">Carga</h3>
+                    <p class="sm:col-span-5 text-neutral-400 leading-relaxed">Cargadores y cables USB-C. Lo que se pierde, se rompe y se vuelve a comprar, hecho para durar más que una semana.</p>
+                    <p class="sm:col-span-2 text-xs font-semibold tracking-[0.16em] uppercase text-neutral-500 sm:text-right sm:pt-2">Próximamente</p>
+                </article>
+                <article class="grid grid-cols-1 sm:grid-cols-12 gap-3 sm:gap-6 py-7">
+                    <p class="sm:col-span-1 text-sm text-neutral-500">04</p>
+                    <h3 class="sm:col-span-4 text-3xl">Audio</h3>
+                    <p class="sm:col-span-5 text-neutral-400 leading-relaxed">Parlantes chicos para una pieza o el mostrador de un local. Sonido claro, tamaño de mochila.</p>
+                    <p class="sm:col-span-2 text-xs font-semibold tracking-[0.16em] uppercase text-neutral-500 sm:text-right sm:pt-2">Próximamente</p>
+                </article>
+                <article class="grid grid-cols-1 sm:grid-cols-12 gap-3 sm:gap-6 py-7">
+                    <p class="sm:col-span-1 text-sm text-neutral-500">05</p>
+                    <h3 class="sm:col-span-4 text-3xl">Energía</h3>
+                    <p class="sm:col-span-5 text-neutral-400 leading-relaxed">Baterías portátiles para el día que se alarga: clase, un delivery, un turno largo en el local.</p>
+                    <p class="sm:col-span-2 text-xs font-semibold tracking-[0.16em] uppercase text-neutral-500 sm:text-right sm:pt-2">Próximamente</p>
+                </article>
+                <article class="grid grid-cols-1 sm:grid-cols-12 gap-3 sm:gap-6 py-7">
+                    <p class="sm:col-span-1 text-sm text-neutral-500">06</p>
+                    <h3 class="sm:col-span-4 text-3xl">Accesorios</h3>
+                    <p class="sm:col-span-5 text-neutral-400 leading-relaxed">Lo que acompaña al teléfono y a la notebook. Pocas referencias, elegidas, con el nombre Wuepy.</p>
+                    <p class="sm:col-span-2 text-xs font-semibold tracking-[0.16em] uppercase text-neutral-500 sm:text-right sm:pt-2">Próximamente</p>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section id="tiendas" class="max-w-6xl mx-auto px-5 py-20 sm:py-28">
+        <p class="text-xs font-semibold tracking-[0.22em] uppercase text-blue-600">Wuepy Business</p>
+        <h2 class="mt-4 text-4xl sm:text-6xl tracking-tight leading-[1.02] max-w-4xl">Una tienda de verdad: dirección propia, catálogo, pedido y caja.</h2>
+        <p class="mt-6 max-w-3xl text-lg leading-relaxed text-neutral-600">Wuepy Business es el panel de business.wuepy.com. Ahí un almacén, una peluquería, una rotisería, una ferretería o una marca de ropa publica lo suyo. No vende los auriculares de Wuepy. Vende lo que ese comercio carga. El visitante no ve un panel: ve una página. El dueño no programa: carga datos.</p>
+
+        <div class="mt-14 grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <article class="bg-neutral-950 text-white rounded-[28px] p-7 sm:p-9">
+                <p class="text-xs font-semibold tracking-[0.18em] uppercase text-neutral-500">Lo que ve el cliente</p>
+                <ol class="mt-6 space-y-5 text-neutral-300 leading-relaxed">
+                    <li><span class="text-white font-semibold">1. El enlace.</span> Entra a un nombre claro, del estilo minegocio.wuepy.com. También se puede buscar el catálogo y abrir la ficha de un producto con una dirección propia.</li>
+                    <li><span class="text-white font-semibold">2. El catálogo.</span> Foto, nombre, categoría y precio. En el celular la grilla se acomoda a una columna. Si el comercio cargó un precio anterior, se muestra tachado al lado del actual.</li>
+                    <li><span class="text-white font-semibold">3. El pedido.</span> Un botón abre WhatsApp con el producto y el precio ya escritos. El pedido queda además en el panel del dueño. Wuepy no se queda con un porcentaje de esa venta.</li>
+                </ol>
+            </article>
+            <article class="border border-neutral-200 rounded-[28px] p-7 sm:p-9">
+                <p class="text-xs font-semibold tracking-[0.18em] uppercase text-neutral-400">Lo que hace el dueño</p>
+                <ol class="mt-6 space-y-5 text-neutral-600 leading-relaxed">
+                    <li><span class="text-neutral-950 font-semibold">1. La cuenta.</span> Nombre, correo y contraseña. El primer mes del plan básico está incluido. Después se paga por transferencia, Giros Tigo o Pago Express.</li>
+                    <li><span class="text-neutral-950 font-semibold">2. La tienda.</span> Nombre, rubro, colores y un diseño. El subdominio se arma solo. Los nombres shop y business están reservados para la marca.</li>
+                    <li><span class="text-neutral-950 font-semibold">3. El día a día.</span> Carga productos, cobra en el POS del local, asigna repartidores y mira la caja del día. El stock es uno solo: lo que sale por la web sale también del mostrador.</li>
+                </ol>
+            </article>
+        </div>
+
+        <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <article class="bg-neutral-50 rounded-3xl p-6">
+                <h3 class="text-xl">Catálogo</h3>
+                <p class="mt-2 text-neutral-600 leading-relaxed">Foto, categoría, precio en guaraníes o dólares, precio de comparación y stock. En el teléfono cada producto es una ficha grande, no una tabla apretada.</p>
+            </article>
+            <article class="bg-neutral-50 rounded-3xl p-6">
+                <h3 class="text-xl">Caja</h3>
+                <p class="mt-2 text-neutral-600 leading-relaxed">El punto de venta registra la venta del local y descuenta el mismo inventario que ve el cliente en internet.</p>
+            </article>
+            <article class="bg-neutral-50 rounded-3xl p-6">
+                <h3 class="text-xl">Reparto</h3>
+                <p class="mt-2 text-neutral-600 leading-relaxed">Hay un panel de repartidores y empleados con permisos. No todo el mundo entra a cambiar precios.</p>
+            </article>
+            <article class="bg-neutral-50 rounded-3xl p-6">
+                <h3 class="text-xl">Google</h3>
+                <p class="mt-2 text-neutral-600 leading-relaxed">Cada tienda publica sitemap.xml y robots.txt para que el catálogo se pueda indexar, no solo compartirse por chat.</p>
+            </article>
+        </div>
+
+        <div class="mt-10 flex flex-col sm:flex-row gap-3">
+            <a href="/auth/register.html" class="h-14 px-6 rounded-full bg-blue-600 text-white font-semibold inline-flex items-center justify-center">Crear mi cuenta</a>
+            <a data-brand="business" href="/?vista=business" class="h-14 px-6 rounded-full border border-neutral-300 font-semibold inline-flex items-center justify-center">Ver Wuepy Business</a>
+        </div>
+    </section>
+
+    <section id="disenos" class="bg-neutral-50 border-y border-neutral-200">
+        <div class="max-w-6xl mx-auto px-5 py-20">
+            <p class="text-xs font-semibold tracking-[0.22em] uppercase text-neutral-400">Diez diseños, o uno hecho con IA</p>
+            <h2 class="mt-4 text-4xl sm:text-5xl tracking-tight max-w-3xl">El aspecto de la tienda se elige. El catálogo no se vuelve a cargar.</h2>
+            <p class="mt-5 max-w-3xl text-lg leading-relaxed text-neutral-600">Hay diez plantillas con nombre y carácter. También se le puede pedir un diseño a la IA, describir el rubro y recibir una página. Si más adelante preferís una plantilla, el diseño anterior queda guardado en la cuenta: no se pierde el trabajo.</p>
+            <div class="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                <article class="bg-white border border-neutral-200 rounded-2xl p-4"><h3 class="font-semibold">Moderna</h3><p class="mt-1 text-sm text-neutral-500 leading-relaxed">Oscura, geométrica, catálogo en grilla.</p></article>
+                <article class="bg-white border border-neutral-200 rounded-2xl p-4"><h3 class="font-semibold">Clara</h3><p class="mt-1 text-sm text-neutral-500 leading-relaxed">Blanca, barra de anuncios y tarjetas clásicas.</p></article>
+                <article class="bg-white border border-neutral-200 rounded-2xl p-4"><h3 class="font-semibold">Urbana</h3><p class="mt-1 text-sm text-neutral-500 leading-relaxed">Amarillo y negro, bordes gruesos.</p></article>
+                <article class="bg-white border border-neutral-200 rounded-2xl p-4"><h3 class="font-semibold">Boutique</h3><p class="mt-1 text-sm text-neutral-500 leading-relaxed">Rosa, papel crema y títulos en serif.</p></article>
+                <article class="bg-white border border-neutral-200 rounded-2xl p-4"><h3 class="font-semibold">Terminal</h3><p class="mt-1 text-sm text-neutral-500 leading-relaxed">Negro, letra mono y verde neón.</p></article>
+                <article class="bg-white border border-neutral-200 rounded-2xl p-4"><h3 class="font-semibold">Glamour</h3><p class="mt-1 text-sm text-neutral-500 leading-relaxed">Rosa fuerte y fichas redondas.</p></article>
+                <article class="bg-white border border-neutral-200 rounded-2xl p-4"><h3 class="font-semibold">Gourmet</h3><p class="mt-1 text-sm text-neutral-500 leading-relaxed">Hero a pantalla completa, de restaurante.</p></article>
+                <article class="bg-white border border-neutral-200 rounded-2xl p-4"><h3 class="font-semibold">Studio</h3><p class="mt-1 text-sm text-neutral-500 leading-relaxed">Mucho blanco, foto grande, botones finos.</p></article>
+                <article class="bg-white border border-neutral-200 rounded-2xl p-4"><h3 class="font-semibold">Power</h3><p class="mt-1 text-sm text-neutral-500 leading-relaxed">Rojo, títulos condensados, botones inclinados.</p></article>
+                <article class="bg-white border border-neutral-200 rounded-2xl p-4"><h3 class="font-semibold">Feria</h3><p class="mt-1 text-sm text-neutral-500 leading-relaxed">Puestos de mercado, sellos y filas.</p></article>
+            </div>
+        </div>
+    </section>
+
+    <section id="precios" class="bg-neutral-50 border-y border-neutral-200">
+        <div class="max-w-6xl mx-auto px-5 py-20">
+            <h2 class="text-4xl sm:text-5xl tracking-tight">Los planes, en guaraníes.</h2>
+            <p class="mt-4 max-w-3xl text-lg text-neutral-600">El primer mes del plan básico está incluido al crear la cuenta. Después se paga por transferencia, Giros Tigo o Pago Express. No hay comisión sobre cada venta. Si invitás a alguien y esa persona abre una tienda activa, sumás 3 días, hasta 10 invitaciones. Con Wuepy Apoya, un video contando la experiencia puede sumar 6 meses si el equipo lo aprueba.</p>
+            <div class="mt-10 grid grid-cols-1 md:grid-cols-3 gap-5">
+                <article class="bg-white border border-neutral-200 rounded-3xl p-7">
+                    <h3 class="text-sm font-semibold tracking-[0.14em] uppercase text-neutral-400">Básico</h3>
+                    <p class="mt-3 text-4xl">30.000 <span class="text-base font-semibold text-neutral-500">Gs / mes</span></p>
+                    <ul class="mt-6 space-y-2 text-neutral-600">
+                        <li>1 tienda, hasta 80 productos</li>
+                        <li>Catálogo, WhatsApp y panel</li>
+                        <li>Las 10 plantillas y 1 sitio con IA</li>
+                    </ul>
+                </article>
+                <article class="bg-neutral-950 text-white rounded-3xl p-7">
+                    <h3 class="text-sm font-semibold tracking-[0.14em] uppercase text-blue-300">Medio</h3>
+                    <p class="mt-3 text-4xl">60.000 <span class="text-base font-semibold text-neutral-400">Gs / mes</span></p>
+                    <ul class="mt-6 space-y-2 text-neutral-300">
+                        <li>Hasta 3 tiendas y 500 productos</li>
+                        <li>Caja, reparto y hasta 5 empleados</li>
+                        <li>5 actualizaciones de IA al mes</li>
+                    </ul>
+                </article>
+                <article class="bg-white border border-neutral-200 rounded-3xl p-7">
+                    <h3 class="text-sm font-semibold tracking-[0.14em] uppercase text-neutral-400">Pro</h3>
+                    <p class="mt-3 text-4xl">150.000 <span class="text-base font-semibold text-neutral-500">Gs / mes</span></p>
+                    <ul class="mt-6 space-y-2 text-neutral-600">
+                        <li>Hasta 25 tiendas</li>
+                        <li>Productos sin un tope práctico</li>
+                        <li>Hasta 50 empleados, cajeros y finanzas</li>
+                    </ul>
+                </article>
+            </div>
+            <p class="mt-6 text-sm text-neutral-500">Los topes son los del panel. El detalle legal está en los términos.</p>
+        </div>
+    </section>
+
+    <section class="max-w-6xl mx-auto px-5 py-20">
+        <h2 class="text-4xl sm:text-5xl tracking-tight max-w-3xl">Tres pasos, y la tienda ya tiene dirección.</h2>
+        <ol class="mt-10 grid grid-cols-1 md:grid-cols-3 gap-8">
+            <li>
+                <p class="text-sm font-semibold text-blue-600">01</p>
+                <h3 class="mt-2 text-2xl">La cuenta</h3>
+                <p class="mt-2 text-neutral-600 leading-relaxed">Nombre, correo y contraseña. Con eso se abre el panel de Wuepy Business y el mes de prueba del plan básico.</p>
+            </li>
+            <li>
+                <p class="text-sm font-semibold text-blue-600">02</p>
+                <h3 class="mt-2 text-2xl">La tienda</h3>
+                <p class="mt-2 text-neutral-600 leading-relaxed">Nombre, rubro y un diseño. El enlace queda armado. Si el nombre ya existe, el panel pide otro. shop y business no se pueden usar: son de la marca.</p>
+            </li>
+            <li>
+                <p class="text-sm font-semibold text-blue-600">03</p>
+                <h3 class="mt-2 text-2xl">Los productos</h3>
+                <p class="mt-2 text-neutral-600 leading-relaxed">Foto, precio y stock. Se comparte el enlace. Lo que se vende en la web o en la caja sale del mismo inventario.</p>
+            </li>
+        </ol>
+        <a href="/auth/register.html" class="mt-10 h-14 px-6 rounded-full bg-neutral-950 text-white font-semibold inline-flex items-center justify-center">Empezar con el mes de prueba</a>
+    </section>
+
     <footer class="border-t border-neutral-200">
-        <div class="max-w-6xl mx-auto px-5 py-10 flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between text-sm text-neutral-500">
-            <p class="font-semibold text-neutral-950">Wuepy</p>
-            <div class="flex flex-wrap gap-x-5 gap-y-2">
-                <a data-brand="business" href="/?vista=business" class="hover:text-neutral-950">Wuepy Business</a>
-                <a href="/nosotros.html" class="hover:text-neutral-950">Nosotros</a>
-                <a href="/terminos.html" class="hover:text-neutral-950">Términos</a>
+        <div class="max-w-6xl mx-auto px-5 py-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 text-sm">
+            <div>
+                <p class="font-black tracking-[0.18em]">WUEPY</p>
+                <p class="mt-3 text-neutral-500 leading-relaxed">Marca de LFAFTECH, hecha en Paraguay. Electrónica en camino. Tiendas para comercios, disponibles ahora.</p>
+            </div>
+            <div class="space-y-2">
+                <p class="font-bold">La marca</p>
+                <a href="#electronica" class="block text-neutral-500">Electrónica, próximamente</a>
+                <a data-brand="shop" href="/shop/" class="block text-neutral-500">shop.wuepy.com</a>
+                <a href="/nosotros.html" class="block text-neutral-500">Nosotros</a>
+            </div>
+            <div class="space-y-2">
+                <p class="font-bold">Negocios</p>
+                <a data-brand="business" href="/?vista=business" class="block text-neutral-500">Wuepy Business</a>
+                <a href="/auth/register.html" class="block text-neutral-500">Crear cuenta</a>
+                <a href="/auth/login.html" class="block text-neutral-500">Ingresar al panel</a>
+                <a href="/wuepy-apoya.html" class="block text-neutral-500">Wuepy Apoya</a>
+            </div>
+            <div class="space-y-2">
+                <p class="font-bold">Legal</p>
+                <a href="/terminos.html" class="block text-neutral-500">Términos</a>
+                <p class="text-neutral-400 pt-4">© 2026 Wuepy by LFAFTECH</p>
             </div>
         </div>
     </footer>
@@ -535,15 +742,12 @@
             const storeView = document.getElementById('store-view');
             storeView.style.display = 'block';
             const frame = document.createElement('iframe');
-            frame.src = '/shop/index.html';
+            frame.id = 'wuepy-shop-frame';
+            frame.src = '/shop/index.html' + window.location.search + window.location.hash;
             frame.title = 'Wuepy';
-            frame.className = 'fixed inset-0 w-full h-full border-0 bg-white';
+            frame.setAttribute('style', 'position:fixed;top:0;left:0;width:100vw;height:100vh;max-width:none;border:0;background:#050505');
             storeView.appendChild(frame);
             return;
-        }
-
-        if (window.__WUEPY_KIND === 'business' && window.WuepyGuide) {
-            WuepyGuide.startLanding();
         }
 
         if (!_isMainDomain) {
