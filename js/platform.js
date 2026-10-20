@@ -187,9 +187,20 @@
         return /^[a-z0-9]{3,32}$/.test(slug || '') && !isReservedSlug(slug);
     }
 
+    function isBrandSlug(slug) {
+        return slug === 'shop' || slug === 'business';
+    }
+
+    function canUseSlug(slug, user) {
+        if (isValidSlug(slug)) return true;
+        return isBrandSlug(slug) && !!(user && user.role === 'superadmin');
+    }
+
     function storeHost(site) {
         const slug = slugify(site && (site.subdomain || site.slug || site.name));
-        return isValidSlug(slug) ? slug + '.wuepy.com' : '';
+        if (!/^[a-z0-9]{3,32}$/.test(slug || '')) return '';
+        if (isReservedSlug(slug) && !isBrandSlug(slug)) return '';
+        return slug + '.wuepy.com';
     }
 
     function storeUrl(site) {
@@ -302,7 +313,7 @@
 
     window.WuepyPlatform = {
         PLANS, TEMPLATES, PALETTES, templatePreview,
-        slugify, isValidSlug, isReservedSlug, storeHost, storeUrl,
+        slugify, isValidSlug, isReservedSlug, isBrandSlug, canUseSlug, storeHost, storeUrl,
         highestPlan, canCreateSite, canUseAi, bumpAiUsage, aiUpdatesUsed,
         buildAiPrompt, draftProductCopy, paymentAlias,
         accountPlanId, setAccountPlan, siteBlocked, orderedSites
