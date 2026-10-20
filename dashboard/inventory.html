@@ -11,6 +11,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="/js/api.js"></script>
     <script src="/js/platform.js"></script>
+    <script src="/js/guide.js"></script>
     
     <style>
         [x-cloak] { display: none !important; }
@@ -31,8 +32,8 @@
             <div class="flex justify-between items-center h-16">
                 <div class="flex items-center gap-8">
                     <a href="/dashboard/index.html" class="flex items-center gap-2 group">
-                        <div class="w-8 h-8 bg-blue-600 rounded flex items-center justify-center text-white font-bold text-lg shadow-md group-hover:bg-blue-700 transition">W</div>
-                        <span class="text-xl font-extrabold text-slate-900 tracking-tight">Wuepy</span>
+                        <div class="w-8 h-8 bg-slate-900 rounded flex items-center justify-center text-white font-bold text-lg shadow-md group-hover:bg-black transition">W</div>
+                        <span class="text-xl font-extrabold tracking-tight"><span class="text-slate-900">Wuepy</span> <span class="text-blue-600">Business</span></span>
                     </a>
                 </div>
                 <div class="flex items-center gap-4">
@@ -66,17 +67,17 @@
                     <i class="fas fa-chevron-right text-[10px]"></i>
                     <span class="text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md">Inventario</span>
                 </div>
-                <h1 class="text-3xl md:text-4xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-                    <i class="fas fa-boxes text-indigo-500"></i> Catálogo de Productos
+                <h1 class="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+                    <i class="fas fa-boxes text-indigo-500"></i> Catálogo
                 </h1>
-                <p class="text-slate-500 mt-2 text-lg">Administra tus existencias, precios y variaciones en tiempo real.</p>
+                <p class="text-slate-500 mt-2 text-base sm:text-lg">En el celular cada producto es una ficha grande. En la compu sigue la tabla.</p>
             </div>
             
-            <div class="flex flex-wrap gap-3">
-                <button class="bg-white border-2 border-slate-200 hover:border-slate-300 text-slate-600 px-5 py-3 rounded-xl font-bold shadow-sm transition flex items-center gap-2">
+            <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                <button class="bg-white border-2 border-slate-200 hover:border-slate-300 text-slate-600 px-5 py-4 rounded-2xl font-bold shadow-sm transition flex items-center justify-center gap-2">
                     <i class="fas fa-file-export"></i> Exportar
                 </button>
-                <button @click="openAddModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-black shadow-lg shadow-indigo-600/30 transition transform hover:-translate-y-0.5 flex items-center gap-2">
+                <button data-guide="agregar" @click="openAddModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-4 rounded-2xl font-black shadow-lg shadow-indigo-600/30 transition transform hover:-translate-y-0.5 flex items-center justify-center gap-2 text-base">
                     <i class="fas fa-plus-circle text-lg"></i> Agregar Producto
                 </button>
             </div>
@@ -95,49 +96,49 @@
             </div>
         </template>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex items-center gap-4">
-                <div class="w-14 h-14 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 text-2xl shrink-0">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
+            <div class="bg-white rounded-2xl p-4 sm:p-6 border border-slate-200 shadow-sm flex flex-col items-start gap-3 min-w-0">
+                <div class="w-10 h-10 text-lg sm:w-12 sm:h-12 sm:text-xl bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 text-2xl shrink-0">
                     <i class="fas fa-box-open"></i>
                 </div>
-                <div>
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Total Referencias</p>
-                    <h3 class="text-2xl font-black text-slate-900" x-text="products.length"></h3>
+                <div class="w-full min-w-0">
+                    <p class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wide mb-1 leading-tight">Referencias</p>
+                    <h3 class="text-xl sm:text-2xl font-black text-slate-900 leading-tight" x-text="products.length"></h3>
                 </div>
             </div>
             
-            <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex items-center gap-4">
-                <div class="w-14 h-14 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600 text-2xl shrink-0">
+            <div class="bg-white rounded-2xl p-4 sm:p-6 border border-slate-200 shadow-sm flex flex-col items-start gap-3 min-w-0">
+                <div class="w-10 h-10 text-lg sm:w-12 sm:h-12 sm:text-xl bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600 text-2xl shrink-0">
                     <i class="fas fa-wallet"></i>
                 </div>
-                <div>
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Valor en Stock</p>
-                    <h3 class="text-2xl font-black text-slate-900 truncate" title="Suma de Precio x Stock" x-text="formatMoney(calculateTotalValue())"></h3>
+                <div class="w-full min-w-0">
+                    <p class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wide mb-1 leading-tight">Valor en stock</p>
+                    <h3 class="text-lg sm:text-2xl font-black text-slate-900 leading-tight break-words" title="Suma de Precio x Stock" x-text="formatMoney(calculateTotalValue())"></h3>
                 </div>
             </div>
 
-            <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex items-center gap-4">
-                <div class="w-14 h-14 bg-orange-50 rounded-xl flex items-center justify-center text-orange-600 text-2xl shrink-0">
+            <div class="bg-white rounded-2xl p-4 sm:p-6 border border-slate-200 shadow-sm flex flex-col items-start gap-3 min-w-0">
+                <div class="w-10 h-10 text-lg sm:w-12 sm:h-12 sm:text-xl bg-orange-50 rounded-xl flex items-center justify-center text-orange-600 text-2xl shrink-0">
                     <i class="fas fa-exclamation-triangle"></i>
                 </div>
-                <div>
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Stock Bajo</p>
-                    <h3 class="text-2xl font-black text-slate-900" x-text="calculateLowStock()"></h3>
+                <div class="w-full min-w-0">
+                    <p class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wide mb-1 leading-tight">Stock bajo</p>
+                    <h3 class="text-xl sm:text-2xl font-black text-slate-900 leading-tight" x-text="calculateLowStock()"></h3>
                 </div>
             </div>
 
-            <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex items-center gap-4">
-                <div class="w-14 h-14 bg-red-50 rounded-xl flex items-center justify-center text-red-600 text-2xl shrink-0">
+            <div class="bg-white rounded-2xl p-4 sm:p-6 border border-slate-200 shadow-sm flex flex-col items-start gap-3 min-w-0">
+                <div class="w-10 h-10 text-lg sm:w-12 sm:h-12 sm:text-xl bg-red-50 rounded-xl flex items-center justify-center text-red-600 text-2xl shrink-0">
                     <i class="fas fa-times-circle"></i>
                 </div>
-                <div>
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Agotados</p>
-                    <h3 class="text-2xl font-black text-red-600" x-text="calculateOutStock()"></h3>
+                <div class="w-full min-w-0">
+                    <p class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wide mb-1 leading-tight">Agotados</p>
+                    <h3 class="text-xl sm:text-2xl font-black text-red-600 leading-tight" x-text="calculateOutStock()"></h3>
                 </div>
             </div>
         </div>
 
-        <div class="bg-white p-5 rounded-t-3xl border border-slate-200 border-b-0 flex flex-col lg:flex-row gap-4 items-center justify-between shadow-sm relative z-10">
+        <div class="bg-white p-4 sm:p-5 rounded-3xl lg:rounded-b-none border border-slate-200 lg:border-b-0 flex flex-col lg:flex-row gap-4 items-stretch lg:items-center justify-between shadow-sm relative z-10 mb-4 lg:mb-0">
             
             <div class="flex flex-col sm:flex-row w-full lg:w-2/3 gap-3">
                 <div class="relative flex-1">
@@ -168,7 +169,49 @@
             </div>
         </div>
 
-        <div class="bg-white border border-slate-200 rounded-b-3xl shadow-sm overflow-hidden relative z-0">
+        <div class="lg:hidden space-y-4" data-guide="fichas" x-show="filteredProducts.length > 0" x-cloak>
+            <template x-for="product in filteredProducts" :key="'card-' + product._id">
+                <article class="bg-white border border-slate-200 rounded-[1.75rem] shadow-sm overflow-hidden">
+                    <div class="aspect-[4/3] bg-slate-100 relative">
+                        <template x-if="product.imageUrl && !product.imageUrl.includes('placehold')">
+                            <img :src="product.imageUrl" alt="" class="absolute inset-0 w-full h-full object-cover">
+                        </template>
+                        <template x-if="!product.imageUrl || product.imageUrl.includes('placehold')">
+                            <div class="absolute inset-0 flex items-center justify-center text-slate-300">
+                                <i class="fas fa-image text-5xl"></i>
+                            </div>
+                        </template>
+                        <span class="absolute top-4 left-4 bg-white/95 text-slate-900 text-xs font-black uppercase tracking-widest px-3 py-1.5 rounded-full" x-text="product.category || 'General'"></span>
+                    </div>
+                    <div class="p-5">
+                        <h2 class="text-2xl font-black text-slate-900 leading-tight" x-text="product.name"></h2>
+                        <p class="text-xs font-bold text-slate-400 mt-2" x-text="product.sku ? 'SKU ' + product.sku : 'Sin SKU'"></p>
+                        <p class="text-3xl font-black text-slate-900 mt-4 tracking-tight" x-text="formatMoney(product.price)"></p>
+                        <template x-if="product.compareAtPrice > product.price">
+                            <p class="text-sm text-slate-400 line-through font-bold mt-1" x-text="formatMoney(product.compareAtPrice)"></p>
+                        </template>
+                        <div class="grid grid-cols-2 gap-3 mt-5">
+                            <div class="rounded-2xl bg-slate-50 border border-slate-100 p-4 text-center">
+                                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Stock</p>
+                                <p class="text-3xl font-black mt-1"
+                                   :class="product.stock > (product.lowStockThreshold || 5) ? 'text-emerald-600' : (product.stock > 0 ? 'text-orange-500' : 'text-red-600')"
+                                   x-text="product.stock"></p>
+                            </div>
+                            <div class="rounded-2xl bg-slate-50 border border-slate-100 p-4 text-center">
+                                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">En la web</p>
+                                <p class="text-base font-black mt-3" :class="product.isActive === false ? 'text-slate-400' : 'text-emerald-600'" x-text="product.isActive === false ? 'Oculto' : 'Publicado'"></p>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3 mt-4">
+                            <button @click="openEditModal(product)" class="h-14 rounded-2xl bg-indigo-600 text-white font-black text-base">Editar</button>
+                            <button @click="confirmDelete(product._id, product.name)" class="h-14 rounded-2xl bg-red-50 text-red-600 font-black text-base border border-red-100">Eliminar</button>
+                        </div>
+                    </div>
+                </article>
+            </template>
+        </div>
+
+        <div class="hidden lg:block bg-white border border-slate-200 rounded-b-3xl shadow-sm overflow-hidden relative z-0" x-show="filteredProducts.length > 0" x-cloak>
             <div class="overflow-x-auto custom-scrollbar min-h-[400px]">
                 <table class="min-w-full divide-y divide-slate-200">
                     <thead class="bg-slate-900">
@@ -256,33 +299,29 @@
                             </tr>
                         </template>
 
-                        <tr x-show="filteredProducts.length === 0 && products.length > 0" x-cloak>
-                            <td colspan="6" class="px-6 py-20 text-center">
-                                <div class="mx-auto w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-4 border-2 border-dashed border-slate-200">
-                                    <i class="fas fa-search-minus text-slate-300 text-3xl"></i>
-                                </div>
-                                <h3 class="text-lg font-black text-slate-800 mb-1">Sin coincidencias</h3>
-                                <p class="text-sm text-slate-500 font-medium">No hay productos que coincidan con tu búsqueda o filtros.</p>
-                                <button @click="searchQuery = ''; filterCategory = 'all'" class="mt-4 text-indigo-600 font-bold hover:underline">Limpiar Filtros</button>
-                            </td>
-                        </tr>
-
-                        <tr x-show="products.length === 0" x-cloak>
-                            <td colspan="6" class="px-6 py-24 text-center">
-                                <div class="mx-auto w-24 h-24 bg-indigo-50 rounded-full flex items-center justify-center mb-6 shadow-inner">
-                                    <i class="fas fa-box-open text-indigo-300 text-5xl"></i>
-                                </div>
-                                <h3 class="text-2xl font-black text-slate-900 mb-2">Tu catálogo está vacío</h3>
-                                <p class="text-base text-slate-500 mb-8 max-w-md mx-auto">Comienza agregando tu primer producto para que tus clientes puedan comprar en tu tienda web y POS.</p>
-                                <button @click="openAddModal()" class="inline-flex items-center px-8 py-4 border border-transparent text-lg font-black rounded-2xl shadow-xl shadow-indigo-600/20 text-white bg-indigo-600 hover:bg-indigo-700 transition transform hover:-translate-y-1">
-                                    <i class="fas fa-plus mr-2"></i> Crear Mi Primer Producto
-                                </button>
-                            </td>
-                        </tr>
-
                     </tbody>
                 </table>
             </div>
+        </div>
+
+        <div x-show="filteredProducts.length === 0 && products.length > 0" x-cloak class="bg-white border border-slate-200 rounded-[1.75rem] px-6 py-16 text-center shadow-sm">
+            <div class="mx-auto w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-4 border-2 border-dashed border-slate-200">
+                <i class="fas fa-search-minus text-slate-300 text-3xl"></i>
+            </div>
+            <h3 class="text-xl font-black text-slate-800 mb-1">Sin coincidencias</h3>
+            <p class="text-base text-slate-500 font-medium">No hay productos que coincidan con tu búsqueda o filtros.</p>
+            <button @click="searchQuery = ''; filterCategory = 'all'" class="mt-4 text-indigo-600 font-bold hover:underline">Limpiar filtros</button>
+        </div>
+
+        <div x-show="products.length === 0" x-cloak class="bg-white border border-slate-200 rounded-[1.75rem] px-6 py-16 text-center shadow-sm">
+            <div class="mx-auto w-24 h-24 bg-indigo-50 rounded-full flex items-center justify-center mb-6 shadow-inner">
+                <i class="fas fa-box-open text-indigo-300 text-5xl"></i>
+            </div>
+            <h3 class="text-2xl sm:text-3xl font-black text-slate-900 mb-2">Tu catálogo está vacío</h3>
+            <p class="text-base text-slate-500 mb-8 max-w-md mx-auto">Agregá el primer producto para que tus clientes lo vean en la tienda y en la caja.</p>
+            <button @click="openAddModal()" class="inline-flex items-center justify-center w-full sm:w-auto px-8 py-4 text-lg font-black rounded-2xl shadow-xl shadow-indigo-600/20 text-white bg-indigo-600 hover:bg-indigo-700 transition">
+                <i class="fas fa-plus mr-2"></i> Crear mi primer producto
+            </button>
         </div>
     </div>
 
@@ -551,6 +590,7 @@
                     }
 
                     await this.loadInventory(this.siteId);
+                    this.$nextTick(() => { if (window.WuepyGuide) WuepyGuide.startCatalog(); });
                 },
 
                 async loadInventory(siteId) {

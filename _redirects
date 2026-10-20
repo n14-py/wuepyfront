@@ -6,5 +6,9 @@
 /dashboard/site/*/finances     /dashboard/finances.html     200
 /dashboard/site/* /dashboard/site-overview.html 200
 
+# Tienda oficial de la marca. El archivo existe; esto cubre /shop sin barra.
+/shop /shop/index.html 200
+/shop/ /shop/index.html 200
+
 # Catch-all para que funcionen las URLs limpias de las tiendas
 /* /index.html 200

@@ -3,29 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wuepy | Crea tu Tienda Online en Paraguay en Minutos.</title>
-    <meta name="description" content="La plataforma todo en uno para emprendedores. Crea tu tienda online, gestiona inventario, usa IA y recibe pedidos por WhatsApp.">
-    
-
+    <title>Wuepy</title>
+    <meta name="description" content="Wuepy es la marca de electrónica. Wuepy Business crea tu tienda online, el catálogo y la caja.">
     <meta name="facebook-domain-verification" content="7fh3rtu0wywnydgk76mh193fwjbm3e" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js"></script>
-    
-    <script src="/js/api.js"></script>
-    <script src="/js/platform.js"></script>
+    <link rel="preconnect" href="https://wuepyback.onrender.com" crossorigin>
+    <script src="/js/brand.js"></script>
     <script>
-        const _hostname = window.location.hostname;
-        const _mainDomain = 'wuepy.com'; 
-        const _isLocal = _hostname === 'localhost' || _hostname === '127.0.0.1';
-        const _isMainDomain = _isLocal || _hostname === _mainDomain || _hostname === `www.${_mainDomain}` || _hostname.includes('pages.dev');
-        if (!_isMainDomain) {
-            // Pintamos el fondo oscuro instantáneamente para que no deslumbre
-            document.documentElement.style.backgroundColor = '#0f172a';
-            // Ocultamos todo el panel de landing page de Wuepy al instante
-            document.write('<style>#landing-view { display: none !important; } body { background-color: #0f172a !important; }</style>');
-        }
+        (function () {
+            var kind = window.WuepyBrand.kind();
+            window.__WUEPY_KIND = kind;
+            window._hostname = window.location.hostname;
+            window._isMainDomain = kind !== 'store';
+            if (kind === 'store') {
+                document.documentElement.style.backgroundColor = '#0f172a';
+                document.write('<style>#gateway-view,#landing-view{display:none!important}html,body{background:#0f172a!important;margin:0}</style>');
+                document.write('<script src="/js/api.js"><\/script><script src="/js/platform.js"><\/script>');
+                return;
+            }
+            if (kind === 'shop') {
+                document.write('<style>#gateway-view,#landing-view{display:none!important}html,body{background:#fff!important;margin:0}</style>');
+                return;
+            }
+            if (kind === 'home') document.write('<style>#landing-view{display:none!important}</style>');
+            if (kind === 'business') document.write('<style>#gateway-view{display:none!important}</style>');
+            document.title = kind === 'business'
+                ? 'Wuepy Business | Creá tu tienda y gestioná tu negocio'
+                : 'Wuepy | Electrónica y tiendas para tu negocio';
+            document.write('<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">');
+            document.write('<script src="https://cdn.tailwindcss.com"><\/script>');
+            document.write('<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">');
+            document.write('<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js"><\/script>');
+            document.write('<script src="/js/api.js"><\/script><script src="/js/platform.js"><\/script><script src="/js/guide.js"><\/script>');
+        })();
     </script>
     <style>
         body {
@@ -49,20 +58,93 @@
             z-index: -1;
             opacity: 0.4;
         }
+        [x-cloak] { display: none !important; }
     </style>
 </head>
 <body x-data="{ mobileMenuOpen: false }">
+
+<div id="gateway-view" class="bg-white min-h-screen text-neutral-950" x-data="{ open: false }">
+    <nav class="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-neutral-200">
+        <div class="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
+            <a href="/" class="text-lg font-black tracking-[0.22em] text-neutral-950">WUEPY</a>
+            <div class="hidden md:flex items-center gap-8 text-sm font-semibold text-neutral-600">
+                <a data-brand="shop" href="/shop/" class="hover:text-neutral-950">Productos</a>
+                <a data-brand="business" href="/?vista=business" class="hover:text-neutral-950">Para tu negocio</a>
+                <a href="/auth/login.html" class="hover:text-neutral-950">Ingresar</a>
+            </div>
+            <div class="flex items-center gap-2">
+                <a data-brand="shop" href="/shop/" class="hidden sm:inline-flex bg-neutral-950 text-white text-sm font-bold px-4 py-2.5 rounded-full">Tienda</a>
+                <button @click="open = !open" class="md:hidden w-11 h-11 text-xl" aria-label="Menú">
+                    <i class="fas" :class="open ? 'fa-times' : 'fa-bars'"></i>
+                </button>
+            </div>
+        </div>
+        <div x-show="open" x-cloak class="md:hidden border-t border-neutral-200 bg-white px-5 py-4 space-y-2">
+            <a data-brand="shop" href="/shop/" class="block py-3 text-lg font-bold">Productos Wuepy</a>
+            <a data-brand="business" href="/?vista=business" class="block py-3 text-lg font-bold">Wuepy Business</a>
+            <a href="/auth/login.html" class="block py-3 text-lg font-bold">Ingresar al panel</a>
+        </div>
+    </nav>
+
+    <header class="max-w-6xl mx-auto px-5 pt-16 pb-10 md:pt-24">
+        <p class="text-xs font-black tracking-[0.22em] uppercase text-neutral-400 mb-4">Paraguay</p>
+        <h1 class="text-5xl sm:text-7xl font-black tracking-tight text-neutral-950 leading-[0.95]">Dos puertas.<br>Una marca.</h1>
+        <p class="mt-6 max-w-xl text-lg text-neutral-500 leading-relaxed">Wuepy es la electrónica. Wuepy Business es el lugar donde armás tu propia tienda, el catálogo y la caja.</p>
+    </header>
+
+    <section class="max-w-6xl mx-auto px-5 pb-8 grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <a data-brand="shop" href="/shop/" class="group bg-white border border-neutral-200 rounded-[2rem] p-8 sm:p-10 min-h-[320px] flex flex-col justify-between hover:border-neutral-950 transition">
+            <div>
+                <p class="text-xs font-black tracking-[0.2em] uppercase text-neutral-400">Tienda oficial</p>
+                <h2 class="mt-4 text-4xl sm:text-5xl font-black tracking-tight">Wuepy</h2>
+                <p class="mt-4 text-lg text-neutral-500 leading-relaxed max-w-md">Auriculares, carga, audio y accesorios. Blanco, negro y nada de ruido.</p>
+            </div>
+            <span class="mt-10 inline-flex items-center justify-center h-14 px-6 rounded-full bg-neutral-950 text-white font-bold w-full sm:w-auto">Entrar a la tienda <i class="fas fa-arrow-right ml-2"></i></span>
+        </a>
+        <a data-brand="business-guide" href="/?vista=business&guia=1" class="group bg-neutral-950 text-white rounded-[2rem] p-8 sm:p-10 min-h-[320px] flex flex-col justify-between">
+            <div>
+                <p class="text-xs font-black tracking-[0.2em] uppercase text-blue-300">Para vender lo tuyo</p>
+                <h2 class="mt-4 text-4xl sm:text-5xl font-black tracking-tight">Wuepy <span class="text-blue-400">Business</span></h2>
+                <p class="mt-4 text-lg text-neutral-300 leading-relaxed max-w-md">Creá el sitio, cargá productos, cobrá en caja y recibí los pedidos por WhatsApp.</p>
+            </div>
+            <span class="mt-10 inline-flex items-center justify-center h-14 px-6 rounded-full bg-blue-600 text-white font-bold w-full sm:w-auto">Quiero crear mi tienda <i class="fas fa-arrow-right ml-2"></i></span>
+        </a>
+    </section>
+
+    <section id="elegir" class="max-w-6xl mx-auto px-5 py-16">
+        <div class="border border-neutral-200 rounded-[2rem] p-8 sm:p-12">
+            <h2 class="text-3xl sm:text-4xl font-black tracking-tight">¿Qué querés hacer?</h2>
+            <p class="mt-3 text-neutral-500 text-lg max-w-2xl">Si es tu negocio, la guía te muestra el primer botón y te explica el camino. Si es la marca, entrá directo a la tienda.</p>
+            <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <a data-brand="business-guide" href="/?vista=business&guia=1" class="h-16 rounded-2xl bg-blue-600 text-white font-black text-lg flex items-center justify-center px-4 text-center">Crear o gestionar mi tienda</a>
+                <a data-brand="shop" href="/shop/" class="h-16 rounded-2xl border-2 border-neutral-950 text-neutral-950 font-black text-lg flex items-center justify-center px-4 text-center">Ver productos Wuepy</a>
+            </div>
+        </div>
+    </section>
+
+    <footer class="border-t border-neutral-200">
+        <div class="max-w-6xl mx-auto px-5 py-10 flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between text-sm text-neutral-500">
+            <p class="font-semibold text-neutral-950">Wuepy</p>
+            <div class="flex flex-wrap gap-x-5 gap-y-2">
+                <a data-brand="business" href="/?vista=business" class="hover:text-neutral-950">Wuepy Business</a>
+                <a href="/nosotros.html" class="hover:text-neutral-950">Nosotros</a>
+                <a href="/terminos.html" class="hover:text-neutral-950">Términos</a>
+            </div>
+        </div>
+    </footer>
+</div>
 
 <div id="landing-view">
     <nav class="fixed w-full glass-nav z-50 border-b border-slate-200/50 transition-all duration-300">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-20">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-indigo-600/30 transform hover:rotate-12 transition">W</div>
-                    <span class="text-2xl font-black text-slate-900 tracking-tight">Wuepy</span>
+                    <div class="w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-slate-900/20">W</div>
+                    <span class="text-2xl font-black tracking-tight"><span class="text-slate-900">Wuepy</span> <span class="text-blue-600">Business</span></span>
                 </div>
                 
                 <div class="hidden md:flex items-center gap-8 bg-white/50 px-6 py-2.5 rounded-full border border-slate-200 shadow-sm">
+                    <a data-brand="shop" href="/shop/" class="text-sm font-bold text-slate-600 hover:text-indigo-600 transition">Tienda Wuepy</a>
                     <a href="#como-funciona" class="text-sm font-bold text-slate-600 hover:text-indigo-600 transition">¿Cómo funciona?</a>
                     <a href="/nosotros.html" class="text-sm font-bold text-slate-600 hover:text-indigo-600 transition">Quiénes somos</a>
                     <a href="#planes" class="text-sm font-bold text-slate-600 hover:text-indigo-600 transition">Planes en Gs.</a>
@@ -85,6 +167,7 @@
 
         <div x-show="mobileMenuOpen" x-collapse class="md:hidden bg-white border-b border-slate-200 shadow-xl absolute w-full">
             <div class="px-4 pt-2 pb-6 space-y-2 flex flex-col">
+                <a data-brand="shop" href="/shop/" class="block px-3 py-3 rounded-md text-base font-bold text-slate-700 hover:bg-slate-50">Tienda Wuepy</a>
                 <a href="#como-funciona" @click="mobileMenuOpen = false" class="block px-3 py-3 rounded-md text-base font-bold text-slate-700 hover:bg-slate-50">¿Cómo funciona?</a>
                 <a href="/nosotros.html" class="block px-3 py-3 rounded-md text-base font-bold text-slate-700 hover:bg-slate-50">Quiénes somos</a>
                 <a href="#planes" @click="mobileMenuOpen = false" class="block px-3 py-3 rounded-md text-base font-bold text-slate-700 hover:bg-slate-50">Ver Precios</a>
@@ -115,7 +198,7 @@
             </p>
             
             <div class="flex flex-col sm:flex-row justify-center gap-4" data-aos="fade-up" data-aos-delay="300">
-                <a href="/auth/register.html" class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-2xl text-lg font-black shadow-xl shadow-indigo-600/30 transition transform hover:-translate-y-1 flex items-center justify-center gap-2">
+                <a data-guide="crear-hero" href="/auth/register.html" onclick="try{localStorage.setItem('wuepy_guide_next','panel')}catch(e){}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-2xl text-lg font-black shadow-xl shadow-indigo-600/30 transition transform hover:-translate-y-1 flex items-center justify-center gap-2">
                     Probar 1 mes GRATIS <i class="fas fa-rocket"></i>
                 </a>
                 <a href="#planes" class="bg-white text-slate-700 border-2 border-slate-200 hover:border-slate-300 hover:bg-slate-50 px-8 py-4 rounded-2xl text-lg font-bold shadow-sm transition flex items-center justify-center gap-2">
@@ -140,7 +223,7 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
-                <div data-aos="fade-up" data-aos-delay="100">
+                <div id="paso-cuenta" data-aos="fade-up" data-aos-delay="100">
                     <div class="w-20 h-20 bg-indigo-500/20 border border-indigo-500/50 rounded-2xl flex items-center justify-center text-indigo-400 text-3xl mx-auto mb-6 shadow-lg shadow-indigo-500/20">
                         <i class="fas fa-user-plus"></i>
                     </div>
@@ -148,7 +231,7 @@
                     <p class="text-slate-400 text-sm leading-relaxed">Regístrate en un minuto. Te damos 1 mes gratis de prueba para tu primera tienda, y si invitas amigos ¡ganas más días!</p>
                 </div>
                 
-                <div data-aos="fade-up" data-aos-delay="200" class="relative">
+                <div id="paso-diseno" data-aos="fade-up" data-aos-delay="200" class="relative">
                     <div class="hidden md:block absolute top-10 left-[-50%] w-full h-[2px] bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent"></div>
                     <div class="w-20 h-20 bg-emerald-500/20 border border-emerald-500/50 rounded-2xl flex items-center justify-center text-emerald-400 text-3xl mx-auto mb-6 shadow-lg shadow-emerald-500/20 relative z-10 bg-slate-900">
                         <i class="fas fa-magic"></i>
@@ -157,7 +240,7 @@
                     <p class="text-slate-400 text-sm leading-relaxed">Elige una de nuestras plantillas profesionales o deja que nuestra Inteligencia Artificial orqueste el diseño perfecto para tu rubro.</p>
                 </div>
                 
-                <div data-aos="fade-up" data-aos-delay="300" class="relative">
+                <div id="paso-vende" data-aos="fade-up" data-aos-delay="300" class="relative">
                     <div class="hidden md:block absolute top-10 left-[-50%] w-full h-[2px] bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent"></div>
                     <div class="w-20 h-20 bg-blue-500/20 border border-blue-500/50 rounded-2xl flex items-center justify-center text-blue-400 text-3xl mx-auto mb-6 shadow-lg shadow-blue-500/20 relative z-10 bg-slate-900">
                         <i class="fas fa-store"></i>
@@ -174,8 +257,8 @@
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                 <div data-aos="fade-up">
                     <p class="text-xs font-black uppercase tracking-widest text-indigo-600 mb-3">Quiénes somos</p>
-                    <h2 class="text-3xl md:text-5xl font-black text-slate-900 mb-4">Wuepy es la tienda online de cualquier negocio paraguayo.</h2>
-                    <p class="text-lg text-slate-500 font-medium leading-relaxed mb-4">No hace falta saber programar. Creás tu cuenta, elegís una plantilla o le pedís a la IA un diseño, cargás productos y compartís tu link. Los pedidos llegan a tu WhatsApp y a la caja del panel.</p>
+                    <h2 class="text-3xl md:text-5xl font-black text-slate-900 mb-4">Wuepy Business es la tienda online de cualquier negocio paraguayo.</h2>
+                    <p class="text-lg text-slate-500 font-medium leading-relaxed mb-4">No hace falta saber programar. Creás tu cuenta, elegís una plantilla o le pedís a la IA un diseño, cargás productos y compartís tu link. Los pedidos llegan a tu WhatsApp y a la caja del panel. La electrónica de la marca está aparte, en la tienda Wuepy.</p>
                     <p class="text-lg text-slate-500 font-medium leading-relaxed mb-8">Detrás está LFAFTECH, en Paraguay. La historia, la misión y el plan para un marketplace local están en la página de nosotros.</p>
                     <a href="/nosotros.html" class="inline-flex items-center gap-2 bg-slate-900 text-white font-black px-6 py-3 rounded-xl">Conocer a Wuepy <i class="fas fa-arrow-right"></i></a>
                 </div>
@@ -385,11 +468,11 @@
             <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
                 <div class="md:col-span-2">
                     <div class="flex items-center gap-3 mb-6">
-                        <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-black text-sm shadow-md">W</div>
-                        <span class="text-2xl font-black text-slate-900 tracking-tight">Wuepy</span>
+                        <div class="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center text-white font-black text-sm shadow-md">W</div>
+                        <span class="text-2xl font-black tracking-tight"><span class="text-slate-900">Wuepy</span> <span class="text-blue-600">Business</span></span>
                     </div>
                     <p class="text-slate-500 font-medium leading-relaxed max-w-sm mb-6">
-                        El SaaS de e-commerce diseñado para potenciar a los emprendedores en Paraguay. Digitaliza, automatiza y crece sin límites.
+                        Wuepy Business arma la tienda, el catálogo y la caja. La marca Wuepy, la de los productos, vive en su propia tienda.
                     </p>
                     <div class="flex gap-4">
                         <a href="#" class="w-10 h-10 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition"><i class="fab fa-facebook-f"></i></a>
@@ -401,6 +484,7 @@
                 <div>
                     <h4 class="font-bold text-slate-900 uppercase tracking-widest text-xs mb-6">Plataforma</h4>
                     <ul class="space-y-4">
+                        <li><a data-brand="shop" href="/shop/" class="text-sm font-medium text-slate-500 hover:text-indigo-600 transition">Tienda Wuepy</a></li>
                         <li><a href="#como-funciona" class="text-sm font-medium text-slate-500 hover:text-indigo-600 transition">¿Cómo funciona?</a></li>
                         <li><a href="#planes" class="text-sm font-medium text-slate-500 hover:text-indigo-600 transition">Precios</a></li>
                         <li><a href="#invita" class="text-sm font-medium text-blue-600 hover:text-blue-700 transition">Programa de Referidos</a></li>
@@ -419,7 +503,7 @@
             
             <div class="border-t border-slate-100 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
                 <p class="text-sm text-slate-400 font-medium">
-                    &copy; 2026 Wuepy by LFAFTECH. Todos los derechos reservados.
+                    &copy; 2026 Wuepy Business by LFAFTECH. Todos los derechos reservados.
                 </p>
                 <div class="flex items-center gap-4 text-sm text-slate-400 font-medium">
                     <span>Hecho con <i class="fas fa-heart text-red-400 mx-1"></i> en Paraguay</span>
@@ -437,6 +521,29 @@
         if (window !== window.top) {
             console.log("Ejecución de Wuepy detenida por seguridad: Ya estamos en un iframe.");
             return; 
+        }
+
+        document.querySelectorAll('[data-brand]').forEach(function (node) {
+            if (!window.WuepyBrand) return;
+            var slot = node.getAttribute('data-brand');
+            if (slot === 'shop') node.setAttribute('href', WuepyBrand.shopUrl());
+            if (slot === 'business') node.setAttribute('href', WuepyBrand.businessUrl());
+            if (slot === 'business-guide') node.setAttribute('href', WuepyBrand.businessGuideUrl());
+        });
+
+        if (window.__WUEPY_KIND === 'shop') {
+            const storeView = document.getElementById('store-view');
+            storeView.style.display = 'block';
+            const frame = document.createElement('iframe');
+            frame.src = '/shop/index.html';
+            frame.title = 'Wuepy';
+            frame.className = 'fixed inset-0 w-full h-full border-0 bg-white';
+            storeView.appendChild(frame);
+            return;
+        }
+
+        if (window.__WUEPY_KIND === 'business' && window.WuepyGuide) {
+            WuepyGuide.startLanding();
         }
 
         if (!_isMainDomain) {
@@ -469,11 +576,17 @@
                     </div>`;
             };
 
-            storeView.innerHTML = `
-                <div class="h-screen w-full flex items-center justify-center bg-slate-950">
-                    <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-indigo-500"></div>
-                </div>
-            `;
+            const cachedPayload = window.WuepyPublicCache && WuepyPublicCache.read(subdomain);
+            const cacheAge = window.WuepyPublicCache ? WuepyPublicCache.age(cachedPayload) : Infinity;
+            const cacheUsable = cachedPayload && cacheAge < 10 * 60 * 1000 && !(cachedPayload.isAiGenerated && !cachedPayload.htmlContent);
+
+            if (!cacheUsable) {
+                storeView.innerHTML = `
+                    <div class="h-screen w-full flex items-center justify-center bg-slate-950">
+                        <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-indigo-500"></div>
+                    </div>
+                `;
+            }
 
             if (badSlug) {
                 storeView.innerHTML = '<div class="h-screen flex items-center justify-center bg-slate-50 text-slate-700 font-bold px-6 text-center">Esta tienda no tiene un enlace válido. Volvé al panel y elegí un subdominio.</div>';
@@ -482,7 +595,7 @@
 
             if (currentPath === '/sitemap.xml' || currentPath === '/robots.txt') {
                 try {
-                    const mapRes = await fetch(`${window.API_URL}/store/public/${subdomain}/sitemap?_t=${Date.now()}`);
+                    const mapRes = await fetch(`${window.API_URL}/store/public/${subdomain}/sitemap`);
                     const mapData = await mapRes.json();
                     const origin = window.location.origin;
                     const urls = (mapData.urls && mapData.urls.length) ? mapData.urls : [origin + '/'];
@@ -515,17 +628,38 @@
                     endpoint = `/store/public/${subdomain}?page=${filename}`;
                 }
 
-                const joiner = endpoint.includes('?') ? '&' : '?';
-                const fetchUrl = `${window.API_URL}${endpoint}${joiner}_t=${Date.now()}`;
+                const fetchUrl = `${window.API_URL}${endpoint}`;
+                const remember = function (payload) {
+                    if (window.WuepyPublicCache && payload && payload.site && Array.isArray(payload.products)) {
+                        WuepyPublicCache.write(subdomain, payload);
+                    }
+                };
 
-                const response = await fetch(fetchUrl);
+                let data = cacheUsable ? cachedPayload : null;
+                if (!data) {
+                    const response = await fetch(fetchUrl);
+                    if (!response.ok) {
+                        show404();
+                        return;
+                    }
+                    data = await response.json();
+                    remember(data);
+                } else if (cacheAge > 20000) {
+                    fetch(fetchUrl).then(function (response) { return response.ok ? response.json() : null; }).then(function (fresh) {
+                        if (!fresh || !fresh.success) return;
+                        const prevTpl = cachedPayload.site && cachedPayload.site.template;
+                        const nextTpl = fresh.site && fresh.site.template;
+                        remember(fresh);
+                        if (!!cachedPayload.isAiGenerated !== !!fresh.isAiGenerated || prevTpl !== nextTpl) {
+                            window.location.reload();
+                        }
+                    }).catch(function () {});
+                }
 
-                if (!response.ok) {
+                if (!data) {
                     show404();
                     return;
                 }
-
-                const data = await response.json();
 
                 if (data.redirectUrl || !data.success) {
                     console.error("[Enrutador Front] Redirección no deseada desde el Backend Global.");
@@ -592,9 +726,15 @@
     });
 </script>
 
-<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 <script>
-    AOS.init({ duration: 800, once: true, offset: 50 });
+    if (window.__WUEPY_KIND === 'home' || window.__WUEPY_KIND === 'business') {
+        var aosScript = document.createElement('script');
+        aosScript.src = 'https://unpkg.com/aos@2.3.1/dist/aos.js';
+        aosScript.onload = function () {
+            if (window.AOS) AOS.init({ duration: 800, once: true, offset: 50 });
+        };
+        document.body.appendChild(aosScript);
+    }
 </script>
 </body>
 </html>
