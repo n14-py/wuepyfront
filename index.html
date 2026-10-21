@@ -3,8 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wuepy</title>
-    <meta name="description" content="Wuepy es la marca de electrónica. Wuepy Business crea tu tienda online, el catálogo y la caja.">
+    <title>Wuepy | Tecnología a lo paraguayoite</title>
+    <meta name="description" content="Descubrí Wuepy, productos tecnológicos y Wuepy Business, la plataforma digital para emprendedores y negocios.">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <meta property="og:title" content="Wuepy | Tecnología a lo paraguayoite">
+    <meta property="og:description" content="Descubrí Wuepy, productos tecnológicos y Wuepy Business, la plataforma digital para emprendedores y negocios.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://wuepy.com/">
+    <meta property="og:image" content="https://wuepy.com/img/wuepy-hero.jpg">
     <meta name="facebook-domain-verification" content="7fh3rtu0wywnydgk76mh193fwjbm3e" />
     <link rel="preconnect" href="https://wuepyback.onrender.com" crossorigin>
     <script src="/js/brand.js"></script>
@@ -21,19 +27,24 @@
                 return;
             }
             if (kind === 'shop') {
-                document.write('<style>#gateway-view,#landing-view{display:none!important}html,body{background:#fff!important;margin:0}</style>');
+                var shopPath = window.location.pathname;
+                if (shopPath === '/' || shopPath === '/index.html' || shopPath === '') {
+                    window.location.replace('/shop/' + window.location.search + window.location.hash);
+                }
+                document.write('<style>#gateway-view,#landing-view{display:none!important}html,body{background:#050505!important;margin:0;height:100%;overflow:hidden}#store-view,#wuepy-shop-frame{position:fixed;inset:0;width:100%;height:100%;max-width:none;border:0;background:#050505}</style>');
                 return;
             }
             if (kind === 'home') document.write('<style>#landing-view{display:none!important}</style>');
             if (kind === 'business') document.write('<style>#gateway-view{display:none!important}</style>');
             document.title = kind === 'business'
                 ? 'Wuepy Business | Creá tu tienda y gestioná tu negocio'
-                : 'Wuepy | Electrónica y tiendas para tu negocio';
+                : 'Wuepy | Tecnología a lo paraguayoite';
+            document.write('<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,560;0,9..144,650;1,9..144,560&family=Outfit:wght@400;500;600;700&display=swap">');
             document.write('<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">');
             document.write('<script src="https://cdn.tailwindcss.com"><\/script>');
             document.write('<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">');
             document.write('<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js"><\/script>');
-            document.write('<script src="/js/api.js"><\/script><script src="/js/platform.js"><\/script><script src="/js/guide.js"><\/script>');
+            document.write('<script src="/js/api.js"><\/script><script src="/js/platform.js"><\/script>');
         })();
     </script>
     <style>
@@ -59,76 +70,259 @@
             opacity: 0.4;
         }
         [x-cloak] { display: none !important; }
+        #gateway-view { font-family: Outfit, system-ui, sans-serif; }
+        #gateway-view h1, #gateway-view h2, #gateway-view .serif { font-family: Fraunces, Georgia, serif; font-weight: 560; font-optical-sizing: auto; }
+        #gateway-view summary::-webkit-details-marker { display: none; }
+        #gateway-view .lift { transition: transform .25s ease, box-shadow .25s ease; }
+        #gateway-view .lift:hover { transform: translateY(-3px); }
     </style>
 </head>
 <body x-data="{ mobileMenuOpen: false }">
 
-<div id="gateway-view" class="bg-white min-h-screen text-neutral-950" x-data="{ open: false }">
-    <nav class="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-neutral-200">
-        <div class="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
-            <a href="/" class="text-lg font-black tracking-[0.22em] text-neutral-950">WUEPY</a>
-            <div class="hidden md:flex items-center gap-8 text-sm font-semibold text-neutral-600">
-                <a data-brand="shop" href="/shop/" class="hover:text-neutral-950">Productos</a>
-                <a data-brand="business" href="/?vista=business" class="hover:text-neutral-950">Para tu negocio</a>
-                <a href="/auth/login.html" class="hover:text-neutral-950">Ingresar</a>
+<div id="gateway-view" class="bg-white min-h-screen text-[#111111]" x-data="{ open: false }">
+    <header class="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-neutral-200">
+        <div class="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between gap-4">
+            <a href="#inicio" class="flex items-center gap-2 font-semibold tracking-[0.22em] text-sm">
+                <span class="w-8 h-8 rounded-lg bg-[#111111] text-white inline-flex items-center justify-center text-sm">W</span>
+                WUEPY
+            </a>
+            <nav class="hidden lg:flex items-center gap-7 text-sm text-[#737373]" aria-label="Principal">
+                <a href="#inicio" class="hover:text-[#111111]">Inicio</a>
+                <a href="#productos" class="hover:text-[#111111]">Productos</a>
+                <a href="#business" class="hover:text-[#111111]">Wuepy Business</a>
+                <a href="#sobre" class="hover:text-[#111111]">Sobre Wuepy</a>
+                <a href="#contacto" class="hover:text-[#111111]">Contacto</a>
+            </nav>
+            <div class="hidden sm:flex items-center gap-2">
+                <a data-brand="shop" href="https://shop.wuepy.com" class="lift h-10 px-4 rounded-full bg-[#111111] text-white text-sm font-semibold inline-flex items-center">Comprar</a>
+                <a data-brand="business" href="https://business.wuepy.com" class="lift h-10 px-4 rounded-full bg-white text-[#111111] border border-[#111111] text-sm font-semibold inline-flex items-center">Tengo un negocio</a>
             </div>
-            <div class="flex items-center gap-2">
-                <a data-brand="shop" href="/shop/" class="hidden sm:inline-flex bg-neutral-950 text-white text-sm font-bold px-4 py-2.5 rounded-full">Tienda</a>
-                <button @click="open = !open" class="md:hidden w-11 h-11 text-xl" aria-label="Menú">
-                    <i class="fas" :class="open ? 'fa-times' : 'fa-bars'"></i>
-                </button>
-            </div>
+            <button @click="open = !open" class="lg:hidden w-11 h-11 text-xl" :aria-expanded="open" aria-controls="menu-movil" aria-label="Menú">
+                <i class="fas" :class="open ? 'fa-times' : 'fa-bars'"></i>
+            </button>
         </div>
-        <div x-show="open" x-cloak class="md:hidden border-t border-neutral-200 bg-white px-5 py-4 space-y-2">
-            <a data-brand="shop" href="/shop/" class="block py-3 text-lg font-bold">Productos Wuepy</a>
-            <a data-brand="business" href="/?vista=business" class="block py-3 text-lg font-bold">Wuepy Business</a>
-            <a href="/auth/login.html" class="block py-3 text-lg font-bold">Ingresar al panel</a>
+        <div id="menu-movil" x-show="open" x-cloak class="lg:hidden border-t border-neutral-200 bg-white px-5 py-3">
+            <a href="#inicio" @click="open = false" class="block py-3 text-lg">Inicio</a>
+            <a href="#productos" @click="open = false" class="block py-3 text-lg">Productos</a>
+            <a href="#business" @click="open = false" class="block py-3 text-lg">Wuepy Business</a>
+            <a href="#sobre" @click="open = false" class="block py-3 text-lg">Sobre Wuepy</a>
+            <a href="#contacto" @click="open = false" class="block py-3 text-lg">Contacto</a>
+            <a data-brand="shop" href="https://shop.wuepy.com" class="mt-2 flex h-12 items-center justify-center rounded-full bg-[#111111] text-white font-semibold">Comprar</a>
+            <a data-brand="business" href="https://business.wuepy.com" class="mt-2 flex h-12 items-center justify-center rounded-full border border-[#111111] font-semibold">Tengo un negocio</a>
         </div>
-    </nav>
-
-    <header class="max-w-6xl mx-auto px-5 pt-16 pb-10 md:pt-24">
-        <p class="text-xs font-black tracking-[0.22em] uppercase text-neutral-400 mb-4">Paraguay</p>
-        <h1 class="text-5xl sm:text-7xl font-black tracking-tight text-neutral-950 leading-[0.95]">Dos puertas.<br>Una marca.</h1>
-        <p class="mt-6 max-w-xl text-lg text-neutral-500 leading-relaxed">Wuepy es la electrónica. Wuepy Business es el lugar donde armás tu propia tienda, el catálogo y la caja.</p>
     </header>
 
-    <section class="max-w-6xl mx-auto px-5 pb-8 grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <a data-brand="shop" href="/shop/" class="group bg-white border border-neutral-200 rounded-[2rem] p-8 sm:p-10 min-h-[320px] flex flex-col justify-between hover:border-neutral-950 transition">
-            <div>
-                <p class="text-xs font-black tracking-[0.2em] uppercase text-neutral-400">Tienda oficial</p>
-                <h2 class="mt-4 text-4xl sm:text-5xl font-black tracking-tight">Wuepy</h2>
-                <p class="mt-4 text-lg text-neutral-500 leading-relaxed max-w-md">Auriculares, carga, audio y accesorios. Blanco, negro y nada de ruido.</p>
+    <main id="inicio">
+        <section class="bg-white">
+            <div class="max-w-6xl mx-auto px-5 py-16 sm:py-24 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div>
+                    <p class="text-xs font-semibold tracking-[0.28em] uppercase text-[#737373]">Tecnología a lo paraguayoite</p>
+                    <h1 class="mt-5 text-5xl sm:text-6xl lg:text-7xl leading-[0.95] tracking-tight">La tecnología que va con vos.</h1>
+                    <p class="mt-6 text-lg leading-relaxed text-[#404040] max-w-xl">En Wuepy acercamos la tecnología a tu día a día y creamos herramientas digitales para que puedas llevar tu negocio al siguiente nivel.</p>
+                    <p class="mt-6 text-2xl">A lo paraguayoite.</p>
+                    <div class="mt-8 flex flex-col sm:flex-row gap-3">
+                        <a data-brand="shop" href="https://shop.wuepy.com" class="lift h-14 px-6 rounded-full bg-[#111111] text-white font-semibold inline-flex items-center justify-center">Quiero comprar</a>
+                        <a data-brand="business" href="https://business.wuepy.com" class="lift h-14 px-6 rounded-full bg-white text-[#111111] border border-[#111111] font-semibold inline-flex items-center justify-center text-center">Quiero emprender o gestionar mi negocio</a>
+                    </div>
+                </div>
+                <figure class="relative">
+                    <img src="/img/wuepy-hero.jpg" alt="Auriculares, rasuradora y batería en una composición de la marca Wuepy" class="w-full rounded-3xl object-cover" width="1600" height="900">
+                </figure>
             </div>
-            <span class="mt-10 inline-flex items-center justify-center h-14 px-6 rounded-full bg-neutral-950 text-white font-bold w-full sm:w-auto">Entrar a la tienda <i class="fas fa-arrow-right ml-2"></i></span>
-        </a>
-        <a data-brand="business-guide" href="/?vista=business&guia=1" class="group bg-neutral-950 text-white rounded-[2rem] p-8 sm:p-10 min-h-[320px] flex flex-col justify-between">
-            <div>
-                <p class="text-xs font-black tracking-[0.2em] uppercase text-blue-300">Para vender lo tuyo</p>
-                <h2 class="mt-4 text-4xl sm:text-5xl font-black tracking-tight">Wuepy <span class="text-blue-400">Business</span></h2>
-                <p class="mt-4 text-lg text-neutral-300 leading-relaxed max-w-md">Creá el sitio, cargá productos, cobrá en caja y recibí los pedidos por WhatsApp.</p>
-            </div>
-            <span class="mt-10 inline-flex items-center justify-center h-14 px-6 rounded-full bg-blue-600 text-white font-bold w-full sm:w-auto">Quiero crear mi tienda <i class="fas fa-arrow-right ml-2"></i></span>
-        </a>
-    </section>
+        </section>
 
-    <section id="elegir" class="max-w-6xl mx-auto px-5 py-16">
-        <div class="border border-neutral-200 rounded-[2rem] p-8 sm:p-12">
-            <h2 class="text-3xl sm:text-4xl font-black tracking-tight">¿Qué querés hacer?</h2>
-            <p class="mt-3 text-neutral-500 text-lg max-w-2xl">Si es tu negocio, la guía te muestra el primer botón y te explica el camino. Si es la marca, entrá directo a la tienda.</p>
-            <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <a data-brand="business-guide" href="/?vista=business&guia=1" class="h-16 rounded-2xl bg-blue-600 text-white font-black text-lg flex items-center justify-center px-4 text-center">Crear o gestionar mi tienda</a>
-                <a data-brand="shop" href="/shop/" class="h-16 rounded-2xl border-2 border-neutral-950 text-neutral-950 font-black text-lg flex items-center justify-center px-4 text-center">Ver productos Wuepy</a>
+        <section class="max-w-6xl mx-auto px-5 py-20 sm:py-28" aria-labelledby="buscando">
+            <h2 id="buscando" class="text-4xl sm:text-5xl tracking-tight max-w-3xl">¿Qué estás buscando hoy?</h2>
+            <p class="mt-4 max-w-2xl text-lg text-[#737373] leading-relaxed">Ya sea que quieras incorporar tecnología a tu vida o hacer crecer tu negocio, en Wuepy tenemos un camino para vos.</p>
+            <div class="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <article class="lift bg-[#F5F5F5] rounded-3xl overflow-hidden flex flex-col">
+                    <img src="/img/wuepy-products.jpg" alt="Composición ilustrativa de auriculares, cable y audio" class="w-full aspect-[4/3] object-cover" width="1200" height="900" loading="lazy">
+                    <div class="p-7 sm:p-9 flex flex-col flex-1">
+                        <p class="text-xs font-semibold tracking-[0.18em] uppercase text-[#737373]">Productos tecnológicos</p>
+                        <h3 class="mt-3 text-3xl">Tecnología para tu día a día.</h3>
+                        <p class="mt-4 text-[#737373] leading-relaxed">Descubrí productos electrónicos y accesorios tecnológicos seleccionados para acompañarte en tu rutina, facilitar tus actividades y conectar con lo que te gusta.</p>
+                        <p class="mt-4 text-sm text-[#737373]">La imagen es ilustrativa. Los productos disponibles, con precio y ficha, se publican en la tienda oficial.</p>
+                        <a data-brand="shop" href="https://shop.wuepy.com" class="mt-auto pt-8 inline-flex h-12 items-center font-semibold underline underline-offset-4">Explorar productos</a>
+                    </div>
+                </article>
+                <article class="lift bg-[#111111] text-white rounded-3xl overflow-hidden flex flex-col">
+                    <img src="/img/wuepy-panel.jpg" alt="Ilustración de un panel para administrar una tienda" class="w-full aspect-[4/3] object-cover" width="1600" height="900" loading="lazy">
+                    <div class="p-7 sm:p-9 flex flex-col flex-1">
+                        <p class="text-xs font-semibold tracking-[0.18em] uppercase text-blue-400">Tecnología para negocios</p>
+                        <h3 class="mt-3 text-3xl">Tu negocio merece más.</h3>
+                        <p class="mt-4 text-neutral-300 leading-relaxed">Una plataforma digital para emprendedores y negocios que necesitan organizar sus productos, administrar su inventario y crear su presencia online desde un mismo entorno.</p>
+                        <a data-brand="business" href="https://business.wuepy.com" class="mt-auto pt-8 inline-flex h-12 items-center font-semibold text-white underline underline-offset-4">Conocer Wuepy Business</a>
+                    </div>
+                </article>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <footer class="border-t border-neutral-200">
-        <div class="max-w-6xl mx-auto px-5 py-10 flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between text-sm text-neutral-500">
-            <p class="font-semibold text-neutral-950">Wuepy</p>
-            <div class="flex flex-wrap gap-x-5 gap-y-2">
-                <a data-brand="business" href="/?vista=business" class="hover:text-neutral-950">Wuepy Business</a>
-                <a href="/nosotros.html" class="hover:text-neutral-950">Nosotros</a>
-                <a href="/terminos.html" class="hover:text-neutral-950">Términos</a>
+        <section id="sobre" class="bg-[#F5F5F5]">
+            <div class="max-w-6xl mx-auto px-5 py-20 sm:py-28 grid grid-cols-1 lg:grid-cols-12 gap-10">
+                <h2 class="lg:col-span-5 text-4xl sm:text-5xl tracking-tight leading-[1.05]">Tecnología, a lo paraguayoite.</h2>
+                <div class="lg:col-span-7 text-lg leading-relaxed text-[#404040] space-y-5">
+                    <p>Creemos que la tecnología debe estar cada vez más cerca de las personas. Por eso, Wuepy une productos tecnológicos y soluciones digitales con una identidad propia, nacida para conectar con nuestra gente.</p>
+                    <p>A lo paraguayoite: con iniciativa, creatividad y ganas de salir adelante.</p>
+                    <a href="/nosotros.html" class="inline-flex font-semibold underline underline-offset-4">Conocer a la empresa</a>
+                </div>
+            </div>
+        </section>
+
+        <section id="productos" class="max-w-6xl mx-auto px-5 py-20 sm:py-28" x-data="{ products: [] }" x-init="fetch((window.API_URL || 'https://wuepyback.onrender.com/api') + '/store/public/shop').then(r => r.ok ? r.json() : null).then(d => { if (d && d.success && d.products) products = d.products }).catch(() => {})">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h2 class="text-4xl sm:text-5xl tracking-tight">Encontrá tu próximo favorito.</h2>
+                    <p class="mt-5 text-lg text-[#737373] leading-relaxed">Explorá nuestra tienda y descubrí los productos tecnológicos disponibles en Wuepy. La compra se hace en la tienda oficial, no en esta página.</p>
+                    <a data-brand="shop" href="https://shop.wuepy.com" class="lift mt-8 h-14 px-6 rounded-full bg-[#111111] text-white font-semibold inline-flex items-center">Ir a la tienda Wuepy</a>
+                </div>
+                <div>
+                    <div x-show="products.length" x-cloak class="grid grid-cols-2 gap-4">
+                        <template x-for="product in products.slice(0, 4)" :key="product._id">
+                            <a data-brand="shop" href="https://shop.wuepy.com" class="block">
+                                <div class="aspect-square bg-[#F5F5F5] rounded-2xl overflow-hidden">
+                                    <img x-show="product.imageUrl || (product.images && product.images[0])" :src="product.imageUrl || product.images[0]" :alt="product.name" class="w-full h-full object-cover" loading="lazy">
+                                </div>
+                                <p class="mt-3 font-semibold" x-text="product.name"></p>
+                            </a>
+                        </template>
+                    </div>
+                    <figure x-show="!products.length">
+                        <img src="/img/wuepy-products.jpg" alt="Composición ilustrativa de productos tecnológicos. No es el catálogo a la venta." class="w-full rounded-3xl" width="1200" height="900" loading="lazy">
+                        <figcaption class="mt-3 text-sm text-[#737373]">Composición ilustrativa. No incluye precios, nombres comerciales ni disponibilidad.</figcaption>
+                    </figure>
+                </div>
+            </div>
+        </section>
+
+        <section id="business" class="bg-[#111111] text-white">
+            <div class="max-w-6xl mx-auto px-5 py-20 sm:py-28">
+                <p class="text-xs font-semibold tracking-[0.2em] uppercase text-blue-400">Wuepy Business</p>
+                <div class="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-10 items-end">
+                    <h2 class="text-4xl sm:text-6xl tracking-tight leading-[1.02]">Tu negocio. Tus reglas. Más posibilidades.</h2>
+                    <p class="text-lg text-neutral-300 leading-relaxed">Administrar un negocio no debería ser más complicado de lo necesario. Wuepy Business está pensado para ayudar a emprendedores y empresas a organizar su operación y desarrollar su presencia digital.</p>
+                </div>
+                <div class="mt-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <article class="border border-white/15 rounded-3xl p-6">
+                        <h3 class="text-xl">Control de inventario</h3>
+                        <p class="mt-3 text-neutral-400 leading-relaxed">Cargá productos con fotografía, categoría, precio y stock. Lo que se vende en la web descuenta el mismo inventario de la caja.</p>
+                    </article>
+                    <article class="border border-white/15 rounded-3xl p-6">
+                        <h3 class="text-xl">Gestión del negocio</h3>
+                        <p class="mt-3 text-neutral-400 leading-relaxed">Pedidos, punto de venta, reparto y empleados con permisos, en el panel de cada tienda.</p>
+                    </article>
+                    <article class="border border-white/15 rounded-3xl p-6">
+                        <h3 class="text-xl">Tu propia presencia online</h3>
+                        <p class="mt-3 text-neutral-400 leading-relaxed">Creá el sitio de tu comercio con una plantilla o con un diseño asistido. El enlace queda en un subdominio de Wuepy.</p>
+                    </article>
+                    <article class="border border-white/15 rounded-3xl p-6">
+                        <h3 class="text-xl">Preparado para crecer</h3>
+                        <p class="mt-3 text-neutral-400 leading-relaxed">Una misma cuenta puede acompañar más de una tienda, según el plan que elijas en la plataforma.</p>
+                    </article>
+                </div>
+                <figure class="mt-12">
+                    <img src="/img/wuepy-panel.jpg" alt="Imagen ilustrativa de un panel de administración. No muestra datos de un cliente." class="w-full rounded-3xl" width="1600" height="900" loading="lazy">
+                    <figcaption class="mt-3 text-sm text-neutral-500">Imagen ilustrativa del tipo de panel. No corresponde a una cuenta real.</figcaption>
+                </figure>
+                <div class="mt-10 flex flex-col sm:flex-row gap-3">
+                    <a data-brand="business" href="https://business.wuepy.com" class="lift h-14 px-6 rounded-full bg-white text-[#111111] font-semibold inline-flex items-center justify-center">Entrar a Wuepy Business</a>
+                    <a href="#como" class="lift h-14 px-6 rounded-full border border-white/30 text-white font-semibold inline-flex items-center justify-center">¿Cómo funciona?</a>
+                </div>
+            </div>
+        </section>
+
+        <section id="como" class="max-w-6xl mx-auto px-5 py-20">
+            <h2 class="text-4xl sm:text-5xl tracking-tight">Cómo se abre una tienda</h2>
+            <ol class="mt-10 grid grid-cols-1 md:grid-cols-3 gap-8">
+                <li>
+                    <p class="text-sm font-semibold text-blue-600">01</p>
+                    <h3 class="mt-2 text-2xl">La cuenta</h3>
+                    <p class="mt-2 text-[#737373] leading-relaxed">Entrá a Wuepy Business y registrate con tu nombre, correo y contraseña. Ahí se abre el panel.</p>
+                </li>
+                <li>
+                    <p class="text-sm font-semibold text-blue-600">02</p>
+                    <h3 class="mt-2 text-2xl">El sitio</h3>
+                    <p class="mt-2 text-[#737373] leading-relaxed">Poné el nombre del comercio, el rubro y un diseño. El enlace se asigna al crear la tienda.</p>
+                </li>
+                <li>
+                    <p class="text-sm font-semibold text-blue-600">03</p>
+                    <h3 class="mt-2 text-2xl">Los productos</h3>
+                    <p class="mt-2 text-[#737373] leading-relaxed">Cargá fotografía, precio y stock. Compartí el enlace. Tus clientes compran por la tienda; vos seguís en el panel.</p>
+                </li>
+            </ol>
+        </section>
+
+        <section class="bg-[#F5F5F5]">
+            <div class="max-w-6xl mx-auto px-5 py-20">
+                <h2 class="text-4xl sm:text-5xl tracking-tight max-w-3xl">Elegí cómo querés crecer con Wuepy.</h2>
+                <div class="mt-10 grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <article class="bg-white rounded-3xl p-8">
+                        <h3 class="text-2xl">Quiero comprar tecnología</h3>
+                        <p class="mt-3 text-[#737373] leading-relaxed">Productos electrónicos y accesorios, en la tienda oficial.</p>
+                        <a data-brand="shop" href="https://shop.wuepy.com" class="lift mt-6 h-12 px-5 rounded-full bg-[#111111] text-white font-semibold inline-flex items-center">Comprar en Wuepy</a>
+                    </article>
+                    <article class="bg-white rounded-3xl p-8">
+                        <h3 class="text-2xl">Quiero emprender o gestionar mi negocio</h3>
+                        <p class="mt-3 text-[#737373] leading-relaxed">Herramientas digitales para organizar productos, stock y tu sitio.</p>
+                        <a data-brand="business" href="https://business.wuepy.com" class="lift mt-6 h-12 px-5 rounded-full border border-[#111111] font-semibold inline-flex items-center">Descubrir Wuepy Business</a>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section class="max-w-3xl mx-auto px-5 py-20" aria-labelledby="faq">
+            <h2 id="faq" class="text-4xl tracking-tight">Preguntas frecuentes</h2>
+            <div class="mt-8 border-t border-neutral-200">
+                <details class="border-b border-neutral-200 group">
+                    <summary class="cursor-pointer list-none py-5 text-lg font-semibold flex justify-between gap-4">¿Qué es Wuepy? <span class="text-[#737373] group-open:rotate-45 transition" aria-hidden="true">+</span></summary>
+                    <p class="pb-5 text-[#737373] leading-relaxed">Wuepy es una marca paraguaya que reúne una línea de productos tecnológicos y una plataforma digital para negocios llamada Wuepy Business.</p>
+                </details>
+                <details class="border-b border-neutral-200 group">
+                    <summary class="cursor-pointer list-none py-5 text-lg font-semibold flex justify-between gap-4">¿Dónde puedo comprar los productos de Wuepy? <span class="text-[#737373] group-open:rotate-45 transition" aria-hidden="true">+</span></summary>
+                    <p class="pb-5 text-[#737373] leading-relaxed">En la tienda oficial, <a data-brand="shop" href="https://shop.wuepy.com" class="underline">shop.wuepy.com</a>.</p>
+                </details>
+                <details class="border-b border-neutral-200 group">
+                    <summary class="cursor-pointer list-none py-5 text-lg font-semibold flex justify-between gap-4">¿Qué es Wuepy Business? <span class="text-[#737373] group-open:rotate-45 transition" aria-hidden="true">+</span></summary>
+                    <p class="pb-5 text-[#737373] leading-relaxed">Es la plataforma digital de Wuepy orientada a ayudar a emprendedores y negocios a administrar su operación y desarrollar su presencia online.</p>
+                </details>
+                <details class="border-b border-neutral-200 group">
+                    <summary class="cursor-pointer list-none py-5 text-lg font-semibold flex justify-between gap-4">¿Puedo crear mi propia tienda online? <span class="text-[#737373] group-open:rotate-45 transition" aria-hidden="true">+</span></summary>
+                    <p class="pb-5 text-[#737373] leading-relaxed">Wuepy Business ofrece herramientas para crear sitios web o tiendas online, según las funcionalidades y condiciones disponibles en la plataforma.</p>
+                </details>
+                <details class="border-b border-neutral-200 group">
+                    <summary class="cursor-pointer list-none py-5 text-lg font-semibold flex justify-between gap-4">¿Wuepy Business y la tienda Wuepy son lo mismo? <span class="text-[#737373] group-open:rotate-45 transition" aria-hidden="true">+</span></summary>
+                    <p class="pb-5 text-[#737373] leading-relaxed">No. La tienda está orientada a la compra de productos físicos. Wuepy Business es una plataforma de software para administrar negocios y crear sitios web.</p>
+                </details>
+                <details class="border-b border-neutral-200 group">
+                    <summary class="cursor-pointer list-none py-5 text-lg font-semibold flex justify-between gap-4">¿Cómo puedo acceder a Wuepy Business? <span class="text-[#737373] group-open:rotate-45 transition" aria-hidden="true">+</span></summary>
+                    <p class="pb-5 text-[#737373] leading-relaxed">Ingresá a <a data-brand="business" href="https://business.wuepy.com" class="underline">business.wuepy.com</a>.</p>
+                </details>
+            </div>
+        </section>
+    </main>
+
+    <footer id="contacto" class="bg-[#111111] text-white">
+        <div class="max-w-6xl mx-auto px-5 py-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 text-sm">
+            <div>
+                <p class="font-semibold tracking-[0.2em]">WUEPY</p>
+                <p class="mt-3 text-neutral-400">A lo paraguayoite.</p>
+            </div>
+            <div class="space-y-2">
+                <p class="font-semibold">Explorar</p>
+                <a href="#inicio" class="block text-neutral-400">Inicio</a>
+                <a href="#productos" class="block text-neutral-400">Productos</a>
+                <a href="#business" class="block text-neutral-400">Wuepy Business</a>
+                <a href="#sobre" class="block text-neutral-400">Sobre Wuepy</a>
+            </div>
+            <div class="space-y-2">
+                <p class="font-semibold">Nuestros sitios</p>
+                <a data-brand="shop" href="https://shop.wuepy.com" class="block text-neutral-400">Tienda Wuepy</a>
+                <a data-brand="business" href="https://business.wuepy.com" class="block text-neutral-400">Wuepy Business</a>
+                <a href="/terminos.html" class="block text-neutral-400">Términos</a>
+            </div>
+            <div class="space-y-2">
+                <p class="font-semibold">Contacto</p>
+                <a href="mailto:luisfretes805@gmail.com" class="block text-neutral-400 break-all">luisfretes805@gmail.com</a>
+                <p class="text-neutral-500 pt-6">© 2026 Wuepy</p>
             </div>
         </div>
     </footer>
@@ -535,15 +729,12 @@
             const storeView = document.getElementById('store-view');
             storeView.style.display = 'block';
             const frame = document.createElement('iframe');
-            frame.src = '/shop/index.html';
+            frame.id = 'wuepy-shop-frame';
+            frame.src = '/shop/index.html' + window.location.search + window.location.hash;
             frame.title = 'Wuepy';
-            frame.className = 'fixed inset-0 w-full h-full border-0 bg-white';
+            frame.setAttribute('style', 'position:fixed;top:0;left:0;width:100vw;height:100vh;max-width:none;border:0;background:#050505');
             storeView.appendChild(frame);
             return;
-        }
-
-        if (window.__WUEPY_KIND === 'business' && window.WuepyGuide) {
-            WuepyGuide.startLanding();
         }
 
         if (!_isMainDomain) {
